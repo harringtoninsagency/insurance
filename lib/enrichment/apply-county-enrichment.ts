@@ -1,5 +1,14 @@
 import { createServiceSupabase } from "@/lib/supabase/server";
 import { findCountyParcel } from "@/lib/enrichment/county-parcels";
+import { isBdrsCovered } from "@/lib/enrichment/building-jurisdiction";
+
+// Cities outside BDRS coverage run their own building department, so their
+// permit history isn't reachable through the Access Portal scraper in
+// scripts/backfill-roof-years.ts. Rather than leave roof_year blank (which
+// falls back to year_built at quote time — treating every such home as if
+// its roof has never been replaced), assume a mid-life roof as a rough
+// planning default until a real per-city permit source is integrated.
+const NON_BDRS_DEFAULT_ROOF_AGE_YEARS = 10;
 
 // Maps PCPAO's free-text EXTERIOR_WALLS values to our own properties.construction
 // vocabulary (which lib/adapters/fetch-quoting.ts then maps again into Fetch's
@@ -39,6 +48,13 @@ export async function applyCountyEnrichment(propertyId: string): Promise<ApplyCo
   const parcel = await findCountyParcel(property);
   if (!parcel) return { matched: false };
 
+  // BDRS-covered properties keep roof_year as-is (null until
+  // scripts/backfill-roof-years.ts finds a real re-roof permit); everything
+  // else gets the flat fallback since we have no permit source for it.
+  const roofYear = isBdrsCovered(property.city)
+    ? property.roof_year
+    : (property.roof_year ?? new Date().getFullYear() - NON_BDRS_DEFAULT_ROOF_AGE_YEARS);
+
   const { error: updateError } = await supabase
     .from("properties")
     .update({
@@ -50,6 +66,7 @@ export async function applyCountyEnrichment(propertyId: string): Promise<ApplyCo
       // Fetch's quote API requires one — backfill from the matched parcel
       // rather than clobbering a zip a more reliable source already set.
       zipcode: property.zipcode ?? parcel.zipcode ?? property.zipcode,
+      roof_year: roofYear,
     })
     .eq("id", propertyId);
 

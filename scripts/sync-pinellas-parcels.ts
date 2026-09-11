@@ -114,13 +114,26 @@ function toInt(value: string | undefined): number | undefined {
   return Number.isFinite(n) ? n : undefined;
 }
 
+// An exact `=== "Single Family"` match against IMPR_DSCR excluded a handful
+// of confirmed single-family homes that PCPAO records under a related but
+// differently-worded description (e.g. "Single Family Res"). Match broadly
+// on the substring instead, plus the bare "SFR" acronym some rows use.
+function isSingleFamilyLike(imprDscr: string | undefined): boolean {
+  if (!imprDscr) return false;
+  const v = imprDscr.toLowerCase();
+  return v.includes("single family") || v === "sfr";
+}
+
 async function main() {
   const parcels = new Map<string, ParcelRecord>();
+  const imprDscrCounts = new Map<string, number>();
 
-  console.log("Pass 1/3: RP_BUILDING (filtering to Single Family)...");
+  console.log("Pass 1/3: RP_BUILDING (filtering to single-family-like descriptions)...");
   const buildingStream = await downloadTableJsonStream("RP_BUILDING");
   const buildingCount = await streamEachRecord(buildingStream, (row) => {
-    if (row.IMPR_DSCR !== "Single Family" || !row.STRAP) return;
+    const dscr = row.IMPR_DSCR ?? "";
+    imprDscrCounts.set(dscr, (imprDscrCounts.get(dscr) ?? 0) + 1);
+    if (!isSingleFamilyLike(dscr) || !row.STRAP) return;
     parcels.set(row.STRAP, {
       strap: row.STRAP,
       county: "Pinellas",
@@ -131,7 +144,12 @@ async function main() {
       exterior_walls: row.EXTERIOR_WALLS || undefined,
     });
   });
-  console.log(`  scanned ${buildingCount.toLocaleString()} rows, kept ${parcels.size.toLocaleString()} single-family parcels`);
+  console.log(`  scanned ${buildingCount.toLocaleString()} rows, kept ${parcels.size.toLocaleString()} single-family-like parcels`);
+  console.log("  distinct IMPR_DSCR values (top 30 by row count):");
+  const sortedDscrCounts = Array.from(imprDscrCounts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 30);
+  for (const [value, count] of sortedDscrCounts) {
+    console.log(`    ${isSingleFamilyLike(value) ? "[KEPT]" : "[skip]"} "${value}": ${count.toLocaleString()}`);
+  }
 
   console.log("Pass 2/3: RP_ALL_SITE_ADDRESSES...");
   const addressStream = await downloadTableJsonStream("RP_ALL_SITE_ADDRESSES");
@@ -173,7 +191,7 @@ async function main() {
     if (upserted % 20_000 < CHUNK_SIZE) console.log(`  ...${upserted.toLocaleString()} upserted`);
   }
 
-  console.log(`Done. ${upserted.toLocaleString()} Pinellas single-family parcels synced.`);
+  console.log(`Done. ${upserted.toLocaleString()} Pinellas single-family-like parcels synced.`);
 }
 
 main().catch((err) => {
