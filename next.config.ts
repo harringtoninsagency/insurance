@@ -10,6 +10,14 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/**": ["./assets/branding/**"],
   },
+  // Server Actions default to a 1MB request body limit — too small for a
+  // real listing photo uploaded via PhotoUploadForm.tsx/uploadListingPhotoAction,
+  // which routinely run several MB straight from an MLS export.
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "10mb",
+    },
+  },
 };
 
 export default nextConfig;
