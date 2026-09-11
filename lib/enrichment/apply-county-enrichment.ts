@@ -46,6 +46,10 @@ export async function applyCountyEnrichment(propertyId: string): Promise<ApplyCo
       sqft: parcel.heated_area_sqft ?? property.sqft,
       construction: mapExteriorWallsToConstruction(parcel.exterior_walls),
       parcel_id: parcel.parcel_number ?? property.parcel_id,
+      // Some ingest sources (the CSV export) don't carry a zip at all, and
+      // Fetch's quote API requires one — backfill from the matched parcel
+      // rather than clobbering a zip a more reliable source already set.
+      zipcode: property.zipcode ?? parcel.zipcode ?? property.zipcode,
     })
     .eq("id", propertyId);
 
