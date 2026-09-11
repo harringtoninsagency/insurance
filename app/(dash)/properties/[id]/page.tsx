@@ -4,6 +4,7 @@ import { PullCountyDataButton } from "./PullCountyDataButton";
 import { GenerateProposalButton } from "./GenerateProposalButton";
 import { GenerateListingSnapshotButton } from "./GenerateListingSnapshotButton";
 import { PhotoUploadForm } from "./PhotoUploadForm";
+import { EditListingAgentForm } from "./EditListingAgentForm";
 import { QueueOutreachForm } from "./QueueOutreachForm";
 
 export default async function PropertyDetailPage({
@@ -85,20 +86,15 @@ export default async function PropertyDetailPage({
           <span className="inline-block h-2 w-2 shrink-0 bg-[#F0FF00]" />
           Listing agent
         </h2>
-        <dl className="grid grid-cols-3 gap-4 text-sm">
-          <div>
-            <dt className="text-slate-500">Name</dt>
-            <dd>{property.listing_agent_name ?? "—"}</dd>
-          </div>
-          <div>
-            <dt className="text-slate-500">Email</dt>
-            <dd>{property.listing_agent_email ?? "—"}</dd>
-          </div>
-          <div>
-            <dt className="text-slate-500">Phone</dt>
-            <dd>{property.listing_agent_phone ?? "—"}</dd>
-          </div>
-        </dl>
+        <EditListingAgentForm
+          propertyId={property.id}
+          name={property.listing_agent_name}
+          email={property.listing_agent_email}
+          phone={property.listing_agent_phone}
+        />
+        <p className="mt-1 text-xs text-slate-500">
+          Not captured by CSV import today — fill this in from the MLS listing when known.
+        </p>
       </section>
 
       <section>

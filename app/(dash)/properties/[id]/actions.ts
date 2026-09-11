@@ -37,6 +37,25 @@ export async function uploadListingPhotoAction(propertyId: string, formData: For
   return result;
 }
 
+export async function updateListingAgentAction(propertyId: string, formData: FormData) {
+  const name = String(formData.get("listing_agent_name") ?? "").trim();
+  const email = String(formData.get("listing_agent_email") ?? "").trim();
+  const phone = String(formData.get("listing_agent_phone") ?? "").trim();
+
+  const supabase = createServiceSupabase();
+  const { error } = await supabase
+    .from("properties")
+    .update({
+      listing_agent_name: name || null,
+      listing_agent_email: email || null,
+      listing_agent_phone: phone || null,
+    })
+    .eq("id", propertyId);
+  if (error) throw new Error(`Failed to update listing agent: ${error.message}`);
+
+  revalidatePath(`/properties/${propertyId}`);
+}
+
 export async function queueOutreachAction(propertyId: string, proposalId: string, recipient: string) {
   const supabase = createServiceSupabase();
   const { data: proposal, error } = await supabase
