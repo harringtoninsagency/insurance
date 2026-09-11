@@ -1,5 +1,8 @@
 import { createServiceSupabase } from "@/lib/supabase/server";
 import { splitStreetAddress, type ParsedListing } from "@/lib/ingest/onehome-email";
+import type { Database } from "@/lib/types/database";
+
+type PropertyInsert = Database["public"]["Tables"]["properties"]["Insert"];
 
 export interface ApplyOneHomeListingsResult {
   inserted: number;
@@ -41,21 +44,23 @@ export async function applyOneHomeListings(
       .eq("mls_id", listing.mlsId)
       .maybeSingle();
 
-    const row = {
+    const row: PropertyInsert = {
       agency_id: agencyId,
       mls_id: listing.mlsId,
       source: "onehome" as const,
-      address: `${listing.streetAddress}, ${listing.city}, ${listing.state} ${listing.zip}`,
+      address: `${listing.streetAddress}, ${listing.city}, ${listing.state}${listing.zip ? ` ${listing.zip}` : ""}`,
       house_number: houseNumber,
       street,
       city: listing.city,
       state: listing.state,
-      zipcode: listing.zip,
       list_price: listing.listPrice,
       beds: listing.beds,
       baths: listing.baths,
       sqft: listing.sqft,
     };
+    // Some ingest sources (e.g. the CSV export) don't carry a zip — never
+    // clobber an already-known property's zipcode with a blank one.
+    if (listing.zip) row.zipcode = listing.zip;
 
     if (existing) {
       const { error } = await supabase.from("properties").update(row).eq("id", existing.id);

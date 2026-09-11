@@ -7,7 +7,7 @@ export interface ParsedListing {
   streetAddress: string;
   city: string;
   state: string;
-  zip: string;
+  zip: string | null;
   beds: number;
   baths: number;
   sqft: number;
