@@ -11,7 +11,7 @@ export interface GenerateListingSnapshotResult {
 
 const PAGE_WIDTH = 612; // 8.5in
 const PAGE_HEIGHT = 792; // 11in
-const MARGIN = 54;
+const MARGIN = 40;
 const CONTENT_WIDTH = PAGE_WIDTH - 2 * MARGIN;
 
 // Brightway Brand Guidelines 2024 color palette (hex -> 0-1 rgb) — same
@@ -118,14 +118,12 @@ export async function generateListingSnapshotProposal(propertyId: string): Promi
 
   let y = PAGE_HEIGHT - MARGIN;
 
-  // --- Header: logo + contact line + yellow accent rule ---
-  // This layout has far more sections below than generate-indication.ts, so
-  // (unlike that one) the logo stays close to its native size rather than
-  // scaled up — there isn't page budget to spare for an oversized header.
-  const logoWidth = Math.min(180, CONTENT_WIDTH - 24);
+  // --- Header: logo (3x native size, per brand emphasis for this
+  // buyer-facing document) + contact line + yellow accent rule ---
+  const logoWidth = Math.min(180 * 3, CONTENT_WIDTH);
   const logoHeight = logoWidth * (headerLogo.height / headerLogo.width);
   page.drawImage(headerLogo, { x: MARGIN, y: y - logoHeight, width: logoWidth, height: logoHeight });
-  y -= logoHeight + 8;
+  y -= logoHeight + 6;
   page.drawText("727-789-2200  ·  harringtonagency@brightway.com", {
     x: MARGIN,
     y,
@@ -133,14 +131,14 @@ export async function generateListingSnapshotProposal(propertyId: string): Promi
     font: boldFont,
     color: DEEP_BLUE,
   });
-  y -= 14;
+  y -= 12;
   page.drawRectangle({ x: MARGIN, y: y - 3, width: CONTENT_WIDTH, height: 3, color: BRIGHT_YELLOW });
-  y -= 20;
+  y -= 16;
 
-  page.drawText("NEW LISTING INSURANCE SNAPSHOT", { x: MARGIN, y, size: 18, font: boldFont, color: DEEP_BLUE });
-  y -= 18;
-  page.drawText(property.address, { x: MARGIN, y, size: 12, font: boldFont, color: rgb(0x1c / 255, 0x64 / 255, 0x8b / 255) });
-  y -= 13;
+  page.drawText("NEW LISTING INSURANCE SNAPSHOT", { x: MARGIN, y, size: 17, font: boldFont, color: DEEP_BLUE });
+  y -= 16;
+  page.drawText(property.address, { x: MARGIN, y, size: 11.5, font: boldFont, color: rgb(0x1c / 255, 0x64 / 255, 0x8b / 255) });
+  y -= 12;
   page.drawText(`Preliminary insurance review for a new MLS listing  |  Prepared ${new Date().toLocaleDateString()}`, {
     x: MARGIN,
     y,
@@ -148,13 +146,13 @@ export async function generateListingSnapshotProposal(propertyId: string): Promi
     font,
     color: PERIWINKLE_GREY,
   });
-  y -= 18;
+  y -= 14;
 
   // --- Photo box (left) + starting-indication box (right) ---
   const photoWidth = 300;
   const boxGap = 18;
   const indicationWidth = CONTENT_WIDTH - photoWidth - boxGap;
-  const rowHeight = 150;
+  const rowHeight = 130;
   const rowTop = y;
 
   if (property.photo_path) {
@@ -224,27 +222,27 @@ export async function generateListingSnapshotProposal(propertyId: string): Promi
   const bestQuote = cheapestHo3 ?? quotes?.[0];
   const indicationX = MARGIN + photoWidth + boxGap;
   page.drawRectangle({ x: indicationX, y: rowTop - rowHeight, width: indicationWidth, height: rowHeight, color: DEEP_BLUE });
-  let boxY = rowTop - 22;
+  let boxY = rowTop - 18;
   const boxPad = 14;
   page.drawText(
     bestQuote ? `PRELIMINARY ${bestQuote.form_type ?? "HO3"}` : "PRELIMINARY",
     { x: indicationX + boxPad, y: boxY, size: 9, font: boldFont, color: BRIGHT_YELLOW }
   );
-  boxY -= 12;
+  boxY -= 10;
   page.drawText("STARTING INDICATION", { x: indicationX + boxPad, y: boxY, size: 9, font: boldFont, color: WHITE });
-  boxY -= 38;
+  boxY -= 30;
   page.drawText(bestQuote ? formatCurrency(Number(bestQuote.premium)) : "—", {
     x: indicationX + boxPad,
     y: boxY,
-    size: 30,
+    size: 26,
     font: boldFont,
     color: WHITE,
   });
-  boxY -= 16;
+  boxY -= 13;
   page.drawText("estimated annual premium", { x: indicationX + boxPad, y: boxY, size: 8, font, color: rgb(0.85, 0.88, 0.92) });
-  boxY -= 14;
+  boxY -= 11;
   page.drawRectangle({ x: indicationX + boxPad, y: boxY, width: indicationWidth - boxPad * 2, height: 0.75, color: PERIWINKLE_GREY });
-  boxY -= 18;
+  boxY -= 15;
   page.drawText("Markets found:", { x: indicationX + boxPad, y: boxY, size: 9, font, color: WHITE });
   page.drawText(quotes?.length ? "YES" : "NO", {
     x: indicationX + boxPad + font.widthOfTextAtSize("Markets found: ", 9),
@@ -253,14 +251,14 @@ export async function generateListingSnapshotProposal(propertyId: string): Promi
     font: boldFont,
     color: BRIGHT_YELLOW,
   });
-  boxY -= 13;
+  boxY -= 12;
   page.drawText("Subject to application and underwriting", { x: indicationX + boxPad, y: boxY, size: 7.5, font, color: rgb(0.75, 0.79, 0.85) });
 
-  y = rowTop - rowHeight - 14;
+  y = rowTop - rowHeight - 10;
 
   function drawSectionHeader(label: string) {
     page.drawText(label, { x: MARGIN, y, size: 10.5, font: boldFont, color: DEEP_BLUE });
-    y -= 14;
+    y -= 12;
   }
 
   // --- Property at a glance: 4 equal boxes ---
@@ -276,14 +274,14 @@ export async function generateListingSnapshotProposal(propertyId: string): Promi
   ];
   const glanceGap = 10;
   const glanceWidth = (CONTENT_WIDTH - glanceGap * 3) / 4;
-  const glanceHeight = 36;
+  const glanceHeight = 32;
   glanceItems.forEach((item, i) => {
     const x = MARGIN + i * (glanceWidth + glanceGap);
     page.drawRectangle({ x, y: y - glanceHeight, width: glanceWidth, height: glanceHeight, color: LIGHT_GREY });
-    page.drawText(item.label, { x: x + 10, y: y - 14, size: 7, font: boldFont, color: PERIWINKLE_GREY });
-    page.drawText(item.value, { x: x + 10, y: y - 28, size: 10, font: boldFont, color: DEEP_BLUE });
+    page.drawText(item.label, { x: x + 10, y: y - 13, size: 7, font: boldFont, color: PERIWINKLE_GREY });
+    page.drawText(item.value, { x: x + 10, y: y - 25, size: 9.5, font: boldFont, color: DEEP_BLUE });
   });
-  y -= glanceHeight + 12;
+  y -= glanceHeight + 10;
 
   // --- Insurance readiness: 2-column checklist ---
   drawSectionHeader("INSURANCE READINESS");
@@ -294,7 +292,7 @@ export async function generateListingSnapshotProposal(propertyId: string): Promi
   ];
   const colGap = 24;
   const readinessColWidth = (CONTENT_WIDTH - colGap) / 2;
-  const readinessRowHeight = 18;
+  const readinessRowHeight = 16;
   const rowsPerCol = Math.ceil(readinessItems.length / 2);
   readinessItems.forEach((item, i) => {
     const col = Math.floor(i / rowsPerCol);
@@ -307,7 +305,7 @@ export async function generateListingSnapshotProposal(propertyId: string): Promi
     const statusX = x + 130;
     page.drawText(item.status, { x: statusX, y: itemY - 7, size: 9, font: boldFont, color: DEEP_BLUE });
   });
-  y -= rowsPerCol * readinessRowHeight + 6;
+  y -= rowsPerCol * readinessRowHeight + 4;
 
   // --- Preliminary carrier indications table ---
   drawSectionHeader("PRELIMINARY CARRIER INDICATIONS");
@@ -320,9 +318,9 @@ export async function generateListingSnapshotProposal(propertyId: string): Promi
   const colCarrier = MARGIN + 10;
   const colForm = MARGIN + 320;
   const colPremium = MARGIN + 420;
-  const tableRowHeight = 20;
-  const logoMaxWidth = 70;
-  const logoMaxHeight = 13;
+  const tableRowHeight = 18;
+  const logoMaxWidth = 65;
+  const logoMaxHeight = 12;
 
   const carrierLogos = new Map<string, PDFImage>();
   for (const carrier of new Set(topHo3.map((q) => q.carrier))) {
@@ -336,7 +334,7 @@ export async function generateListingSnapshotProposal(propertyId: string): Promi
   // Reserve space below the table for the two condensed lines, the "have an
   // interested buyer" callout, and the footer, so a longer carrier list
   // degrades by skipping rows rather than overlapping the footer.
-  const FOOTER_RESERVE = 108;
+  const FOOTER_RESERVE = 95;
 
   page.drawRectangle({ x: MARGIN, y: y - tableRowHeight, width: CONTENT_WIDTH, height: tableRowHeight, color: DEEP_BLUE });
   page.drawText("CARRIER", { x: colCarrier, y: y - 13.5, size: 9, font: boldFont, color: WHITE });
@@ -387,7 +385,7 @@ export async function generateListingSnapshotProposal(propertyId: string): Promi
   y -= 8;
 
   // --- "Have an interested buyer?" callout ---
-  const calloutHeight = 36;
+  const calloutHeight = 32;
   page.drawRectangle({
     x: MARGIN,
     y: y - calloutHeight,
@@ -397,32 +395,32 @@ export async function generateListingSnapshotProposal(propertyId: string): Promi
     borderColor: BRIGHT_YELLOW,
     borderWidth: 1.5,
   });
-  page.drawText("HAVE AN INTERESTED BUYER?", { x: MARGIN + 14, y: y - 15, size: 9, font: boldFont, color: DEEP_BLUE });
-  page.drawText("Send us the buyer's name, closing date and contact information for a personalized proposal.", {
+  page.drawText("HAVE AN INTERESTED BUYER?", { x: MARGIN + 14, y: y - 14, size: 9, font: boldFont, color: DEEP_BLUE });
+  page.drawText("Email us the buyer's name, phone number and email for a personalized quote.", {
     x: MARGIN + 14,
-    y: y - 27,
+    y: y - 25,
     size: 8,
     font,
     color: rgb(0.3, 0.35, 0.4),
   });
 
   // --- Footer ---
-  const footerY = MARGIN + 30;
+  const footerY = MARGIN + 24;
   page.drawRectangle({ x: MARGIN, y: footerY, width: CONTENT_WIDTH, height: 0.75, color: PERIWINKLE_GREY });
   page.drawText(
     "Indicative estimates only, based on a placeholder applicant profile. Final premiums require a full application and",
-    { x: MARGIN, y: footerY - 14, size: 7.5, font, color: PERIWINKLE_GREY }
+    { x: MARGIN, y: footerY - 13, size: 7.5, font, color: PERIWINKLE_GREY }
   );
   page.drawText("are subject to underwriting, inspections, property documentation, coverage selections and applicant details.", {
     x: MARGIN,
-    y: footerY - 24,
+    y: footerY - 23,
     size: 7.5,
     font,
     color: PERIWINKLE_GREY,
   });
   const tagline = "The brighter way to do insurance.";
   const taglineWidth = italicFont.widthOfTextAtSize(tagline, 9);
-  page.drawText(tagline, { x: PAGE_WIDTH - MARGIN - taglineWidth, y: footerY - 36, size: 9, font: italicFont, color: DEEP_BLUE });
+  page.drawText(tagline, { x: PAGE_WIDTH - MARGIN - taglineWidth, y: footerY - 33, size: 9, font: italicFont, color: DEEP_BLUE });
 
   const pdfBytes = await pdfDoc.save();
   const path = `${property.agency_id}/${propertyId}/listing-snapshot-v${version}.pdf`;
