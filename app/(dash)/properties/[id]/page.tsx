@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { PullCountyDataButton } from "./PullCountyDataButton";
 import { GenerateProposalButton } from "./GenerateProposalButton";
+import { GenerateListingSnapshotButton } from "./GenerateListingSnapshotButton";
+import { PhotoUploadForm } from "./PhotoUploadForm";
 import { QueueOutreachForm } from "./QueueOutreachForm";
 
 export default async function PropertyDetailPage({
@@ -57,6 +59,12 @@ export default async function PropertyDetailPage({
     });
   }
 
+  let photoPreviewUrl: string | null = null;
+  if (property.photo_path) {
+    const { data } = await supabase.storage.from("listing-photos").createSignedUrl(property.photo_path, 3600);
+    photoPreviewUrl = data?.signedUrl ?? null;
+  }
+
   return (
     <div className="space-y-8">
       <div>
@@ -91,6 +99,25 @@ export default async function PropertyDetailPage({
             <dd>{property.listing_agent_phone ?? "—"}</dd>
           </div>
         </dl>
+      </section>
+
+      <section>
+        <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase text-[#003049]">
+          <span className="inline-block h-2 w-2 shrink-0 bg-[#F0FF00]" />
+          Listing photo
+        </h2>
+        {photoPreviewUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={photoPreviewUrl}
+            alt={`${property.address} listing photo`}
+            className="mb-3 h-48 w-full max-w-md rounded object-cover"
+          />
+        )}
+        <PhotoUploadForm propertyId={property.id} />
+        <p className="mt-1 text-xs text-slate-500">
+          Save the photo from the MLS/listing site and upload it here — used by the listing snapshot proposal below.
+        </p>
       </section>
 
       <section>
@@ -190,13 +217,16 @@ export default async function PropertyDetailPage({
             <span className="inline-block h-2 w-2 shrink-0 bg-[#F0FF00]" />
             Proposals
           </h2>
-          <GenerateProposalButton propertyId={property.id} />
+          <div className="flex items-center gap-2">
+            <GenerateProposalButton propertyId={property.id} />
+            <GenerateListingSnapshotButton propertyId={property.id} />
+          </div>
         </div>
         {proposals?.length ? (
           <ul className="space-y-2 text-sm">
             {proposals.map((p) => (
               <li key={p.id} className="flex items-center justify-between rounded border border-slate-200 bg-white px-4 py-2">
-                <span className="font-medium capitalize">{p.kind} v{p.version}</span>
+                <span className="font-medium capitalize">{p.kind.replace(/_/g, " ")} v{p.version}</span>
                 <div className="flex items-center gap-4">
                   <span className="text-slate-500">
                     {new Date(p.created_at).toLocaleDateString()}

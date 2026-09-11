@@ -19,7 +19,7 @@ export type PropertyStatus =
   | "quoted"
   | "closed"
   | "dead";
-export type ProposalKind = "indication" | "firm";
+export type ProposalKind = "indication" | "firm" | "listing_snapshot";
 export type OutreachStatus = "pending_review" | "approved" | "sent" | "bounced" | "rejected";
 export type QuoteAdapterName =
   | "indicative"
@@ -87,6 +87,7 @@ export interface Database {
           listing_agent_name: string | null;
           listing_agent_email: string | null;
           listing_agent_phone: string | null;
+          photo_path: string | null;
           status: PropertyStatus;
           created_at: string;
           updated_at: string;

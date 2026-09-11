@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { applyCountyEnrichment } from "@/lib/enrichment/apply-county-enrichment";
 import { generateIndicationProposal } from "@/lib/proposals/generate-indication";
+import { generateListingSnapshotProposal } from "@/lib/proposals/generate-listing-snapshot";
+import { uploadListingPhoto } from "@/lib/proposals/listing-photo";
 import { queueOutreach } from "@/lib/outreach/queue";
 import { createServiceSupabase } from "@/lib/supabase/server";
 
@@ -14,6 +16,23 @@ export async function pullCountyDataAction(propertyId: string) {
 
 export async function generateProposalAction(propertyId: string) {
   const result = await generateIndicationProposal(propertyId);
+  revalidatePath(`/properties/${propertyId}`);
+  return result;
+}
+
+export async function generateListingSnapshotAction(propertyId: string) {
+  const result = await generateListingSnapshotProposal(propertyId);
+  revalidatePath(`/properties/${propertyId}`);
+  return result;
+}
+
+export async function uploadListingPhotoAction(propertyId: string, formData: FormData) {
+  const file = formData.get("photo");
+  if (!(file instanceof File) || file.size === 0) {
+    throw new Error("Choose a photo file first");
+  }
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const result = await uploadListingPhoto(propertyId, bytes, file.type);
   revalidatePath(`/properties/${propertyId}`);
   return result;
 }
