@@ -11,7 +11,8 @@ export default async function ReviewPage() {
 
   return (
     <div>
-      <h1 className="mb-2 text-xl font-semibold">Outreach review</h1>
+      <h1 className="text-xl font-semibold text-[#003049]">Outreach review</h1>
+      <div className="mb-2 mt-2 h-[3px] w-16 bg-[#F0FF00]" />
       <p className="mb-6 text-sm text-slate-500">
         Generated indications land here first. Nothing sends until a producer
         approves it — see the outreach guardrails in the implementation plan.

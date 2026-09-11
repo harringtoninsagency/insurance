@@ -60,19 +60,21 @@ export default async function PropertyDetailPage({
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-xl font-semibold">{property.address}</h1>
+        <h1 className="text-xl font-semibold text-[#003049]">{property.address}</h1>
+        <div className="mb-2 mt-2 h-[3px] w-16 bg-[#F0FF00]" />
         <p className="text-sm text-slate-500">
           {property.year_built ? `Built ${property.year_built}` : "Year built unknown"}
           {property.sqft ? ` · ${property.sqft.toLocaleString()} sqft` : ""}
           {property.construction ? ` · ${property.construction}` : ""}
         </p>
-        <span className="mt-2 inline-block rounded-full bg-slate-100 px-2 py-1 text-xs font-medium">
+        <span className="mt-2 inline-block rounded-full bg-[#8291AC]/15 px-2 py-1 text-xs font-medium text-[#003049]">
           {property.status}
         </span>
       </div>
 
       <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase text-slate-500">
+        <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase text-[#003049]">
+          <span className="inline-block h-2 w-2 shrink-0 bg-[#F0FF00]" />
           Listing agent
         </h2>
         <dl className="grid grid-cols-3 gap-4 text-sm">
@@ -93,7 +95,8 @@ export default async function PropertyDetailPage({
 
       <section>
         <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-sm font-semibold uppercase text-slate-500">
+          <h2 className="flex items-center gap-2 text-sm font-semibold uppercase text-[#003049]">
+            <span className="inline-block h-2 w-2 shrink-0 bg-[#F0FF00]" />
             Enrichment
           </h2>
           <PullCountyDataButton propertyId={property.id} />
@@ -127,7 +130,8 @@ export default async function PropertyDetailPage({
       </section>
 
       <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase text-slate-500">
+        <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase text-[#003049]">
+          <span className="inline-block h-2 w-2 shrink-0 bg-[#F0FF00]" />
           Risk profile
         </h2>
         {riskProfile ? (
@@ -142,13 +146,14 @@ export default async function PropertyDetailPage({
       </section>
 
       <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase text-slate-500">
+        <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase text-[#003049]">
+          <span className="inline-block h-2 w-2 shrink-0 bg-[#F0FF00]" />
           Quotes
         </h2>
         {quotes?.length ? (
           <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500">
+              <thead className="bg-[#003049] text-xs uppercase text-white">
                 <tr>
                   <th className="px-4 py-3">Carrier</th>
                   <th className="px-4 py-3">Adapter</th>
@@ -181,7 +186,8 @@ export default async function PropertyDetailPage({
 
       <section>
         <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-sm font-semibold uppercase text-slate-500">
+          <h2 className="flex items-center gap-2 text-sm font-semibold uppercase text-[#003049]">
+            <span className="inline-block h-2 w-2 shrink-0 bg-[#F0FF00]" />
             Proposals
           </h2>
           <GenerateProposalButton propertyId={property.id} />
@@ -198,7 +204,7 @@ export default async function PropertyDetailPage({
                   {proposalDownloadUrls.has(p.id) && (
                     <a
                       href={proposalDownloadUrls.get(p.id)}
-                      className="font-medium text-slate-900 hover:underline"
+                      className="font-medium text-[#003049] hover:underline"
                     >
                       Download
                     </a>

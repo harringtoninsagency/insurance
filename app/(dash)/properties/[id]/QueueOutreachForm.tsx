@@ -30,7 +30,7 @@ export function QueueOutreachForm({ propertyId, proposalId }: { propertyId: stri
       <button
         type="submit"
         disabled={isPending}
-        className="rounded border border-slate-300 px-3 py-1.5 text-sm font-medium disabled:opacity-50"
+        className="rounded border border-[#003049] px-3 py-1.5 text-sm font-medium text-[#003049] disabled:opacity-50"
       >
         {isPending ? "Queuing..." : "Queue for review"}
       </button>

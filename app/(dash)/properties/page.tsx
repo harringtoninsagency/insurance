@@ -10,7 +10,8 @@ export default async function PropertiesPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-xl font-semibold">Properties</h1>
+      <h1 className="text-xl font-semibold text-[#003049]">Properties</h1>
+      <div className="mb-6 mt-2 h-[3px] w-16 bg-[#F0FF00]" />
 
       {error && (
         <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -28,7 +29,7 @@ export default async function PropertiesPage() {
       {!!properties?.length && (
         <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500">
+            <thead className="bg-[#003049] text-xs uppercase text-white">
               <tr>
                 <th className="px-4 py-3">Address</th>
                 <th className="px-4 py-3">Listing agent</th>
@@ -42,7 +43,7 @@ export default async function PropertiesPage() {
                   <td className="px-4 py-3">
                     <Link
                       href={`/properties/${p.id}`}
-                      className="font-medium text-slate-900 hover:underline"
+                      className="font-medium text-[#003049] hover:underline"
                     >
                       {p.address}
                     </Link>
@@ -54,7 +55,7 @@ export default async function PropertiesPage() {
                     {p.list_price ? `$${Number(p.list_price).toLocaleString()}` : "—"}
                   </td>
                   <td className="px-4 py-3">
-                    <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-medium">
+                    <span className="rounded-full bg-[#8291AC]/15 px-2 py-1 text-xs font-medium text-[#003049]">
                       {p.status}
                     </span>
                   </td>

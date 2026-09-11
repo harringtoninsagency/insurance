@@ -1,6 +1,8 @@
 import Link from "next/link";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
+import brightwayLogo from "@/assets/branding/brightway-harrington-horizontal-deep-blue.png";
 
 export default async function DashLayout({
   children,
@@ -19,12 +21,14 @@ export default async function DashLayout({
   return (
     <div className="flex min-h-screen">
       <nav className="w-56 shrink-0 border-r border-slate-200 bg-white p-4">
-        <div className="mb-6 text-lg font-semibold">FetchRival</div>
+        <Image src={brightwayLogo} alt="Brightway Insurance | The Harrington Agency" className="h-auto w-full" priority />
+        <div className="mb-2 mt-3 h-[3px] w-full bg-[#F0FF00]" />
+        <div className="mb-4 text-xs text-[#8291AC]">FetchRival</div>
         <ul className="space-y-1 text-sm">
           <li>
             <Link
               href="/properties"
-              className="block rounded px-3 py-2 hover:bg-slate-100"
+              className="block rounded px-3 py-2 font-medium text-[#003049] hover:bg-[#003049]/5"
             >
               Properties
             </Link>
@@ -32,7 +36,7 @@ export default async function DashLayout({
           <li>
             <Link
               href="/review"
-              className="block rounded px-3 py-2 hover:bg-slate-100"
+              className="block rounded px-3 py-2 font-medium text-[#003049] hover:bg-[#003049]/5"
             >
               Outreach review
             </Link>
