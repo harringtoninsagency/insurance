@@ -123,7 +123,12 @@ export const fetchQuotingAdapter: CarrierQuoteAdapter<FetchQuoteFields, FetchRat
       house_number: property.house_number,
       street: property.street,
       city: property.city,
-      county: property.county ?? property.city,
+      // property.county is never actually populated (no ingest source sets
+      // it), so this was falling back to the city name — an invalid value
+      // that made Frontline reject the risk address outright ("An invalid
+      // Risk Address county was passed in"). Every property this agency
+      // quotes is in Pinellas County, FL, so that's the correct fallback.
+      county: property.county ?? "Pinellas",
       state: property.state,
       zipcode: property.zipcode,
       effective_date: todayIso(),

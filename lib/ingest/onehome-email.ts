@@ -80,7 +80,10 @@ export function parseOneHomeEmail(msgFilePath: string): ParsedListing[] {
 
 /** Splits "9913 W BAY ST" into { houseNumber: "9913", street: "W BAY ST" }. */
 export function splitStreetAddress(streetAddress: string): { houseNumber: string; street: string } {
-  const match = streetAddress.match(/^(\d+)\s+(.+)$/);
+  // A trailing letter (e.g. "1121A ORANGE AVE") is a legitimate house-number
+  // suffix some FL addresses use, not a unit designator (those come after
+  // the street name — see stripUnitDesignator in county-parcels.ts).
+  const match = streetAddress.match(/^(\d+[A-Za-z]?)\s+(.+)$/);
   if (!match || !match[1] || !match[2]) {
     throw new Error(`Could not split house number from street address: "${streetAddress}"`);
   }

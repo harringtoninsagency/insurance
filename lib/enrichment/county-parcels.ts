@@ -189,12 +189,22 @@ export async function findCountyParcel(property: PropertyRow): Promise<CountyPar
   if (!property.house_number || !property.street) return null;
 
   const supabase = createServiceSupabase();
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from("county_parcels")
     .select("*")
     .eq("str_num", property.house_number);
 
   if (error) throw new Error(`County parcel lookup failed: ${error.message}`);
+
+  // A letter-suffixed house number (e.g. "1121A", MLS-style for a duplex or
+  // rear unit) usually shares a single base parcel in county records, which
+  // carries no such suffix — retry against the bare digits before giving up.
+  if (!data?.length && /^\d+[A-Za-z]$/.test(property.house_number)) {
+    const bareHouseNumber = property.house_number.slice(0, -1);
+    ({ data, error } = await supabase.from("county_parcels").select("*").eq("str_num", bareHouseNumber));
+    if (error) throw new Error(`County parcel lookup failed: ${error.message}`);
+  }
+
   if (!data?.length) return null;
 
   const targetStreet = normalizeStreetName(property.street);
