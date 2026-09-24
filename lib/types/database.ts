@@ -277,6 +277,26 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["county_parcels"]["Row"]>;
         Relationships: [];
       };
+      county_roof_permits: {
+        Row: {
+          strap: string;
+          parcel_number: string | null;
+          permit_number: string | null;
+          agency_name: string | null;
+          issue_dt: string;
+          roof_year: number;
+          est_val: number | null;
+          roof_permit_count: number;
+          synced_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["county_roof_permits"]["Row"]> & {
+          strap: string;
+          issue_dt: string;
+          roof_year: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["county_roof_permits"]["Row"]>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

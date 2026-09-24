@@ -1,13 +1,14 @@
 import { createServiceSupabase } from "@/lib/supabase/server";
 import { findCountyParcel } from "@/lib/enrichment/county-parcels";
 import { isBdrsCovered } from "@/lib/enrichment/building-jurisdiction";
+import { findLatestRoofPermitYear, resolveRoofYearFromPermit } from "@/lib/enrichment/roof-permits";
 
-// Cities outside BDRS coverage run their own building department, so their
-// permit history isn't reachable through the Access Portal scraper in
-// scripts/backfill-roof-years.ts. Rather than leave roof_year blank (which
-// falls back to year_built at quote time — treating every such home as if
-// its roof has never been replaced), assume a mid-life roof as a rough
-// planning default until a real per-city permit source is integrated.
+// Placeholder for parcels with no roof permit on record, outside BDRS
+// coverage (their own building departments aren't reachable through the
+// Access Portal scraper in scripts/backfill-roof-years.ts). Rather than leave
+// roof_year blank (which falls back to year_built at quote time — treating
+// every such home as if its roof has never been replaced), assume a mid-life
+// roof as a rough planning default.
 const NON_BDRS_DEFAULT_ROOF_AGE_YEARS = 10;
 
 // Maps PCPAO's free-text EXTERIOR_WALLS values to our own properties.construction
@@ -48,12 +49,19 @@ export async function applyCountyEnrichment(propertyId: string): Promise<ApplyCo
   const parcel = await findCountyParcel(property);
   if (!parcel) return { matched: false };
 
-  // BDRS-covered properties keep roof_year as-is (null until
-  // scripts/backfill-roof-years.ts finds a real re-roof permit); everything
-  // else gets the flat fallback since we have no permit source for it.
-  const roofYear = isBdrsCovered(property.city)
-    ? property.roof_year
-    : (property.roof_year ?? new Date().getFullYear() - NON_BDRS_DEFAULT_ROOF_AGE_YEARS);
+  // Real permit history first (county_roof_permits, synced from PCPAO's
+  // countywide permit export). With no roof permit on record, fall back to the
+  // earlier rules: BDRS-covered properties keep roof_year as-is (null means
+  // "assume original roof" at quote time), everything else gets the flat
+  // default.
+  const placeholderDefaultYear = new Date().getFullYear() - NON_BDRS_DEFAULT_ROOF_AGE_YEARS;
+  const permitYear = await findLatestRoofPermitYear(parcel.strap);
+  const roofYear =
+    permitYear != null
+      ? resolveRoofYearFromPermit(property.roof_year, permitYear, placeholderDefaultYear)
+      : isBdrsCovered(property.city)
+        ? property.roof_year
+        : (property.roof_year ?? placeholderDefaultYear);
 
   const { error: updateError } = await supabase
     .from("properties")

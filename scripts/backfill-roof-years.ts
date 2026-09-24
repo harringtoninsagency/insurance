@@ -56,7 +56,11 @@ async function main() {
     .is("roof_year", null);
   if (error) throw error;
 
-  const targets = (properties ?? []).filter((p) => isBdrsCovered(p.city) && p.house_number && p.street);
+  // Optional single-property mode: npx tsx scripts/backfill-roof-years.ts <property-id>
+  const onlyId = process.argv[2];
+  const targets = (properties ?? []).filter(
+    (p) => isBdrsCovered(p.city) && p.house_number && p.street && (!onlyId || p.id === onlyId)
+  );
   console.log(`${targets.length} BDRS-covered properties to search for roof permits.`);
 
   const browser = await chromium.launch();
