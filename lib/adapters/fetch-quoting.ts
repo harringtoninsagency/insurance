@@ -53,6 +53,14 @@ const DWELLING_A_PER_SQFT = 200;
 // carrier has shown a problem being quoted *above* its actual minimum.
 const DWELLING_A_MINIMUM = 350_000;
 
+/** Coverage A the adapter quotes by default for a home of this size. */
+export function defaultDwellingA(sqft: number): number {
+  return Math.max(Math.round(Number(sqft) * DWELLING_A_PER_SQFT), DWELLING_A_MINIMUM);
+}
+
+// Fetch's own default for HO3 Coverage C (personal property) when not set.
+export const DEFAULT_PERSONAL_PROPERTY_PCT = 50;
+
 // Universal P&C's DP3 quotes reject occupancy: Owner ("Coverage is
 // unavailable for this combination of policy type, occupancy, and wind
 // coverage", returned as a placeholder $128, not a real error) — DP3 is a
@@ -113,10 +121,7 @@ export const fetchQuotingAdapter: CarrierQuoteAdapter<FetchQuoteFields, FetchRat
       );
     }
 
-    const dwellingA = Math.max(
-      Math.round(Number(property.sqft) * DWELLING_A_PER_SQFT),
-      DWELLING_A_MINIMUM
-    );
+    const dwellingA = defaultDwellingA(Number(property.sqft));
 
     return {
       ...PLACEHOLDER_INSURED,

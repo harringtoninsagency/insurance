@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { PDFDocument, StandardFonts, rgb, type PDFImage } from "pdf-lib";
 import { createServiceSupabase } from "@/lib/supabase/server";
+import { resolveCoverages } from "@/lib/quotes/coverage";
 
 export interface GenerateListingSnapshotResult {
   proposalId: string;
@@ -93,7 +94,7 @@ export async function generateListingSnapshotProposal(propertyId: string): Promi
 
   const { data: quotes, error: quotesError } = await supabase
     .from("quotes")
-    .select("id, carrier, form_type, premium")
+    .select("id, carrier, form_type, premium, coverages")
     .eq("property_id", propertyId)
     .gt("premium", 0)
     .order("premium", { ascending: true });
@@ -253,6 +254,12 @@ export async function generateListingSnapshotProposal(propertyId: string): Promi
   });
   boxY -= 12;
   page.drawText("Subject to application and underwriting", { x: indicationX + boxPad, y: boxY, size: 7.5, font, color: rgb(0.75, 0.79, 0.85) });
+  const coverages = resolveCoverages((quotes ?? []).map((q) => q.coverages), property.sqft);
+  if (coverages) {
+    boxY -= 11;
+    const basis = `Based on ${formatCurrency(coverages.dwelling_a)} dwelling${coverages.isDefault ? " (est.)" : ""}, ${coverages.personal_property_pct}% contents`;
+    page.drawText(basis, { x: indicationX + boxPad, y: boxY, size: 7.5, font, color: rgb(0.75, 0.79, 0.85) });
+  }
 
   y = rowTop - rowHeight - 10;
 

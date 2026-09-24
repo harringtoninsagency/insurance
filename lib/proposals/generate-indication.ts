@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { PDFDocument, StandardFonts, rgb, type PDFImage } from "pdf-lib";
 import { createServiceSupabase } from "@/lib/supabase/server";
+import { coverageLines, resolveCoverages } from "@/lib/quotes/coverage";
 
 export interface GenerateIndicationResult {
   proposalId: string;
@@ -146,12 +147,14 @@ export async function generateIndicationProposal(propertyId: string): Promise<Ge
 
   // --- Property Snapshot: cream color-blocked panel per brand color usage guide ---
   drawSectionHeader("PROPERTY SNAPSHOT");
+  const coverages = resolveCoverages(quotes.map((q) => q.coverages), property.sqft);
   const snapshot = [
     property.year_built ? `Year Built: ${property.year_built}` : null,
     property.sqft ? `Living Area: ${property.sqft.toLocaleString()} sqft` : null,
     property.construction ? `Construction: ${property.construction}` : null,
     property.beds != null && property.baths != null ? `${property.beds} bd / ${property.baths} ba` : null,
     enrichment?.flood_zone ? `Flood Zone: ${enrichment.flood_zone}` : null,
+    ...(coverages ? coverageLines(coverages) : []),
   ].filter((line): line is string => line != null);
 
   const panelPadding = 12;
@@ -169,7 +172,7 @@ export async function generateIndicationProposal(propertyId: string): Promise<Ge
   const colCarrier = MARGIN + 10;
   const colForm = MARGIN + 250;
   const colPremium = MARGIN + 350;
-  const rowHeight = 22;
+  const rowHeight = 20; // tightened from 22 to leave room for the coverage lines above the table
   const logoMaxWidth = 70;
   const logoMaxHeight = 16;
   const tableWidth = PAGE_WIDTH - 2 * MARGIN;
