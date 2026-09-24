@@ -95,7 +95,7 @@ export async function generateIndicationProposal(propertyId: string): Promise<Ge
   const version = (existingProposals?.[0]?.version ?? 0) + 1;
 
   const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
+  let page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const italicFont = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
@@ -167,11 +167,12 @@ export async function generateIndicationProposal(propertyId: string): Promise<Ge
   }
   y -= panelHeight + 24;
 
-  // --- Carrier Indications table ---
+  // --- Carrier Indications table (paginated: DP3 rows follow the HO3 rows and
+  // spill onto continuation pages, each with its own header and footer) ---
   drawSectionHeader("CARRIER INDICATIONS");
   const colCarrier = MARGIN + 10;
-  const colForm = MARGIN + 250;
-  const colPremium = MARGIN + 350;
+  const colForm = MARGIN + 262;
+  const colPremium = MARGIN + 400;
   const rowHeight = 20; // tightened from 22 to leave room for the coverage lines above the table
   const logoMaxWidth = 70;
   const logoMaxHeight = 16;
@@ -192,16 +193,57 @@ export async function generateIndicationProposal(propertyId: string): Promise<Ge
   const displayQuotes = [...quotes].sort(
     (a, b) => formRank(a.form_type) - formRank(b.form_type) || Number(a.premium) - Number(b.premium)
   );
-  const bestQuoteId = quotes.reduce((best, q) => (Number(q.premium) < Number(best.premium) ? q : best)).id;
+  // Highlight the cheapest HO3, not the cheapest overall — DP3 is a rental
+  // form and usually cheaper, so it shouldn't read as the top pick.
+  const bestQuoteId = (displayQuotes.find((q) => q.form_type === "HO3") ?? displayQuotes[0])!.id;
 
-  page.drawRectangle({ x: MARGIN, y: y - rowHeight, width: tableWidth, height: rowHeight, color: DEEP_BLUE });
-  page.drawText("Carrier", { x: colCarrier, y: y - 15, size: 10, font: boldFont, color: WHITE });
-  page.drawText("Form", { x: colForm, y: y - 15, size: 10, font: boldFont, color: WHITE });
-  page.drawText("Annual Premium", { x: colPremium, y: y - 15, size: 10, font: boldFont, color: WHITE });
-  y -= rowHeight;
+  const propertyAddress = property.address;
+  const formLabel = (form: string | null) => (form === "DP3" ? "DP3 (rental property)" : (form ?? "-"));
 
+  function drawTableHeader() {
+    page.drawRectangle({ x: MARGIN, y: y - rowHeight, width: tableWidth, height: rowHeight, color: DEEP_BLUE });
+    page.drawText("Carrier", { x: colCarrier, y: y - 15, size: 10, font: boldFont, color: WHITE });
+    page.drawText("Form", { x: colForm, y: y - 15, size: 10, font: boldFont, color: WHITE });
+    page.drawText("Annual Premium", { x: colPremium, y: y - 15, size: 10, font: boldFont, color: WHITE });
+    y -= rowHeight;
+  }
+
+  function drawFooter() {
+    const footerY = MARGIN + 44;
+    page.drawRectangle({ x: MARGIN, y: footerY, width: PAGE_WIDTH - 2 * MARGIN, height: 0.75, color: PERIWINKLE_GREY });
+    const markSize = 14;
+    page.drawImage(footerMark, { x: MARGIN, y: footerY - 34, width: markSize, height: markSize });
+    page.drawText(
+      "All premiums shown are indicative estimates only, based on a placeholder applicant profile.",
+      { x: MARGIN + markSize + 8, y: footerY - 14, size: 8, font, color: PERIWINKLE_GREY }
+    );
+    page.drawText(
+      "Actual bindable premiums require a full application and are subject to underwriting.",
+      { x: MARGIN + markSize + 8, y: footerY - 25, size: 8, font, color: PERIWINKLE_GREY }
+    );
+    page.drawText("The brighter way to do insurance.", {
+      x: MARGIN + markSize + 8,
+      y: footerY - 36,
+      size: 8,
+      font: italicFont,
+      color: DEEP_BLUE,
+    });
+  }
+
+  function startContinuationPage() {
+    drawFooter();
+    page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
+    y = PAGE_HEIGHT - MARGIN;
+    page.drawText("Insurance Indication Summary (continued)", { x: MARGIN, y: y - 12, size: 14, font: boldFont, color: DEEP_BLUE });
+    page.drawText(propertyAddress, { x: MARGIN, y: y - 28, size: 10, font, color: PERIWINKLE_GREY });
+    page.drawRectangle({ x: MARGIN, y: y - 38, width: PAGE_WIDTH - 2 * MARGIN, height: 3, color: BRIGHT_YELLOW });
+    y -= 52;
+    drawTableHeader();
+  }
+
+  drawTableHeader();
   displayQuotes.forEach((quote, i) => {
-    if (y < MARGIN + FOOTER_RESERVE) return; // stay on one page
+    if (y < MARGIN + FOOTER_RESERVE) startContinuationPage();
     const rowTop = y;
     if (i % 2 === 1) {
       page.drawRectangle({ x: MARGIN, y: rowTop - rowHeight, width: tableWidth, height: rowHeight, color: CREAM });
@@ -229,32 +271,12 @@ export async function generateIndicationProposal(propertyId: string): Promise<Ge
     }
 
     page.drawText(quote.carrier, { x: carrierTextX, y: textY, size: 10, font: carrierFont, color: BLACK });
-    page.drawText(quote.form_type ?? "-", { x: colForm, y: textY, size: 10, font: carrierFont, color: BLACK });
+    page.drawText(formLabel(quote.form_type), { x: colForm, y: textY, size: 10, font: carrierFont, color: BLACK });
     page.drawText(formatCurrency(Number(quote.premium)), { x: colPremium, y: textY, size: 10, font: carrierFont, color: DEEP_BLUE });
     y -= rowHeight;
   });
 
-  // --- Footer: rule, brand mark, disclaimers, tagline ---
-  const footerY = MARGIN + 44;
-  page.drawRectangle({ x: MARGIN, y: footerY, width: PAGE_WIDTH - 2 * MARGIN, height: 0.75, color: PERIWINKLE_GREY });
-
-  const markSize = 14;
-  page.drawImage(footerMark, { x: MARGIN, y: footerY - 34, width: markSize, height: markSize });
-  page.drawText(
-    "All premiums shown are indicative estimates only, based on a placeholder applicant profile.",
-    { x: MARGIN + markSize + 8, y: footerY - 14, size: 8, font, color: PERIWINKLE_GREY }
-  );
-  page.drawText(
-    "Actual bindable premiums require a full application and are subject to underwriting.",
-    { x: MARGIN + markSize + 8, y: footerY - 25, size: 8, font, color: PERIWINKLE_GREY }
-  );
-  page.drawText("The brighter way to do insurance.", {
-    x: MARGIN + markSize + 8,
-    y: footerY - 36,
-    size: 8,
-    font: italicFont,
-    color: DEEP_BLUE,
-  });
+  drawFooter();
 
   const pdfBytes = await pdfDoc.save();
   const path = `${property.agency_id}/${propertyId}/indication-v${version}.pdf`;
