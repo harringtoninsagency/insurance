@@ -27,6 +27,9 @@ const AMBER = rgb(0xd9 / 255, 0x8c / 255, 0x0d / 255);
 const BLACK = rgb(0, 0, 0);
 const WHITE = rgb(1, 1, 1);
 
+const CONTACT_EMAIL = "harringtonagency@brightway.com";
+const CONTACT_PHONE = "727-789-2200";
+
 const BRANDING_DIR = join(process.cwd(), "assets", "branding");
 const CARRIER_LOGOS_DIR = join(BRANDING_DIR, "carriers");
 
@@ -341,7 +344,7 @@ export async function generateListingSnapshotProposal(propertyId: string): Promi
   // Reserve space below the table for the two condensed lines, the "have an
   // interested buyer" callout, and the footer, so a longer carrier list
   // degrades by skipping rows rather than overlapping the footer.
-  const FOOTER_RESERVE = 95;
+  const FOOTER_RESERVE = 125;
 
   page.drawRectangle({ x: MARGIN, y: y - tableRowHeight, width: CONTENT_WIDTH, height: tableRowHeight, color: DEEP_BLUE });
   page.drawText("CARRIER", { x: colCarrier, y: y - 13.5, size: 9, font: boldFont, color: WHITE });
@@ -392,7 +395,7 @@ export async function generateListingSnapshotProposal(propertyId: string): Promi
   y -= 8;
 
   // --- "Have an interested buyer?" callout ---
-  const calloutHeight = 32;
+  const calloutHeight = 42;
   page.drawRectangle({
     x: MARGIN,
     y: y - calloutHeight,
@@ -402,14 +405,24 @@ export async function generateListingSnapshotProposal(propertyId: string): Promi
     borderColor: BRIGHT_YELLOW,
     borderWidth: 1.5,
   });
-  page.drawText("HAVE AN INTERESTED BUYER?", { x: MARGIN + 14, y: y - 14, size: 9, font: boldFont, color: DEEP_BLUE });
-  page.drawText("Email us the buyer's name, phone number and email for a personalized quote.", {
+  page.drawText("HAVE AN INTERESTED BUYER?", { x: MARGIN + 14, y: y - 17, size: 9, font: boldFont, color: DEEP_BLUE });
+  page.drawText("Email us the buyer's name, phone number and email", {
     x: MARGIN + 14,
-    y: y - 25,
+    y: y - 28,
     size: 8,
     font,
     color: rgb(0.3, 0.35, 0.4),
   });
+  page.drawText("for a personalized quote.", { x: MARGIN + 14, y: y - 37, size: 8, font, color: rgb(0.3, 0.35, 0.4) });
+
+  // Contact details, right-aligned so the call to action has somewhere to go.
+  const contactSize = 10;
+  const contactRight = MARGIN + CONTENT_WIDTH - 14;
+  const emailWidth = boldFont.widthOfTextAtSize(CONTACT_EMAIL, contactSize);
+  const phoneWidth = boldFont.widthOfTextAtSize(CONTACT_PHONE, contactSize);
+  page.drawRectangle({ x: contactRight - emailWidth - 14, y: y - calloutHeight + 8, width: 0.75, height: calloutHeight - 16, color: PERIWINKLE_GREY });
+  page.drawText(CONTACT_EMAIL, { x: contactRight - emailWidth, y: y - 20, size: contactSize, font: boldFont, color: DEEP_BLUE });
+  page.drawText(CONTACT_PHONE, { x: contactRight - phoneWidth, y: y - 34, size: contactSize, font: boldFont, color: DEEP_BLUE });
 
   // --- Footer ---
   const footerY = MARGIN + 24;
