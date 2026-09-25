@@ -29,9 +29,13 @@ interactions, or filled in from sources that permit it.
 2. **Snapshot as the hook.** The New Listing Insurance Snapshot is genuinely useful to a listing agent. Send it
    to the listing agent for their own listing ("we prepared this for your listing at 123 Main St — feel free to
    share with buyers"). A reply gives us a verified email; a call or text-back gives a cell number and consent.
-3. **Opt-in page.** A simple "Get insurance snapshots for your listings" sign-up (name, brokerage, email, cell,
-   checkbox for email and separate checkbox for text consent). Records as source "Web form" with consent
-   captured. Needs a public route (the app is currently login-gated end to end).
+3. **Opt-in page (built: `/partners`).** A public "Insurance snapshots for your listings" sign-up (name,
+   brokerage, email, cell, office phone, license #, plus separate email and text-message consent checkboxes).
+   Records as source "Web form" and stores the consent time, the exact wording shown and the IP (migration
+   `0010`). Someone marked do-not-contact or opted out is never re-subscribed by the form. Known limits: there
+   is no confirmation email yet (no sending provider), so an opt-in proves the form was submitted, not that the
+   submitter owns the address — send a confirmation ("double opt-in") once outreach email exists; and there is
+   no rate limiting beyond a hidden honeypot field.
 4. **Events and office visits.** Broker opens, office lunch-and-learns, lender/agent mixers, business cards.
    Type the sign-in sheet into a CSV (source "Event") and import it.
 5. **Referrals.** Ask every engaged partner for two introductions.
@@ -93,7 +97,7 @@ launching outreach.
 partners who have sent at least one referral.
 
 ## What's next to build (in priority order)
-1. Public opt-in page for realtors/loan officers (needs a `proxy.ts` allowlist for the public route).
+1. Confirmation email for opt-ins (needs the sending provider), and rate limiting on `/partners`.
 2. DBPR importer once we've looked at a real file (weekly refresh, license-number keyed).
 3. Rank realtors by how often they appear in our listing flow, and a "needs email/cell" work queue.
 4. Consent capture UI (mark email opted-in / SMS written consent with a date and note).

@@ -328,6 +328,10 @@ export interface Database {
           status: "prospect" | "contacted" | "engaged" | "active_partner";
           notes: string | null;
           last_verified_at: string | null;
+          email_consent_at: string | null;
+          sms_consent_at: string | null;
+          consent_text: string | null;
+          consent_ip: string | null;
           created_at: string;
           updated_at: string;
         };
