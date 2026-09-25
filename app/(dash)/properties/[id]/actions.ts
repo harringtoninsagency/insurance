@@ -6,6 +6,7 @@ import { generateIndicationProposal } from "@/lib/proposals/generate-indication"
 import { generateListingSnapshotProposal } from "@/lib/proposals/generate-listing-snapshot";
 import { uploadListingPhoto } from "@/lib/proposals/listing-photo";
 import { queueOutreach } from "@/lib/outreach/queue";
+import { upsertContact } from "@/lib/contacts/upsert-contact";
 import { createServiceSupabase } from "@/lib/supabase/server";
 
 export async function pullCountyDataAction(propertyId: string) {
@@ -43,15 +44,36 @@ export async function updateListingAgentAction(propertyId: string, formData: For
   const phone = String(formData.get("listing_agent_phone") ?? "").trim();
 
   const supabase = createServiceSupabase();
-  const { error } = await supabase
+  const { data: property, error } = await supabase
     .from("properties")
     .update({
       listing_agent_name: name || null,
       listing_agent_email: email || null,
       listing_agent_phone: phone || null,
     })
-    .eq("id", propertyId);
-  if (error) throw new Error(`Failed to update listing agent: ${error.message}`);
+    .eq("id", propertyId)
+    .select("agency_id, address")
+    .single();
+  if (error || !property) throw new Error(`Failed to update listing agent: ${error?.message ?? "no row"}`);
+
+  // Every listing agent we learn about is a potential referral partner — add
+  // them to the realtor directory. The phone on a listing is stored as an
+  // office line because it can't be told apart from a cell, and texting a cell
+  // needs consent. A directory hiccup must never fail the listing edit.
+  if (name) {
+    try {
+      await upsertContact(supabase, property.agency_id, {
+        contactType: "realtor",
+        fullName: name,
+        email,
+        officePhone: phone,
+        source: "listing_agent",
+        sourceDetail: `Listing agent on ${property.address}`,
+      });
+    } catch (err) {
+      console.warn("Could not add listing agent to contacts:", err);
+    }
+  }
 
   revalidatePath(`/properties/${propertyId}`);
 }

@@ -41,6 +41,14 @@ export default async function DashLayout({
               Outreach review
             </Link>
           </li>
+          <li>
+            <Link
+              href="/contacts"
+              className="block rounded px-3 py-2 font-medium text-[#003049] hover:bg-[#003049]/5"
+            >
+              Realtors &amp; brokers
+            </Link>
+          </li>
         </ul>
       </nav>
       <main className="flex-1 p-8">{children}</main>

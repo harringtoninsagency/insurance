@@ -20,6 +20,16 @@ export type PropertyStatus =
   | "closed"
   | "dead";
 export type ProposalKind = "indication" | "firm" | "listing_snapshot";
+export type ContactType = "realtor" | "mortgage_broker";
+export type ContactSource =
+  | "manual"
+  | "csv_import"
+  | "listing_agent"
+  | "public_license"
+  | "referral"
+  | "event"
+  | "web_form"
+  | "other";
 export type OutreachStatus = "pending_review" | "approved" | "sent" | "bounced" | "rejected";
 export type QuoteAdapterName =
   | "indicative"
@@ -295,6 +305,38 @@ export interface Database {
           roof_year: number;
         };
         Update: Partial<Database["public"]["Tables"]["county_roof_permits"]["Row"]>;
+        Relationships: [];
+      };
+      industry_contacts: {
+        Row: {
+          id: string;
+          agency_id: string;
+          contact_type: ContactType;
+          full_name: string;
+          company_name: string | null;
+          cell_phone: string | null;
+          office_phone: string | null;
+          email: string | null;
+          license_number: string | null;
+          license_state: string;
+          city: string | null;
+          source: ContactSource;
+          source_detail: string | null;
+          email_consent: "unknown" | "opted_in" | "opted_out";
+          sms_consent: "none" | "written";
+          do_not_contact: boolean;
+          status: "prospect" | "contacted" | "engaged" | "active_partner";
+          notes: string | null;
+          last_verified_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["industry_contacts"]["Row"]> & {
+          agency_id: string;
+          contact_type: ContactType;
+          full_name: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["industry_contacts"]["Row"]>;
         Relationships: [];
       };
     };
