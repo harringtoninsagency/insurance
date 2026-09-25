@@ -6,8 +6,9 @@
 import { resolve } from "node:path";
 process.loadEnvFile(resolve(import.meta.dirname, "../.env.local"));
 
-import { parseOneHomeEmail } from "@/lib/ingest/onehome-email";
+import { parseOneHomeEmail, extractListingPhotos, readMsgHtml } from "@/lib/ingest/onehome-email";
 import { applyOneHomeListings } from "@/lib/ingest/apply-onehome-listings";
+import { applyOneHomePhotos } from "@/lib/ingest/apply-onehome-photos";
 
 const AGENCY_ID = "ccb0a58e-0b78-4799-b236-66d1bda42f67";
 
@@ -24,6 +25,10 @@ async function main() {
 
   const result = await applyOneHomeListings(AGENCY_ID, listings);
   console.log(`Inserted ${result.inserted}, updated ${result.updated}, skipped ${result.skipped}.`);
+
+  const photos = extractListingPhotos(readMsgHtml(resolve(path)));
+  const photoResult = await applyOneHomePhotos(AGENCY_ID, photos, { dryRun: process.argv.includes("--dry-run-photos") });
+  console.log(`Photos: found ${photos.length} — ${JSON.stringify(photoResult)}`);
 }
 
 main().catch((err) => {

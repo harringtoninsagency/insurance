@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import MsgReader from "@kenjiuno/msgreader";
+import { decompressRTF } from "@kenjiuno/decompressrtf";
 
 export interface ParsedListing {
   listPrice: number;
@@ -76,6 +77,50 @@ export function parseOneHomeEmail(msgFilePath: string): ParsedListing[] {
     throw new Error(`${msgFilePath} has no plain-text body to parse`);
   }
   return parseOneHomeListingsFromText(body);
+}
+
+export interface ListingPhoto {
+  mlsId: string;
+  url: string;
+}
+
+const MEDIA_IMG_RE = /<img[^>]*\bsrc="(https:\/\/media\.stellar\.mlsmatrix\.com\/[^"]+)"[^>]*>/gi;
+const MLS_ID_RE = /MLS\s*#\s*(?:<[^>]*>\s*)*([A-Z0-9]{6,})/i;
+
+/**
+ * Pulls each listing's photo out of a OneHome saved-search email's HTML. Each
+ * highlighted listing is an <img> on Stellar's media server followed by its
+ * "MLS #..." text, so a photo is paired with the first MLS number that
+ * appears before the next photo. Source-agnostic: works on HTML from a .msg
+ * file, an .eml/Gmail message, or Microsoft Graph. Only the listing thumbnails
+ * are returned (the email's own logo/badge images are hosted elsewhere).
+ */
+export function extractListingPhotos(html: string): ListingPhoto[] {
+  const imgs = [...html.matchAll(MEDIA_IMG_RE)];
+  const photos: ListingPhoto[] = [];
+  imgs.forEach((img, i) => {
+    const start = (img.index ?? 0) + img[0].length;
+    const end = imgs[i + 1]?.index ?? html.length;
+    const mls = html.slice(start, end).match(MLS_ID_RE)?.[1];
+    if (mls) photos.push({ mlsId: mls.toUpperCase(), url: img[1]!.replace(/&amp;/g, "&") });
+  });
+  return photos;
+}
+
+/**
+ * Outlook .msg exports often carry the HTML body only inside the compressed
+ * RTF field (as encapsulated HTML), with no separate HTML body — so read it
+ * from there when a plain HTML body isn't present.
+ */
+export function readMsgHtml(msgFilePath: string): string {
+  const reader = new MsgReader(readFileSync(msgFilePath) as unknown as ArrayBuffer);
+  const data = reader.getFileData();
+  if (data.bodyHtml) return data.bodyHtml;
+  if (data.html) return Buffer.from(data.html).toString("utf8");
+  if (data.compressedRtf) {
+    return Buffer.from(decompressRTF(Array.from(data.compressedRtf))).toString("latin1");
+  }
+  return "";
 }
 
 /** Splits "9913 W BAY ST" into { houseNumber: "9913", street: "W BAY ST" }. */
