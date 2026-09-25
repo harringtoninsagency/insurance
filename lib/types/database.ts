@@ -231,6 +231,7 @@ export interface Database {
           agency_id: string;
           proposal_id: string;
           recipient: string;
+          contact_id: string | null;
           status: OutreachStatus;
           approved_by: string | null;
           sent_at: string | null;

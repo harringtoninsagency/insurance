@@ -5,7 +5,20 @@ import { queueOutreachAction } from "./actions";
 
 type State = { queued: true } | { error: string } | null;
 
-export function QueueOutreachForm({ propertyId, proposalId }: { propertyId: string; proposalId: string }) {
+interface DirectoryOption {
+  email: string;
+  label: string;
+}
+
+export function QueueOutreachForm({
+  propertyId,
+  proposalId,
+  contacts,
+}: {
+  propertyId: string;
+  proposalId: string;
+  contacts: DirectoryOption[];
+}) {
   async function runAction(_prev: State, formData: FormData): Promise<State> {
     const recipient = String(formData.get("recipient") ?? "");
     try {
@@ -24,9 +37,17 @@ export function QueueOutreachForm({ propertyId, proposalId }: { propertyId: stri
         type="email"
         name="recipient"
         required
-        placeholder="recipient@example.com"
-        className="w-64 rounded border border-slate-300 px-3 py-1.5 text-sm"
+        placeholder="Pick from directory or type an email"
+        list="directory-contacts"
+        className="w-80 rounded border border-slate-300 px-3 py-1.5 text-sm"
       />
+      <datalist id="directory-contacts">
+        {contacts.map((c) => (
+          <option key={c.email} value={c.email}>
+            {c.label}
+          </option>
+        ))}
+      </datalist>
       <button
         type="submit"
         disabled={isPending}

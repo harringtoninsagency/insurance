@@ -101,7 +101,7 @@ partners who have sent at least one referral.
 2. DBPR importer once we've looked at a real file (weekly refresh, license-number keyed).
 3. Rank realtors by how often they appear in our listing flow, and a "needs email/cell" work queue.
 4. Consent capture UI (mark email opted-in / SMS written consent with a date and note).
-5. Feed the directory into the existing outreach review flow, gated on consent and do-not-contact.
+5. ~~Feed the directory into the existing outreach review flow~~ — done: queuing offers directory contacts, links each item to its contact, and blocks do-not-contact / opted-out people at queue *and* approval time. Contacts with no opt-in on record are allowed but labelled on the review screen. Still missing: actually sending (no email provider yet) and moving a contact to "contacted" when a send happens.
 
 ## Decisions needed from you
 - Territory: Pinellas only, or Tampa Bay counties from day one?

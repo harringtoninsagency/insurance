@@ -23,7 +23,7 @@ export type UpsertOutcome =
   | { result: "rejected"; reason: string };
 
 // ilike treats % and _ as wildcards; underscores are common in emails.
-const escapeLike = (v: string) => v.replace(/[\\%_]/g, (c) => `\\${c}`);
+export const escapeLike = (v: string) => v.replace(/[\\%_]/g, (c) => `\\${c}`);
 
 const FILLABLE = ["company_name", "cell_phone", "office_phone", "email", "license_number", "city"] as const;
 

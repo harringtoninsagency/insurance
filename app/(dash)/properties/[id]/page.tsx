@@ -15,6 +15,17 @@ export default async function PropertyDetailPage({
   const { id } = await params;
   const supabase = await createServerSupabase();
 
+  // Realtors/brokers offered as recipients when queuing outreach. People who
+  // opted out or are marked do-not-contact are left out (and blocked anyway).
+  const { data: directoryContacts } = await supabase
+    .from("industry_contacts")
+    .select("full_name, company_name, email")
+    .not("email", "is", null)
+    .eq("do_not_contact", false)
+    .neq("email_consent", "opted_out")
+    .order("full_name")
+    .limit(1000);
+
   const [{ data: property }, { data: enrichment }, { data: riskProfile }, { data: quotes }, { data: proposals }] =
     await Promise.all([
       supabase.from("properties").select("*").eq("id", id).single(),
@@ -243,7 +254,14 @@ export default async function PropertyDetailPage({
           <p className="text-sm text-slate-500">No proposals generated yet.</p>
         )}
         {!!proposals?.length && (
-          <QueueOutreachForm propertyId={property.id} proposalId={proposals[0]!.id} />
+          <QueueOutreachForm
+            propertyId={property.id}
+            proposalId={proposals[0]!.id}
+            contacts={(directoryContacts ?? []).map((c) => ({
+              email: c.email!,
+              label: `${c.full_name}${c.company_name ? ` — ${c.company_name}` : ""}`,
+            }))}
+          />
         )}
       </section>
     </div>
