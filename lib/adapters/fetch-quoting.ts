@@ -151,7 +151,8 @@ export const fetchQuotingAdapter: CarrierQuoteAdapter<FetchQuoteFields, FetchRat
       // the closest available (general plumbing, YYYY format). Not left at
       // Fetch's own default since some carrier integrations behind Fetch
       // silently fail on blank optionals rather than surfacing an error.
-      plumbing_updated: "2020",
+      // Never earlier than the build year — plumbing can't predate the house.
+      plumbing_updated: String(Math.max(2020, Number(property.year_built))),
       ...(formType?.toLowerCase() === "dp3" && carrierKey ? (CARRIER_DP3_OCCUPANCY_OVERRIDES[carrierKey] ?? {}) : {}),
     };
   },
