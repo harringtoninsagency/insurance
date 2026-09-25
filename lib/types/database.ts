@@ -21,6 +21,14 @@ export type PropertyStatus =
   | "dead";
 export type ProposalKind = "indication" | "firm" | "listing_snapshot";
 export type ContactType = "realtor" | "mortgage_broker";
+export type ConsentEventType =
+  | "email_opt_in"
+  | "sms_opt_in"
+  | "email_opt_out"
+  | "sms_opt_out"
+  | "do_not_contact"
+  | "do_not_contact_cleared";
+export type ConsentMethod = "web_form" | "paper_form" | "written_reply" | "verbal" | "directory";
 export type ContactSource =
   | "manual"
   | "csv_import"
@@ -306,6 +314,32 @@ export interface Database {
           roof_year: number;
         };
         Update: Partial<Database["public"]["Tables"]["county_roof_permits"]["Row"]>;
+        Relationships: [];
+      };
+      contact_consent_events: {
+        Row: {
+          id: string;
+          agency_id: string;
+          contact_id: string | null;
+          contact_name: string;
+          contact_email: string | null;
+          contact_cell: string | null;
+          event_type: ConsentEventType;
+          method: ConsentMethod;
+          note: string | null;
+          consent_text: string | null;
+          ip: string | null;
+          occurred_at: string;
+          recorded_by: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["contact_consent_events"]["Row"]> & {
+          agency_id: string;
+          contact_name: string;
+          event_type: ConsentEventType;
+          method: ConsentMethod;
+        };
+        Update: Partial<Database["public"]["Tables"]["contact_consent_events"]["Row"]>;
         Relationships: [];
       };
       industry_contacts: {

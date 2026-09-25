@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { AddContactForm } from "./AddContactForm";
 import { ImportContactsForm } from "./ImportContactsForm";
@@ -129,7 +130,9 @@ export default async function ContactsPage({
                 {contacts.map((c) => (
                   <tr key={c.id} className="border-b border-slate-100 align-top last:border-0">
                     <td className="px-4 py-3">
-                      <div className="font-medium text-[#003049]">{c.full_name}</div>
+                      <Link href={`/contacts/${c.id}`} className="font-medium text-[#003049] hover:underline">
+                        {c.full_name}
+                      </Link>
                       <div className="text-xs text-slate-500">{TYPE_LABEL[c.contact_type]}</div>
                     </td>
                     <td className="px-4 py-3 text-slate-600">{c.company_name ?? "—"}</td>
@@ -143,6 +146,9 @@ export default async function ContactsPage({
                     <td className="px-4 py-3 text-xs text-slate-600">
                       <div>Email: {c.email_consent.replace("_", " ")}</div>
                       <div>SMS: {c.sms_consent === "written" ? "written consent" : "none"}</div>
+                      <Link href={`/contacts/${c.id}`} className="text-[#003049] hover:underline">
+                        Record consent
+                      </Link>
                     </td>
                     <td className="px-4 py-3">
                       <DoNotContactButton contactId={c.id} doNotContact={c.do_not_contact} />

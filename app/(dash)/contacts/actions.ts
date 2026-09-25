@@ -1,10 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createServerSupabase } from "@/lib/supabase/server";
+import { sessionContext } from "@/lib/contacts/session";
+import { applyConsentEvent, type ConsentResult } from "@/lib/contacts/consent";
 import { upsertContact } from "@/lib/contacts/upsert-contact";
 import { importContactsCsv, type ImportSummary } from "@/lib/contacts/import-csv";
-import type { ContactSource, ContactType } from "@/lib/types/database";
+import type { ConsentEventType, ConsentMethod, ContactSource, ContactType } from "@/lib/types/database";
 
 // Imports run row-by-row (dedupe lookups per person), so keep one upload
 // small enough to finish inside a request; bigger lists go through
@@ -13,17 +14,6 @@ const MAX_UI_IMPORT_ROWS = 1000;
 const MAX_UI_IMPORT_BYTES = 2 * 1024 * 1024;
 
 const SOURCES: ContactSource[] = ["manual", "csv_import", "listing_agent", "public_license", "referral", "event", "web_form", "other"];
-
-async function sessionContext() {
-  const supabase = await createServerSupabase();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not signed in");
-  const { data: profile } = await supabase.from("profiles").select("agency_id").eq("id", user.id).single();
-  if (!profile) throw new Error("No agency profile for this user");
-  return { supabase, agencyId: profile.agency_id };
-}
 
 const str = (formData: FormData, key: string) => String(formData.get(key) ?? "").trim();
 const asType = (v: string): ContactType => (v === "mortgage_broker" ? "mortgage_broker" : "realtor");
@@ -79,12 +69,59 @@ export async function importContactsAction(_prev: ImportState, formData: FormDat
   }
 }
 
-export async function setDoNotContactAction(contactId: string, doNotContact: boolean) {
-  const { supabase } = await sessionContext();
-  const { error } = await supabase
-    .from("industry_contacts")
-    .update({ do_not_contact: doNotContact, updated_at: new Date().toISOString() })
-    .eq("id", contactId);
-  if (error) throw new Error(`Failed to update contact: ${error.message}`);
+// The list's quick "Mark DNC" button. Lifting do-not-contact needs a note
+// recording that the person asked, so that lives on the contact's own page.
+export async function markDoNotContactAction(contactId: string) {
+  const { supabase, userEmail } = await sessionContext();
+  const { data: contact, error } = await supabase.from("industry_contacts").select("*").eq("id", contactId).single();
+  if (error || !contact) throw new Error(`Contact not found: ${error?.message ?? "no row"}`);
+  const result = await applyConsentEvent(supabase, contact, {
+    type: "do_not_contact",
+    method: "directory",
+    note: "Marked from the directory list",
+    recordedBy: userEmail,
+  });
+  if (!result.ok) throw new Error(result.error);
   revalidatePath("/contacts");
+  revalidatePath(`/contacts/${contactId}`);
+}
+
+export interface RecordConsentPayload {
+  type: ConsentEventType;
+  method: ConsentMethod;
+  note: string;
+  occurredOn: string;
+  cellPhone: string;
+}
+
+const EVENT_TYPES: ConsentEventType[] = ["email_opt_in", "sms_opt_in", "email_opt_out", "sms_opt_out", "do_not_contact", "do_not_contact_cleared"];
+const METHODS: ConsentMethod[] = ["paper_form", "written_reply", "verbal"];
+
+// Takes a plain object (not FormData) so the form keeps everything typed in
+// when validation fails — React resets uncontrolled form fields after a form action.
+export async function recordConsentAction(contactId: string, payload: RecordConsentPayload): Promise<ConsentResult> {
+  try {
+    if (!EVENT_TYPES.includes(payload.type)) return { ok: false, error: "Choose what the person told you." };
+    if (!METHODS.includes(payload.method)) return { ok: false, error: "Choose how you got it." };
+
+    const { supabase, userEmail } = await sessionContext();
+    const { data: contact, error } = await supabase.from("industry_contacts").select("*").eq("id", contactId).single();
+    if (error || !contact) return { ok: false, error: "Contact not found." };
+
+    const result = await applyConsentEvent(supabase, contact, {
+      type: payload.type,
+      method: payload.method,
+      note: payload.note,
+      occurredOn: payload.occurredOn.trim() || null,
+      cellPhone: payload.cellPhone.trim() || null,
+      recordedBy: userEmail,
+    });
+    if (result.ok) {
+      revalidatePath("/contacts");
+      revalidatePath(`/contacts/${contactId}`);
+    }
+    return result;
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Failed to record consent" };
+  }
 }

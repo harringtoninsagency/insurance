@@ -73,7 +73,7 @@ export async function recordOptIn(supabase: SupabaseClient<Database>, input: Opt
 
   const { data: contact } = await supabase
     .from("industry_contacts")
-    .select("do_not_contact, email_consent")
+    .select("full_name, do_not_contact, email_consent")
     .eq("id", outcome.id)
     .single();
   if (!contact || contact.do_not_contact || contact.email_consent === "opted_out") return { ok: true };
@@ -87,6 +87,28 @@ export async function recordOptIn(supabase: SupabaseClient<Database>, input: Opt
     .filter(Boolean)
     .join("\n");
 
+  // Log the consent (exact wording and IP as evidence) *before* applying it.
+  const events = [
+    { event_type: "email_opt_in" as const, consent_text: EMAIL_CONSENT_TEXT, contact_cell: null as string | null },
+    ...(input.smsConsent && cell ? [{ event_type: "sms_opt_in" as const, consent_text: SMS_CONSENT_TEXT, contact_cell: cell }] : []),
+  ].map((e) => ({
+    agency_id: PUBLIC_FORM_AGENCY_ID,
+    contact_id: outcome.id,
+    contact_name: contact.full_name,
+    contact_email: email,
+    method: "web_form" as const,
+    note: `Public opt-in page, wording v${CONSENT_VERSION}`,
+    ip: input.ip,
+    occurred_at: now,
+    recorded_by: "web form",
+    ...e,
+  }));
+  const { error: eventError } = await supabase.from("contact_consent_events").insert(events);
+  if (eventError) {
+    // No consent without a record of it: if the history can't be saved, don't grant anything.
+    console.error("Opt-in history entry failed:", eventError.message);
+    return { ok: false, error: "Something went wrong saving your details. Please try again or email us." };
+  }
   const { error } = await supabase
     .from("industry_contacts")
     .update({
@@ -105,5 +127,6 @@ export async function recordOptIn(supabase: SupabaseClient<Database>, input: Opt
     console.error("Opt-in consent update failed:", error.message);
     return { ok: false, error: "Something went wrong saving your details. Please try again or email us." };
   }
+
   return { ok: true };
 }
