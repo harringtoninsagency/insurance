@@ -52,8 +52,9 @@ interactions, or filled in from sources that permit it.
   licensed and where they work, (c) key records by licence number so no one is entered twice.
 - Do the same for mortgage loan originators via NMLS lookups; consider the NMLS B2B subscription if volume
   justifies it.
-- **Not built yet:** a DBPR importer. The file's exact column layout should be confirmed against a real
-  download first; the generic CSV importer covers it once headers are mapped.
+- **Built:** `scripts/import-dbpr-licenses.ts` — see item 2 under "What's next to build" below for details.
+  DBPR files are published per region (a bundle of counties, not by individual county); Pinellas/Pasco/
+  Hillsborough/Manatee/Hernando/Polk/Hardee are all Region 6.
 
 ### 4. Enrichment for phones and emails
 - Brokerage websites and association directories: check each site's terms and robots.txt, and prefer entering
@@ -98,7 +99,7 @@ partners who have sent at least one referral.
 
 ## What's next to build (in priority order)
 1. Confirmation email for opt-ins (needs the sending provider), and rate limiting on `/partners`.
-2. DBPR importer once we've looked at a real file (weekly refresh, license-number keyed).
+2. ~~DBPR importer~~ — done: `scripts/import-dbpr-licenses.ts` + `lib/contacts/dbpr.ts` pull Florida's official "Real Estate Sales Associates and Brokers" extract (per-region CSV, no auth, refreshed weekly) and upsert active individual agents/brokers as `source: "public_license"`, keyed on license number so re-running never duplicates. Confirmed against a real download: ~11,500 active individual Pinellas licenses alone. Still contact-detail-free by design — this only builds the target list, per the two-layer approach above.
 3. Rank realtors by how often they appear in our listing flow, and a "needs email/cell" work queue.
 4. Consent capture UI (mark email opted-in / SMS written consent with a date and note).
 5. ~~Feed the directory into the existing outreach review flow~~ — done: queuing offers directory contacts, links each item to its contact, and blocks do-not-contact / opted-out people at queue *and* approval time. Contacts with no opt-in on record are allowed but labelled on the review screen. Still missing: actually sending (no email provider yet) and moving a contact to "contacted" when a send happens.
