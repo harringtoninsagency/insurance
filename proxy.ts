@@ -1,8 +1,10 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-// /partners is the public realtor / mortgage broker opt-in page.
-const PUBLIC_PATHS = ["/login", "/partners"];
+// Public by design: the login page, the realtor / mortgage broker opt-in page,
+// the unsubscribe page + one-click endpoint (must work for anyone holding a
+// signed link), and the email provider's webhook (verified by signature).
+const PUBLIC_PATHS = ["/login", "/partners", "/unsubscribe", "/api/unsubscribe", "/api/webhooks/resend"];
 
 type CookieToSet = { name: string; value: string; options: CookieOptions };
 

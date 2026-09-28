@@ -243,6 +243,8 @@ export interface Database {
           status: OutreachStatus;
           approved_by: string | null;
           sent_at: string | null;
+          provider_message_id: string | null;
+          send_error: string | null;
           opens: number;
           replies: number;
           created_at: string;
