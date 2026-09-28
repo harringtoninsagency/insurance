@@ -6,7 +6,6 @@ import { DoNotContactButton } from "./DoNotContactButton";
 
 const PAGE_SIZE = 200;
 
-const TYPE_LABEL = { realtor: "Realtor", mortgage_broker: "Mortgage broker" } as const;
 const SOURCE_LABEL: Record<string, string> = {
   manual: "Entered by hand",
   csv_import: "CSV / roster",
@@ -24,7 +23,9 @@ export default async function ContactsPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const params = await searchParams;
-  const type = params.type === "realtor" || params.type === "mortgage_broker" ? params.type : null;
+  // Realtors and mortgage brokers are kept as separate views rather than one
+  // merged list — always exactly one active tab, defaulting to realtors.
+  const type = params.type === "mortgage_broker" ? "mortgage_broker" : "realtor";
   // Strip characters that would break out of the PostgREST or() filter or act as LIKE wildcards.
   const q = (typeof params.q === "string" ? params.q : "").replace(/[,()%_*\\]/g, " ").trim();
 
@@ -33,9 +34,9 @@ export default async function ContactsPage({
   let query = supabase
     .from("industry_contacts")
     .select("*")
+    .eq("contact_type", type)
     .order("created_at", { ascending: false })
     .limit(PAGE_SIZE);
-  if (type) query = query.eq("contact_type", type);
   if (q) query = query.or(`full_name.ilike.%${q}%,company_name.ilike.%${q}%,email.ilike.%${q}%`);
 
   const count = (build: (b: ReturnType<typeof base>) => ReturnType<typeof base>) => build(base());
@@ -80,35 +81,57 @@ export default async function ContactsPage({
 
       <section className="space-y-3 rounded-lg border border-slate-200 bg-white p-5">
         <h2 className="font-medium text-[#003049]">Add a contact</h2>
-        <AddContactForm />
+        <AddContactForm defaultType={type} />
       </section>
 
       <section className="space-y-3 rounded-lg border border-slate-200 bg-white p-5">
         <h2 className="font-medium text-[#003049]">Import a list</h2>
-        <ImportContactsForm />
+        <ImportContactsForm defaultType={type} />
       </section>
 
       <section className="space-y-3">
+        {/* Two separate lists, not one merged table with a type filter — pick a tab. */}
+        <div className="flex gap-2 border-b border-slate-200">
+          {(
+            [
+              { value: "realtor", label: "Realtors", count: stats[0]!.value },
+              { value: "mortgage_broker", label: "Mortgage brokers", count: stats[1]!.value },
+            ] as const
+          ).map((tab) => {
+            const href = `/contacts?type=${tab.value}${q ? `&q=${encodeURIComponent(q)}` : ""}`;
+            const active = type === tab.value;
+            return (
+              <Link
+                key={tab.value}
+                href={href}
+                className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium ${
+                  active ? "border-[#003049] text-[#003049]" : "border-transparent text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                {tab.label} ({tab.count.toLocaleString()})
+              </Link>
+            );
+          })}
+        </div>
+
         <form className="flex items-center gap-3 text-sm" method="get">
+          <input type="hidden" name="type" value={type} />
           <input
             name="q"
             defaultValue={q}
-            placeholder="Search name, company or email"
-            className="w-72 rounded border border-slate-300 px-2 py-1.5"
+            placeholder={`Search ${type === "realtor" ? "realtors" : "mortgage brokers"} by name, company or email`}
+            className="w-80 rounded border border-slate-300 px-2 py-1.5"
           />
-          <select name="type" defaultValue={type ?? ""} className="rounded border border-slate-300 px-2 py-1.5">
-            <option value="">All types</option>
-            <option value="realtor">Realtors</option>
-            <option value="mortgage_broker">Mortgage brokers</option>
-          </select>
           <button type="submit" className="rounded border border-[#003049] px-3 py-1.5 font-medium text-[#003049]">
-            Filter
+            Search
           </button>
         </form>
 
         {error && <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">{error.message}</p>}
         {!error && contacts?.length === 0 && (
-          <p className="text-sm text-slate-500">No contacts match. Add one above, or import a list.</p>
+          <p className="text-sm text-slate-500">
+            No {type === "realtor" ? "realtors" : "mortgage brokers"} match. Add one above, or import a list.
+          </p>
         )}
 
         {!!contacts?.length && (
@@ -133,7 +156,6 @@ export default async function ContactsPage({
                       <Link href={`/contacts/${c.id}`} className="font-medium text-[#003049] hover:underline">
                         {c.full_name}
                       </Link>
-                      <div className="text-xs text-slate-500">{TYPE_LABEL[c.contact_type]}</div>
                     </td>
                     <td className="px-4 py-3 text-slate-600">{c.company_name ?? "—"}</td>
                     <td className="whitespace-nowrap px-4 py-3 text-slate-600">{c.cell_phone ?? "—"}</td>

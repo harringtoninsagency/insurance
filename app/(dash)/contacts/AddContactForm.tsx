@@ -16,7 +16,7 @@ function Field({ id, label, ...props }: { id: string; label: string } & React.In
   );
 }
 
-export function AddContactForm() {
+export function AddContactForm({ defaultType = "realtor" }: { defaultType?: "realtor" | "mortgage_broker" }) {
   const [state, formAction, isPending] = useActionState<AddContactState, FormData>(addContactAction, null);
 
   return (
@@ -25,7 +25,7 @@ export function AddContactForm() {
         <label htmlFor="contact_type" className="text-xs text-slate-500">
           Type
         </label>
-        <select id="contact_type" name="contact_type" className={inputClass}>
+        <select id="contact_type" name="contact_type" className={inputClass} defaultValue={defaultType}>
           <option value="realtor">Realtor</option>
           <option value="mortgage_broker">Mortgage broker</option>
         </select>

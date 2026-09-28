@@ -5,7 +5,7 @@ import { importContactsAction, type ImportState } from "./actions";
 
 const inputClass = "w-full rounded border border-slate-300 px-2 py-1.5 text-sm";
 
-export function ImportContactsForm() {
+export function ImportContactsForm({ defaultType = "realtor" }: { defaultType?: "realtor" | "mortgage_broker" }) {
   const [state, formAction, isPending] = useActionState<ImportState, FormData>(importContactsAction, null);
 
   return (
@@ -20,7 +20,7 @@ export function ImportContactsForm() {
           <label htmlFor="import_contact_type" className="text-xs text-slate-500">
             Default type
           </label>
-          <select id="import_contact_type" name="contact_type" className={inputClass}>
+          <select id="import_contact_type" name="contact_type" className={inputClass} defaultValue={defaultType}>
             <option value="realtor">Realtors</option>
             <option value="mortgage_broker">Mortgage brokers</option>
           </select>
