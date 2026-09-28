@@ -13,6 +13,7 @@ document is the plan for filling it.
 |---|---|---|
 | **FL DBPR real estate licensee files** (free CSV, refreshed weekly; statewide or by county) | Name, employer/brokerage, address, county, license number, status | Phone, email (not in the documented columns) |
 | **NMLS Consumer Access** (free public lookup; a paid B2B data subscription is also offered — confirm terms with NMLS) | Loan originators and mortgage companies, license status, employer/sponsor | Reliable direct cell/email for individuals |
+| **FL OFR loan originator registration extract** (free CSV, refreshed monthly, no login — the practical substitute for a full NMLS pull, see item 2 under "What's next to build") | Name, city/county, NMLS ID, status | Employer/brokerage (not in this file at all), phone (present for under 2% of rows) |
 | Brokerage team pages, association directories | Often an office line and email per agent | Cell phones (usually) |
 | Listing data we already handle (OneHome emails, the listing-agent form) | Listing agent name, and email/phone when a producer enters them | Anything for agents who haven't listed a property we saw |
 
@@ -50,8 +51,15 @@ interactions, or filled in from sources that permit it.
 - Download the DBPR Real Estate Sales Associates & Brokers file (or the county-group files for Pinellas,
   Hillsborough, Pasco) and filter to active licences. Use it to (a) rank a target list, (b) confirm someone is
   licensed and where they work, (c) key records by licence number so no one is entered twice.
-- Do the same for mortgage loan originators via NMLS lookups; consider the NMLS B2B subscription if volume
-  justifies it.
+- **Built:** `scripts/import-mortgage-broker-licenses.ts` pulls Florida OFR's own free loan-originator registration
+  extract (real.flofr.com, no login, refreshed monthly) instead of NMLS's own data — NMLS's bulk "B2B Access"
+  needs an application and a subscription agreement with State Regulatory Registry LLC, a business decision for
+  the agency, not something to sign up for here. Every row still carries the person's real NMLS ID. Confirmed
+  against a real download: this file licenses people to lend *in* Florida regardless of where they live, so it's
+  filtered to Florida-resident originators only; there is no employer/brokerage column at all (a real gap
+  against the realtor side — `companyName` is always null), and a phone number is present for under 2% of rows.
+  If the agency later gets NMLS B2B access, swap this importer's source for that feed without changing the
+  directory schema — same NMLS ID as the license key either way.
 - **Built:** `scripts/import-dbpr-licenses.ts` — see item 2 under "What's next to build" below for details.
   DBPR files are published per region (a bundle of counties, not by individual county); Pinellas/Pasco/
   Hillsborough/Manatee/Hernando/Polk/Hardee are all Region 6.

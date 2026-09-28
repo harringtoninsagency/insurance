@@ -2,7 +2,18 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ContactSource, ContactType, Database } from "@/lib/types/database";
 import { upsertContact, type ContactInput } from "@/lib/contacts/upsert-contact";
 
-/** Minimal RFC-4180 parser: quoted fields, escaped quotes, embedded commas/newlines. */
+/**
+ * Minimal RFC-4180 parser: quoted fields, escaped quotes, embedded
+ * commas/newlines. Tolerant of one real-world defect confirmed in a Florida
+ * OFR export: a stray, unescaped quote in the middle of a field's content
+ * (not doubled, not at the field's end). A strict parser treats that as the
+ * closing quote, which then desyncs everything after it — the very next
+ * ordinary quote in the file re-enters "quoted" mode and silently swallows
+ * every comma and newline until another one happens to appear, merging
+ * thousands of real rows into one. A quote only closes a field here when it's
+ * immediately followed by the field delimiter, a line ending, or end of
+ * input; anything else is kept as literal text and the field stays open.
+ */
 export function parseCsv(text: string): string[][] {
   const rows: string[][] = [];
   let row: string[] = [];
@@ -13,11 +24,16 @@ export function parseCsv(text: string): string[][] {
   for (let i = 0; i < src.length; i++) {
     const ch = src[i]!;
     if (quoted) {
-      if (ch === '"' && src[i + 1] === '"') {
-        field += '"';
-        i++;
-      } else if (ch === '"') {
-        quoted = false;
+      if (ch === '"') {
+        const next = src[i + 1];
+        if (next === '"') {
+          field += '"';
+          i++;
+        } else if (next === undefined || next === "," || next === "\n" || next === "\r") {
+          quoted = false;
+        } else {
+          field += ch;
+        }
       } else {
         field += ch;
       }
