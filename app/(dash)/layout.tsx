@@ -18,6 +18,15 @@ export default async function DashLayout({
     redirect("/login");
   }
 
+  // A logged-in session isn't necessarily an internal one — a partner account
+  // (realtor/mortgage broker) is a real Supabase Auth user too, just with no
+  // profiles row. RLS already returns them zero rows anywhere in here, but
+  // send them to their own portal rather than showing internal-looking chrome.
+  const { data: profile } = await supabase.from("profiles").select("id").eq("id", user.id).maybeSingle();
+  if (!profile) {
+    redirect("/partner");
+  }
+
   return (
     <div className="flex min-h-screen">
       <nav className="w-56 shrink-0 border-r border-slate-200 bg-white p-4">
@@ -31,6 +40,14 @@ export default async function DashLayout({
               className="block rounded px-3 py-2 font-medium text-[#003049] hover:bg-[#003049]/5"
             >
               Properties
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/quote-requests"
+              className="block rounded px-3 py-2 font-medium text-[#003049] hover:bg-[#003049]/5"
+            >
+              Quote requests
             </Link>
           </li>
           <li>

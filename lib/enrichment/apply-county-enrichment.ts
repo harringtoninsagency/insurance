@@ -63,23 +63,39 @@ export async function applyCountyEnrichment(propertyId: string): Promise<ApplyCo
         ? property.roof_year
         : (property.roof_year ?? placeholderDefaultYear);
 
-  const { error: updateError } = await supabase
-    .from("properties")
-    .update({
-      year_built: parcel.year_built ?? property.year_built,
-      sqft: parcel.heated_area_sqft ?? property.sqft,
-      construction: mapExteriorWallsToConstruction(parcel.exterior_walls),
-      parcel_id: parcel.parcel_number ?? property.parcel_id,
-      // Some ingest sources (the CSV export) don't carry a zip at all, and
-      // Fetch's quote API requires one — backfill from the matched parcel
-      // rather than clobbering a zip a more reliable source already set.
-      zipcode: property.zipcode ?? parcel.zipcode ?? property.zipcode,
-      roof_year: roofYear,
-    })
-    .eq("id", propertyId);
+  const enrichedFields = {
+    year_built: parcel.year_built ?? property.year_built,
+    sqft: parcel.heated_area_sqft ?? property.sqft,
+    construction: mapExteriorWallsToConstruction(parcel.exterior_walls),
+    parcel_id: parcel.parcel_number ?? property.parcel_id,
+    // Some ingest sources (the CSV export) don't carry a zip at all, and
+    // Fetch's quote API requires one — backfill from the matched parcel
+    // rather than clobbering a zip a more reliable source already set.
+    zipcode: property.zipcode ?? parcel.zipcode ?? property.zipcode,
+    roof_year: roofYear,
+  };
+
+  const { error: updateError } = await supabase.from("properties").update(enrichedFields).eq("id", propertyId);
 
   if (updateError) {
-    throw new Error(`Failed to update property ${propertyId}: ${updateError.message}`);
+    // Two property rows can legitimately point at the same physical parcel
+    // now that quote requests always get their own dedicated row (see
+    // lib/quote-requests/prepare.ts) rather than reusing one already on file
+    // for that address — `unique(agency_id, parcel_id)` then refuses the
+    // second one. parcel_id is bookkeeping only; nothing downstream (Fetch
+    // quoting, proposals) reads it, so on that specific collision, save
+    // everything else and simply leave this row's parcel_id blank.
+    const isParcelIdCollision = updateError.code === "23505" && updateError.message.includes("parcel_id");
+    if (!isParcelIdCollision) {
+      throw new Error(`Failed to update property ${propertyId}: ${updateError.message}`);
+    }
+    const { error: retryError } = await supabase
+      .from("properties")
+      .update({ ...enrichedFields, parcel_id: property.parcel_id })
+      .eq("id", propertyId);
+    if (retryError) {
+      throw new Error(`Failed to update property ${propertyId}: ${retryError.message}`);
+    }
   }
 
   const { error: enrichmentError } = await supabase.from("enrichments").insert({

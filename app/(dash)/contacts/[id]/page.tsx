@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { EVENT_LABEL, METHOD_LABEL } from "@/lib/contacts/consent";
 import { ConsentForm } from "./ConsentForm";
+import { InvitePartnerButton } from "./InvitePartnerButton";
 
 const TYPE_LABEL = { realtor: "Realtor", mortgage_broker: "Mortgage broker" } as const;
 
@@ -24,6 +25,8 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
 
   const { data: contact } = await supabase.from("industry_contacts").select("*").eq("id", id).single();
   if (!contact) notFound();
+
+  const { data: partnerAccount } = await supabase.from("partner_accounts").select("status, invited_at, activated_at").eq("contact_id", id).maybeSingle();
 
   const { data: events } = await supabase
     .from("contact_consent_events")
@@ -59,6 +62,20 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
             <div className="text-slate-800">{value ?? "—"}</div>
           </div>
         ))}
+      </section>
+
+      <section className="space-y-3 rounded-lg border border-slate-200 bg-white p-5">
+        <h2 className="font-medium text-[#003049]">Partner portal access</h2>
+        {!partnerAccount && <p className="text-sm text-slate-500">Not invited yet — they have no access to the portal.</p>}
+        {partnerAccount?.status === "invited" && (
+          <p className="text-sm text-amber-800">
+            Invited {fmt(partnerAccount.invited_at)}, hasn&apos;t activated their account yet.
+          </p>
+        )}
+        {partnerAccount?.status === "active" && (
+          <p className="text-sm text-green-700">Active since {fmt(partnerAccount.activated_at)} — can sign in and request quotes.</p>
+        )}
+        {partnerAccount?.status !== "active" && <InvitePartnerButton contactId={contact.id} hasEmail={!!contact.email} />}
       </section>
 
       <section className="space-y-3 rounded-lg border border-slate-200 bg-white p-5">

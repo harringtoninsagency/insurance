@@ -5,6 +5,8 @@ import { sessionContext } from "@/lib/contacts/session";
 import { applyConsentEvent, type ConsentResult } from "@/lib/contacts/consent";
 import { upsertContact } from "@/lib/contacts/upsert-contact";
 import { importContactsCsv, type ImportSummary } from "@/lib/contacts/import-csv";
+import { invitePartner, type InviteResult } from "@/lib/partners/invite";
+import { createServiceSupabase } from "@/lib/supabase/server";
 import type { ConsentEventType, ConsentMethod, ContactSource, ContactType } from "@/lib/types/database";
 
 // Imports run row-by-row (dedupe lookups per person), so keep one upload
@@ -123,5 +125,21 @@ export async function recordConsentAction(contactId: string, payload: RecordCons
     return result;
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "Failed to record consent" };
+  }
+}
+
+export async function invitePartnerAction(contactId: string): Promise<InviteResult> {
+  try {
+    const { agencyId, userEmail } = await sessionContext();
+    // inviteUserByEmail needs the service-role client — the signed-in
+    // producer's own session (checked above) is what authorizes this action,
+    // not what performs it.
+    const service = createServiceSupabase();
+    const { data: profile } = await service.from("profiles").select("id").eq("email", userEmail).maybeSingle();
+    const result = await invitePartner(service, agencyId, contactId, profile?.id ?? null);
+    if (result.ok) revalidatePath(`/contacts/${contactId}`);
+    return result;
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Failed to invite this contact" };
   }
 }

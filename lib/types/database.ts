@@ -45,7 +45,11 @@ export type QuoteAdapterName =
   | "selectsys"
   | "ivans"
   | "fetch_quoting";
-export type ListingSourceName = "bridge" | "trestle" | "mlsgrid" | "county" | "onehome";
+export type ListingSourceName = "bridge" | "trestle" | "mlsgrid" | "county" | "onehome" | "quote_request";
+export type PartnerAccountStatus = "invited" | "active" | "disabled";
+export type QuoteRequesterType = "partner" | "public";
+export type QuoteRequestKind = "quote_summary" | "listing_snapshot" | "both";
+export type QuoteRequestStatus = "new" | "processing" | "completed" | "failed" | "needs_review";
 
 export interface Database {
   public: {
@@ -378,6 +382,65 @@ export interface Database {
           full_name: string;
         };
         Update: Partial<Database["public"]["Tables"]["industry_contacts"]["Row"]>;
+        Relationships: [];
+      };
+      partner_accounts: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          agency_id: string;
+          contact_id: string;
+          status: PartnerAccountStatus;
+          invited_by: string | null;
+          invited_at: string;
+          activated_at: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["partner_accounts"]["Row"]> & {
+          agency_id: string;
+          contact_id: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["partner_accounts"]["Row"]>;
+        Relationships: [];
+      };
+      quote_requests: {
+        Row: {
+          id: string;
+          agency_id: string;
+          contact_id: string | null;
+          requester_type: QuoteRequesterType;
+          requester_name: string;
+          requester_email: string;
+          requester_phone: string | null;
+          request_kind: QuoteRequestKind;
+          address_line: string;
+          city: string;
+          state: string;
+          zipcode: string | null;
+          year_built: number | null;
+          sqft: number | null;
+          beds: number | null;
+          baths: number | null;
+          construction: string | null;
+          list_price: number | null;
+          dwelling_a: number | null;
+          personal_property_pct: number | null;
+          status: QuoteRequestStatus;
+          status_detail: string | null;
+          property_id: string | null;
+          created_at: string;
+          processed_at: string | null;
+        };
+        Insert: Partial<Database["public"]["Tables"]["quote_requests"]["Row"]> & {
+          agency_id: string;
+          requester_type: QuoteRequesterType;
+          requester_name: string;
+          requester_email: string;
+          request_kind: QuoteRequestKind;
+          address_line: string;
+          city: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["quote_requests"]["Row"]>;
         Relationships: [];
       };
     };

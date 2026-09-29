@@ -3,8 +3,19 @@ import { NextResponse, type NextRequest } from "next/server";
 
 // Public by design: the login page, the realtor / mortgage broker opt-in page,
 // the unsubscribe page + one-click endpoint (must work for anyone holding a
-// signed link), and the email provider's webhook (verified by signature).
-const PUBLIC_PATHS = ["/login", "/partners", "/unsubscribe", "/api/unsubscribe", "/api/webhooks/resend"];
+// signed link), the email provider's webhook (verified by signature), the
+// public quote-request landing page, and the partner portal's own login and
+// invite-acceptance pages (a partner has no session yet at either of those).
+const PUBLIC_PATHS = [
+  "/login",
+  "/partners",
+  "/unsubscribe",
+  "/api/unsubscribe",
+  "/api/webhooks/resend",
+  "/request-quote",
+  "/partner/login",
+  "/partner/accept-invite",
+];
 
 type CookieToSet = { name: string; value: string; options: CookieOptions };
 
@@ -42,7 +53,11 @@ export async function proxy(request: NextRequest) {
 
   if (!user && !isPublic) {
     const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/login";
+    // The partner portal has its own login, separate from the internal one —
+    // a partner account has no profiles row, so sending them to /login would
+    // just be confusing (and pointless: they'd sign in fine, then bounce
+    // straight back out of the internal dashboard, see app/(dash)/layout.tsx).
+    loginUrl.pathname = request.nextUrl.pathname.startsWith("/partner") ? "/partner/login" : "/login";
     return NextResponse.redirect(loginUrl);
   }
 
