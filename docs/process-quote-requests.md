@@ -15,14 +15,28 @@ part that needs an agent.
 
 `https://github.com/harringtoninsagency/insurance`, branch `main`. Agency id: `ccb0a58e-0b78-4799-b236-66d1bda42f67`.
 
+## Credentials — read this before step 1
+
+Every script below starts with `import { loadEnvIfPresent } from "@/lib/env"; loadEnvIfPresent();`. On a local
+machine `.env.local` exists and this loads it. In this routine's cloud environment there is no such file — the
+three Supabase variables (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+`SUPABASE_SERVICE_ROLE_KEY`) are meant to be provided directly as real process environment variables instead,
+already set on the environment before this process starts — `loadEnvIfPresent()` does nothing in that case,
+which is correct (calling `process.loadEnvFile` on a path that doesn't exist throws).
+
+**Check first**, before running anything else: `env | grep -i supabase`. If the three variables aren't there,
+that's an environment configuration problem — stop, send exactly one push notification naming the missing
+variables, and end the run. Do not work around it by writing a `.env.local` file, asking for the values in
+chat, or any other substitute; those values must only ever be set directly in this environment's own settings.
+
 ## Steps
 
 ### 1. Find pending requests
 
 ```ts
 // scripts/_find-pending.ts (scratch — delete when done)
-import { resolve } from "node:path";
-process.loadEnvFile(resolve(import.meta.dirname, "../.env.local"));
+import { loadEnvIfPresent } from "@/lib/env";
+loadEnvIfPresent();
 import { createServiceSupabase } from "@/lib/supabase/server";
 const s = createServiceSupabase();
 const { data } = await s.from("quote_requests").select("id, property_id, address_line, city, request_kind, dwelling_a, personal_property_pct").eq("status", "processing").order("created_at");
@@ -40,8 +54,8 @@ If there are none, stop — nothing to do.
 
 ```ts
 // scripts/_build-items.ts (scratch)
-import { resolve } from "node:path";
-process.loadEnvFile(resolve(import.meta.dirname, "../.env.local"));
+import { loadEnvIfPresent } from "@/lib/env";
+loadEnvIfPresent();
 import { createServiceSupabase } from "@/lib/supabase/server";
 import { buildFetchQuoteItems } from "@/lib/quote-requests/fetch-pipeline";
 const s = createServiceSupabase();
@@ -84,8 +98,8 @@ placeholder), replacing it with the override item's real DP3 rate.
 
 ```ts
 // scripts/_finalize.ts (scratch)
-import { resolve } from "node:path";
-process.loadEnvFile(resolve(import.meta.dirname, "../.env.local"));
+import { loadEnvIfPresent } from "@/lib/env";
+loadEnvIfPresent();
 import { finalizeQuoteRequest } from "@/lib/quote-requests/fetch-pipeline";
 const result = await finalizeQuoteRequest(REQUEST_ID, STANDARD_FETCH_QUOTE_REQUEST_ID, mergedRates);
 console.log(JSON.stringify(result));
