@@ -101,7 +101,7 @@ export async function applyCountyEnrichment(propertyId: string): Promise<ApplyCo
   const { error: enrichmentError } = await supabase.from("enrichments").insert({
     agency_id: property.agency_id,
     property_id: propertyId,
-    provider: "pcpao",
+    provider: parcel.county === "Pasco" ? "pascopa" : "pcpao",
     county_appraiser_payload: parcel,
   });
 
