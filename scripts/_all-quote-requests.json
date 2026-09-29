@@ -1,0 +1,1232 @@
+[
+  {
+    "client_item_id": "01620838-8c60-4065-80c0-21365a7fc30d",
+    "quote_request_id": "6aa389a84a5886d69206a196",
+    "address": "1441 SATSUMA Street, Clearwater, FL 33756"
+  },
+  {
+    "client_item_id": "upc-dp3-01620838",
+    "quote_request_id": "6aa389a8661993b8870a2f36",
+    "address": "1441 SATSUMA Street, Clearwater, FL 33756"
+  },
+  {
+    "client_item_id": "043294bc-b18b-4aa9-9fc5-169c83989347",
+    "quote_request_id": "6aa389a8661993b8870a2f3e",
+    "address": "3429 37TH Street N, St Petersburg, FL 33713"
+  },
+  {
+    "client_item_id": "upc-dp3-043294bc",
+    "quote_request_id": "6aa389a94a5886d69206a1e6",
+    "address": "3429 37TH Street N, St Petersburg, FL 33713"
+  },
+  {
+    "client_item_id": "0984519a-757d-4918-9d6c-c4e121f24dcf",
+    "quote_request_id": "6aa389a9661993b8870a2f8f",
+    "address": "5682 63RD Lane N, St Petersburg, FL 33709"
+  },
+  {
+    "client_item_id": "upc-dp3-0984519a",
+    "quote_request_id": "6aa389a94a5886d69206a1ef",
+    "address": "5682 63RD Lane N, St Petersburg, FL 33709"
+  },
+  {
+    "client_item_id": "0aeb201b-3227-4b4e-853a-25d2d7a064fd",
+    "quote_request_id": "6aa389aa4a5886d69206a1f6",
+    "address": "2564 SURREY Drive, Palm Harbor, FL 34684"
+  },
+  {
+    "client_item_id": "upc-dp3-0aeb201b",
+    "quote_request_id": "6aa389aa0441c18218090896",
+    "address": "2564 SURREY Drive, Palm Harbor, FL 34684"
+  },
+  {
+    "client_item_id": "0b10087a-8371-4ebc-8774-5f36a1048908",
+    "quote_request_id": "6aa389ab661993b8870a2fdf",
+    "address": "2749 16TH Avenue N, St Petersburg, FL 33713"
+  },
+  {
+    "client_item_id": "upc-dp3-0b10087a",
+    "quote_request_id": "6aa389ab4a5886d69206a246",
+    "address": "2749 16TH Avenue N, St Petersburg, FL 33713"
+  },
+  {
+    "client_item_id": "0e60dab2-a237-47c0-8ab6-d96a32cc1951",
+    "quote_request_id": "6aa389ac4a5886d69206a24e",
+    "address": "4210 82ND Avenue N, Pinellas Park, FL 33781"
+  },
+  {
+    "client_item_id": "upc-dp3-0e60dab2",
+    "quote_request_id": "6aa389ac661993b8870a302f",
+    "address": "4210 82ND Avenue N, Pinellas Park, FL 33781"
+  },
+  {
+    "client_item_id": "0e82698c-495a-480b-98aa-1ea57d540ff4",
+    "quote_request_id": "6aa389ad661993b8870a3037",
+    "address": "11399 80TH Avenue, Seminole, FL 33772"
+  },
+  {
+    "client_item_id": "upc-dp3-0e82698c",
+    "quote_request_id": "6aa389ad4a5886d69206a29e",
+    "address": "11399 80TH Avenue, Seminole, FL 33772"
+  },
+  {
+    "client_item_id": "0e856aa0-3bbf-455b-988e-a482168fcc67",
+    "quote_request_id": "6aa389ad4a5886d69206a2a6",
+    "address": "11312 116TH Street, Seminole, FL 33778"
+  },
+  {
+    "client_item_id": "upc-dp3-0e856aa0",
+    "quote_request_id": "6aa389ae661993b8870a3087",
+    "address": "11312 116TH Street, Seminole, FL 33778"
+  },
+  {
+    "client_item_id": "10e2b4e6-627f-44ee-a2b8-f7faf3ffd271",
+    "quote_request_id": "6aa389ae661993b8870a308f",
+    "address": "407 OCEAN Court, Largo, FL 33756"
+  },
+  {
+    "client_item_id": "upc-dp3-10e2b4e6",
+    "quote_request_id": "6aa389ae4a5886d69206a2f6",
+    "address": "407 OCEAN Court, Largo, FL 33756"
+  },
+  {
+    "client_item_id": "12c59058-e801-4583-a341-c3c151739ffd",
+    "quote_request_id": "6aa389ae4a5886d69206a2fe",
+    "address": "8911 113TH Street, Seminole, FL 33772"
+  },
+  {
+    "client_item_id": "upc-dp3-12c59058",
+    "quote_request_id": "6aa389af661993b8870a30df",
+    "address": "8911 113TH Street, Seminole, FL 33772"
+  },
+  {
+    "client_item_id": "176f11f0-ab7a-4b63-b49e-7c078f7215fb",
+    "quote_request_id": "6aa389af661993b8870a30e7",
+    "address": "5426 8TH Avenue N, St Petersburg, FL 33710"
+  },
+  {
+    "client_item_id": "upc-dp3-176f11f0",
+    "quote_request_id": "6aa389b04a5886d69206a34e",
+    "address": "5426 8TH Avenue N, St Petersburg, FL 33710"
+  },
+  {
+    "client_item_id": "17b47935-3f87-41a5-9428-aea636873751",
+    "quote_request_id": "6aa389b04a5886d69206a356",
+    "address": "3680 SIENA Lane, Palm Harbor, FL 34685"
+  },
+  {
+    "client_item_id": "upc-dp3-17b47935",
+    "quote_request_id": "6aa389b1661993b8870a3137",
+    "address": "3680 SIENA Lane, Palm Harbor, FL 34685"
+  },
+  {
+    "client_item_id": "1827dfa9-6baf-4659-9bcb-f256b9aaf63b",
+    "quote_request_id": "6aa389b1661993b8870a313f",
+    "address": "102 WIMBLEDON Court, Redington Shores, FL 33708"
+  },
+  {
+    "client_item_id": "upc-dp3-1827dfa9",
+    "quote_request_id": "6aa389b14a5886d69206a3a6",
+    "address": "102 WIMBLEDON Court, Redington Shores, FL 33708"
+  },
+  {
+    "client_item_id": "19412428-2d38-4717-a3d5-4dbba375298b",
+    "quote_request_id": "6aa389b14a5886d69206a3ae",
+    "address": "4359 GREAT LAKES Drive N, Clearwater, FL 33762"
+  },
+  {
+    "client_item_id": "upc-dp3-19412428",
+    "quote_request_id": "6aa389b2661993b8870a318f",
+    "address": "4359 GREAT LAKES Drive N, Clearwater, FL 33762"
+  },
+  {
+    "client_item_id": "1b3bdd20-683e-49c2-b41b-3bea426d22b2",
+    "quote_request_id": "6aa389b3661993b8870a3197",
+    "address": "1438 10TH Avenue S, St Petersburg, FL 33705"
+  },
+  {
+    "client_item_id": "upc-dp3-1b3bdd20",
+    "quote_request_id": "6aa389b34a5886d69206a3fe",
+    "address": "1438 10TH Avenue S, St Petersburg, FL 33705"
+  },
+  {
+    "client_item_id": "1d99429e-426b-4c49-a076-25d2076ddf60",
+    "quote_request_id": "6aa389b34a5886d69206a406",
+    "address": "401 DEMPSEY Road, Palm Harbor, FL 34683"
+  },
+  {
+    "client_item_id": "upc-dp3-1d99429e",
+    "quote_request_id": "6aa389b4661993b8870a31e7",
+    "address": "401 DEMPSEY Road, Palm Harbor, FL 34683"
+  },
+  {
+    "client_item_id": "21001d99-9eca-44cd-b0af-b51eb903973c",
+    "quote_request_id": "6aa389b4661993b8870a31ef",
+    "address": "449 12TH Avenue N, St Petersburg, FL 33701"
+  },
+  {
+    "client_item_id": "upc-dp3-21001d99",
+    "quote_request_id": "6aa389b44a5886d69206a456",
+    "address": "449 12TH Avenue N, St Petersburg, FL 33701"
+  },
+  {
+    "client_item_id": "21f870db-cca0-4661-88dd-03d86d1c7082",
+    "quote_request_id": "6aa389b44a5886d69206a45e",
+    "address": "4666 11TH Avenue S, St Petersburg, FL 33711"
+  },
+  {
+    "client_item_id": "upc-dp3-21f870db",
+    "quote_request_id": "6aa389b5661993b8870a323f",
+    "address": "4666 11TH Avenue S, St Petersburg, FL 33711"
+  },
+  {
+    "client_item_id": "244547f8-142f-4ede-9b2d-3af3da7dd2c2",
+    "quote_request_id": "6aa389b5661993b8870a3247",
+    "address": "3350 HUNT CLUB Drive, Clearwater, FL 33761"
+  },
+  {
+    "client_item_id": "upc-dp3-244547f8",
+    "quote_request_id": "6aa389b54a5886d69206a4ae",
+    "address": "3350 HUNT CLUB Drive, Clearwater, FL 33761"
+  },
+  {
+    "client_item_id": "25f54e12-dae6-4c02-aa05-6122c00bf53a",
+    "quote_request_id": "6aa389b64a5886d69206a4b6",
+    "address": "115 S ORION Avenue, Clearwater, FL 33765"
+  },
+  {
+    "client_item_id": "upc-dp3-25f54e12",
+    "quote_request_id": "6aa389b7661993b8870a3297",
+    "address": "115 S ORION Avenue, Clearwater, FL 33765"
+  },
+  {
+    "client_item_id": "276389e2-556d-4e91-b6b6-cbdef77078f3",
+    "quote_request_id": "6aa389b7661993b8870a329f",
+    "address": "2106 PELICAN Court, Tarpon Springs, FL 34689"
+  },
+  {
+    "client_item_id": "upc-dp3-276389e2",
+    "quote_request_id": "6aa389b770780d7ac20ed295",
+    "address": "2106 PELICAN Court, Tarpon Springs, FL 34689"
+  },
+  {
+    "client_item_id": "27ebe049-8067-4171-8194-bfc7c51b7450",
+    "quote_request_id": "6aa389b770780d7ac20ed29d",
+    "address": "726 75TH Avenue N, St Petersburg, FL 33702"
+  },
+  {
+    "client_item_id": "upc-dp3-27ebe049",
+    "quote_request_id": "6aa389b8661993b8870a32ef",
+    "address": "726 75TH Avenue N, St Petersburg, FL 33702"
+  },
+  {
+    "client_item_id": "29274da4-c50b-407c-a0f6-eae92c6c49be",
+    "quote_request_id": "6aa389b8661993b8870a32f7",
+    "address": "6164 23RD Avenue N, St Petersburg, FL 33710"
+  },
+  {
+    "client_item_id": "upc-dp3-29274da4",
+    "quote_request_id": "6aa389b870780d7ac20ed2ed",
+    "address": "6164 23RD Avenue N, St Petersburg, FL 33710"
+  },
+  {
+    "client_item_id": "2a07b7ca-50b0-425d-b563-e70343f8eb11",
+    "quote_request_id": "6aa389b970780d7ac20ed2f5",
+    "address": "520 14TH Avenue NW, Largo, FL 33770"
+  },
+  {
+    "client_item_id": "upc-dp3-2a07b7ca",
+    "quote_request_id": "6aa389b9661993b8870a3347",
+    "address": "520 14TH Avenue NW, Largo, FL 33770"
+  },
+  {
+    "client_item_id": "2e459829-8686-4b64-9ffa-57f3d5c90ab8",
+    "quote_request_id": "6aa389ba661993b8870a334f",
+    "address": "1016 GOSHEN Road, Tarpon Springs, FL 34689"
+  },
+  {
+    "client_item_id": "upc-dp3-2e459829",
+    "quote_request_id": "6aa389ba70780d7ac20ed345",
+    "address": "1016 GOSHEN Road, Tarpon Springs, FL 34689"
+  },
+  {
+    "client_item_id": "3033b070-3210-47fe-9c96-c1d49e2bd393",
+    "quote_request_id": "6aa38a200441c1821809089d",
+    "address": "4401 SHORE ACRES Boulevard NE, St Petersburg, FL 33703"
+  },
+  {
+    "client_item_id": "upc-dp3-3033b070",
+    "quote_request_id": "6aa38a214a5886d69206a506",
+    "address": "4401 SHORE ACRES Boulevard NE, St Petersburg, FL 33703"
+  },
+  {
+    "client_item_id": "32aa3678-f79d-4769-a43f-57bc9b989dcb",
+    "quote_request_id": "6aa38a214a5886d69206a50e",
+    "address": "2640 ORCHARD HIGHLANDS Drive, Palm Harbor, FL 34684"
+  },
+  {
+    "client_item_id": "upc-dp3-32aa3678",
+    "quote_request_id": "6aa38a210441c182180908ed",
+    "address": "2640 ORCHARD HIGHLANDS Drive, Palm Harbor, FL 34684"
+  },
+  {
+    "client_item_id": "3384388d-b5b6-481a-8f64-c1e221811747",
+    "quote_request_id": "6aa38a210441c182180908f5",
+    "address": "1420 GRAY Street S, Gulfport, FL 33707"
+  },
+  {
+    "client_item_id": "upc-dp3-3384388d",
+    "quote_request_id": "6aa38a224a5886d69206a55e",
+    "address": "1420 GRAY Street S, Gulfport, FL 33707"
+  },
+  {
+    "client_item_id": "374f2fe6-dfb1-461c-b8eb-f7d0440565f9",
+    "quote_request_id": "6aa38a224a5886d69206a566",
+    "address": "14462 91ST Avenue, Seminole, FL 33776"
+  },
+  {
+    "client_item_id": "upc-dp3-374f2fe6",
+    "quote_request_id": "6aa38a220441c18218090945",
+    "address": "14462 91ST Avenue, Seminole, FL 33776"
+  },
+  {
+    "client_item_id": "3c5eed09-2e67-4353-8de8-e09f68841de5",
+    "quote_request_id": "6aa38a220441c1821809094d",
+    "address": "17161 2ND Street E, North Redington Beach, FL 33708"
+  },
+  {
+    "client_item_id": "upc-dp3-3c5eed09",
+    "quote_request_id": "6aa38a234a5886d69206a5b6",
+    "address": "17161 2ND Street E, North Redington Beach, FL 33708"
+  },
+  {
+    "client_item_id": "3e8fd2f5-85af-4b8f-b1be-401af3e54658",
+    "quote_request_id": "6aa38a234a5886d69206a5be",
+    "address": "3923 HAINES Road N, St Petersburg, FL 33703"
+  },
+  {
+    "client_item_id": "upc-dp3-3e8fd2f5",
+    "quote_request_id": "6aa38a230441c1821809099d",
+    "address": "3923 HAINES Road N, St Petersburg, FL 33703"
+  },
+  {
+    "client_item_id": "413081c8-c2de-4228-b484-b8d56faa138e",
+    "quote_request_id": "6aa38a240441c182180909a5",
+    "address": "1927 JULLEE Lane, Palm Harbor, FL 34683"
+  },
+  {
+    "client_item_id": "upc-dp3-413081c8",
+    "quote_request_id": "6aa38a254a5886d69206a60e",
+    "address": "1927 JULLEE Lane, Palm Harbor, FL 34683"
+  },
+  {
+    "client_item_id": "4135f7c3-e669-455a-9194-9b1a6534ebbe",
+    "quote_request_id": "6aa38a254a5886d69206a616",
+    "address": "1710 30TH Street S, St Petersburg, FL 33713"
+  },
+  {
+    "client_item_id": "upc-dp3-4135f7c3",
+    "quote_request_id": "6aa38a250441c182180909f5",
+    "address": "1710 30TH Street S, St Petersburg, FL 33713"
+  },
+  {
+    "client_item_id": "44029ab9-7247-4651-8e92-0798587c390b",
+    "quote_request_id": "6aa38a250441c182180909fd",
+    "address": "2336 MALCOLM Drive, Palm Harbor, FL 34684"
+  },
+  {
+    "client_item_id": "upc-dp3-44029ab9",
+    "quote_request_id": "6aa38a264a5886d69206a666",
+    "address": "2336 MALCOLM Drive, Palm Harbor, FL 34684"
+  },
+  {
+    "client_item_id": "44891acb-d7f0-4236-a8c4-18c7569c9d90",
+    "quote_request_id": "6aa38a264a5886d69206a66e",
+    "address": "1835 15TH Avenue S, St Petersburg, FL 33712"
+  },
+  {
+    "client_item_id": "upc-dp3-44891acb",
+    "quote_request_id": "6aa38a260441c18218090a4d",
+    "address": "1835 15TH Avenue S, St Petersburg, FL 33712"
+  },
+  {
+    "client_item_id": "4622a3ca-1cf6-4b6f-9c68-aad3abfe34c6",
+    "quote_request_id": "6aa38a260441c18218090a55",
+    "address": "1766 BAYOU GRANDE Boulevard NE, St Petersburg, FL 33703"
+  },
+  {
+    "client_item_id": "upc-dp3-4622a3ca",
+    "quote_request_id": "6aa38a274a5886d69206a6be",
+    "address": "1766 BAYOU GRANDE Boulevard NE, St Petersburg, FL 33703"
+  },
+  {
+    "client_item_id": "4703f797-04af-4a29-8181-48fc1605d34e",
+    "quote_request_id": "6aa38a274a5886d69206a6c6",
+    "address": "7800 COUNTRY CLUB Road N, St Petersburg, FL 33710"
+  },
+  {
+    "client_item_id": "upc-dp3-4703f797",
+    "quote_request_id": "6aa38a270441c18218090aa5",
+    "address": "7800 COUNTRY CLUB Road N, St Petersburg, FL 33710"
+  },
+  {
+    "client_item_id": "478c77c7-ae61-439d-b928-e237dd731c51",
+    "quote_request_id": "6aa38a270441c18218090aad",
+    "address": "2950 CURLING Court, Palm Harbor, FL 34684"
+  },
+  {
+    "client_item_id": "upc-dp3-478c77c7",
+    "quote_request_id": "6aa38a294a5886d69206a716",
+    "address": "2950 CURLING Court, Palm Harbor, FL 34684"
+  },
+  {
+    "client_item_id": "498df05d-58fd-4f87-bf87-789a816732bb",
+    "quote_request_id": "6aa38a294a5886d69206a71e",
+    "address": "1350 26TH Avenue N, St Petersburg, FL 33704"
+  },
+  {
+    "client_item_id": "upc-dp3-498df05d",
+    "quote_request_id": "6aa38a290441c18218090afd",
+    "address": "1350 26TH Avenue N, St Petersburg, FL 33704"
+  },
+  {
+    "client_item_id": "4cd41017-1e42-43cd-9fe0-47e280b4e55a",
+    "quote_request_id": "6aa38a290441c18218090b05",
+    "address": "7151 121ST Avenue, Largo, FL 33773"
+  },
+  {
+    "client_item_id": "upc-dp3-4cd41017",
+    "quote_request_id": "6aa38a2a4a5886d69206a76e",
+    "address": "7151 121ST Avenue, Largo, FL 33773"
+  },
+  {
+    "client_item_id": "4d3178f7-4567-4f5c-a717-981e0c207802",
+    "quote_request_id": "6aa38a2a0441c18218090b56",
+    "address": "1601 AVOCA Drive, Tarpon Springs, FL 34689"
+  },
+  {
+    "client_item_id": "upc-dp3-4d3178f7",
+    "quote_request_id": "6aa38a2a4a5886d69206a777",
+    "address": "1601 AVOCA Drive, Tarpon Springs, FL 34689"
+  },
+  {
+    "client_item_id": "50609aaa-2ae2-47f4-8ed3-696b8c89c5f6",
+    "quote_request_id": "6aa38a2a4a5886d69206a77e",
+    "address": "8081 28TH Avenue N, St Petersburg, FL 33710"
+  },
+  {
+    "client_item_id": "upc-dp3-50609aaa",
+    "quote_request_id": "6aa38a2b661993b8870a339e",
+    "address": "8081 28TH Avenue N, St Petersburg, FL 33710"
+  },
+  {
+    "client_item_id": "51d67d6d-f83b-4409-984b-d29e7b659345",
+    "quote_request_id": "6aa38a2b0441c18218090ba6",
+    "address": "2801 CANDLEWOOD Street, Clearwater, FL 33759"
+  },
+  {
+    "client_item_id": "upc-dp3-51d67d6d",
+    "quote_request_id": "6aa38a2b4a5886d69206a7ce",
+    "address": "2801 CANDLEWOOD Street, Clearwater, FL 33759"
+  },
+  {
+    "client_item_id": "5469d960-d57b-41c2-8ccb-d170e8d87538",
+    "quote_request_id": "6aa38a2c4a5886d69206a7d6",
+    "address": "802 EMBASSY Road, Largo, FL 33771"
+  },
+  {
+    "client_item_id": "upc-dp3-5469d960",
+    "quote_request_id": "6aa38a2d0441c18218090bf6",
+    "address": "802 EMBASSY Road, Largo, FL 33771"
+  },
+  {
+    "client_item_id": "55ff9b80-d66a-4535-9e33-11c5223d1d81",
+    "quote_request_id": "6aa38a2d0441c18218090bfe",
+    "address": "389 GEORGIA Avenue, Crystal Beach, FL 34681"
+  },
+  {
+    "client_item_id": "upc-dp3-55ff9b80",
+    "quote_request_id": "6aa38a2d4a5886d69206a826",
+    "address": "389 GEORGIA Avenue, Crystal Beach, FL 34681"
+  },
+  {
+    "client_item_id": "572eb5c2-1f21-48a1-9b15-2b05f62abb2d",
+    "quote_request_id": "6aa38a2e4a5886d69206a82e",
+    "address": "12705 PARK Boulevard, Seminole, FL 33776"
+  },
+  {
+    "client_item_id": "upc-dp3-572eb5c2",
+    "quote_request_id": "6aa38a2e0441c18218090c4e",
+    "address": "12705 PARK Boulevard, Seminole, FL 33776"
+  },
+  {
+    "client_item_id": "5778bd18-d9c0-45d5-9feb-31fedc7b438f",
+    "quote_request_id": "6aa38a2f0441c18218090c56",
+    "address": "789 16TH Avenue S, St Petersburg, FL 33701"
+  },
+  {
+    "client_item_id": "upc-dp3-5778bd18",
+    "quote_request_id": "6aa38a2f4a5886d69206a87e",
+    "address": "789 16TH Avenue S, St Petersburg, FL 33701"
+  },
+  {
+    "client_item_id": "59237ed2-5cb3-4dda-bd74-5dde9cf15dd9",
+    "quote_request_id": "6aa38a2f4a5886d69206a886",
+    "address": "2707 LAKEBREEZE Lane S, Clearwater, FL 33759"
+  },
+  {
+    "client_item_id": "upc-dp3-59237ed2",
+    "quote_request_id": "6aa38a300441c18218090ca6",
+    "address": "2707 LAKEBREEZE Lane S, Clearwater, FL 33759"
+  },
+  {
+    "client_item_id": "5ae42964-560e-46dd-a628-420c97210536",
+    "quote_request_id": "6aa38a300441c18218090cae",
+    "address": "629 LEXINGTON Street, Dunedin, FL 34698"
+  },
+  {
+    "client_item_id": "upc-dp3-5ae42964",
+    "quote_request_id": "6aa38a304a5886d69206a8d6",
+    "address": "629 LEXINGTON Street, Dunedin, FL 34698"
+  },
+  {
+    "client_item_id": "5b9956b8-0645-40a8-86db-cadf36f48a31",
+    "quote_request_id": "6aa38a304a5886d69206a8de",
+    "address": "10205 FALCON Terrace, Seminole, FL 33778"
+  },
+  {
+    "client_item_id": "upc-dp3-5b9956b8",
+    "quote_request_id": "6aa38a310441c18218090cfe",
+    "address": "10205 FALCON Terrace, Seminole, FL 33778"
+  },
+  {
+    "client_item_id": "6185c11c-9511-4596-9eb4-7199a5aeb177",
+    "quote_request_id": "6aa38aa870780d7ac20ed34c",
+    "address": "4161 BLUEFISH Drive SE, St Petersburg, FL 33705"
+  },
+  {
+    "client_item_id": "upc-dp3-6185c11c",
+    "quote_request_id": "6aa38aa8c65174c13c071c96",
+    "address": "4161 BLUEFISH Drive SE, St Petersburg, FL 33705"
+  },
+  {
+    "client_item_id": "63970c60-4c94-4dae-98e5-8b6e89a91fa0",
+    "quote_request_id": "6aa38aa8c65174c13c071c9e",
+    "address": "2114 21ST Avenue N, St Petersburg, FL 33713"
+  },
+  {
+    "client_item_id": "upc-dp3-63970c60",
+    "quote_request_id": "6aa38aa970780d7ac20ed39c",
+    "address": "2114 21ST Avenue N, St Petersburg, FL 33713"
+  },
+  {
+    "client_item_id": "64157f6a-bf45-4840-9e74-8ff8d09b3736",
+    "quote_request_id": "6aa38aa970780d7ac20ed3a4",
+    "address": "1037 12TH Avenue S, St Petersburg, FL 33705"
+  },
+  {
+    "client_item_id": "upc-dp3-64157f6a",
+    "quote_request_id": "6aa38aa9c65174c13c071cee",
+    "address": "1037 12TH Avenue S, St Petersburg, FL 33705"
+  },
+  {
+    "client_item_id": "66a97837-6744-495a-86e5-6e01f298d625",
+    "quote_request_id": "6aa38aaac65174c13c071cf6",
+    "address": "7454 1ST Way N, St Petersburg, FL 33702"
+  },
+  {
+    "client_item_id": "upc-dp3-66a97837",
+    "quote_request_id": "6aa38aab70780d7ac20ed3f4",
+    "address": "7454 1ST Way N, St Petersburg, FL 33702"
+  },
+  {
+    "client_item_id": "6888c2ee-1782-4c2a-974c-a51d67bcfdd2",
+    "quote_request_id": "6aa38aab70780d7ac20ed3fc",
+    "address": "425 WAYFARER Court, Tarpon Springs, FL 34689"
+  },
+  {
+    "client_item_id": "upc-dp3-6888c2ee",
+    "quote_request_id": "6aa38aabc65174c13c071d46",
+    "address": "425 WAYFARER Court, Tarpon Springs, FL 34689"
+  },
+  {
+    "client_item_id": "7334ff4e-0e95-4919-b6af-32cee13ff6ed",
+    "quote_request_id": "6aa38aabc65174c13c071d4e",
+    "address": "604 CHESTNUT Street, Oldsmar, FL 34677"
+  },
+  {
+    "client_item_id": "upc-dp3-7334ff4e",
+    "quote_request_id": "6aa38aac70780d7ac20ed44c",
+    "address": "604 CHESTNUT Street, Oldsmar, FL 34677"
+  },
+  {
+    "client_item_id": "7e5a406b-1faf-4bd6-9166-e968c0efb2e3",
+    "quote_request_id": "6aa38aac70780d7ac20ed454",
+    "address": "1136 22ND Avenue N, St Petersburg, FL 33704"
+  },
+  {
+    "client_item_id": "upc-dp3-7e5a406b",
+    "quote_request_id": "6aa38aacc65174c13c071d9e",
+    "address": "1136 22ND Avenue N, St Petersburg, FL 33704"
+  },
+  {
+    "client_item_id": "82516416-2589-4382-8df1-7344b34b973a",
+    "quote_request_id": "6aa38aacc65174c13c071da6",
+    "address": "426 SCOTLAND ST, Dunedin, FL 34698"
+  },
+  {
+    "client_item_id": "upc-dp3-82516416",
+    "quote_request_id": "6aa38aad70780d7ac20ed4a4",
+    "address": "426 SCOTLAND ST, Dunedin, FL 34698"
+  },
+  {
+    "client_item_id": "84197870-5259-43af-84cc-99d03c2ac713",
+    "quote_request_id": "6aa38aae70780d7ac20ed4ac",
+    "address": "5220 55TH Avenue N, St Petersburg, FL 33709"
+  },
+  {
+    "client_item_id": "upc-dp3-84197870",
+    "quote_request_id": "6aa38aaec65174c13c071df6",
+    "address": "5220 55TH Avenue N, St Petersburg, FL 33709"
+  },
+  {
+    "client_item_id": "8505b009-074b-4322-9a5d-66c774eff102",
+    "quote_request_id": "6aa38aaec65174c13c071dfe",
+    "address": "2784 HEATHERWOOD Court, Clearwater, FL 33761"
+  },
+  {
+    "client_item_id": "upc-dp3-8505b009",
+    "quote_request_id": "6aa38aaf70780d7ac20ed4fc",
+    "address": "2784 HEATHERWOOD Court, Clearwater, FL 33761"
+  },
+  {
+    "client_item_id": "85791fce-359e-4729-86ee-51db13170d50",
+    "quote_request_id": "6aa38aaf70780d7ac20ed504",
+    "address": "11324 87TH Avenue, Seminole, FL 33772"
+  },
+  {
+    "client_item_id": "upc-dp3-85791fce",
+    "quote_request_id": "6aa38aafc65174c13c071e4e",
+    "address": "11324 87TH Avenue, Seminole, FL 33772"
+  },
+  {
+    "client_item_id": "8842b03e-c97c-4778-8b2f-ee0c00e90d6c",
+    "quote_request_id": "6aa38aafc65174c13c071e56",
+    "address": "10030 59TH Avenue N, St Petersburg, FL 33708"
+  },
+  {
+    "client_item_id": "upc-dp3-8842b03e",
+    "quote_request_id": "6aa38ab070780d7ac20ed554",
+    "address": "10030 59TH Avenue N, St Petersburg, FL 33708"
+  },
+  {
+    "client_item_id": "8974e1e4-4db7-48b8-b177-566bd423f16c",
+    "quote_request_id": "6aa38ab070780d7ac20ed55c",
+    "address": "1390 SEABREEZE ST, Clearwater, FL 33756"
+  },
+  {
+    "client_item_id": "upc-dp3-8974e1e4",
+    "quote_request_id": "6aa38ab0c65174c13c071ea6",
+    "address": "1390 SEABREEZE ST, Clearwater, FL 33756"
+  },
+  {
+    "client_item_id": "89e08a40-9732-409e-b7a0-7967d05c4332",
+    "quote_request_id": "6aa38ab0c65174c13c071eae",
+    "address": "1304 PARKWOOD Street, Clearwater, FL 33755"
+  },
+  {
+    "client_item_id": "upc-dp3-89e08a40",
+    "quote_request_id": "6aa38ab170780d7ac20ed5ac",
+    "address": "1304 PARKWOOD Street, Clearwater, FL 33755"
+  },
+  {
+    "client_item_id": "8aa11ea1-465a-428d-9c8b-8ff0b01d8fb0",
+    "quote_request_id": "6aa38ab270780d7ac20ed5b4",
+    "address": "743 BONNIE Boulevard, Palm Harbor, FL 34684"
+  },
+  {
+    "client_item_id": "upc-dp3-8aa11ea1",
+    "quote_request_id": "6aa38ab2c65174c13c071efe",
+    "address": "743 BONNIE Boulevard, Palm Harbor, FL 34684"
+  },
+  {
+    "client_item_id": "8b4031eb-9520-4256-8e52-bc8dbd08bde3",
+    "quote_request_id": "6aa38ab2c65174c13c071f06",
+    "address": "2985 BREEZY MEADOWS Drive, Clearwater, FL 33760"
+  },
+  {
+    "client_item_id": "upc-dp3-8b4031eb",
+    "quote_request_id": "6aa38ab370780d7ac20ed604",
+    "address": "2985 BREEZY MEADOWS Drive, Clearwater, FL 33760"
+  },
+  {
+    "client_item_id": "8e59702f-55c1-4fe0-b5a3-99b65798c52a",
+    "quote_request_id": "6aa38ab370780d7ac20ed60c",
+    "address": "796 PINEWOOD Drive, Dunedin, FL 34698"
+  },
+  {
+    "client_item_id": "upc-dp3-8e59702f",
+    "quote_request_id": "6aa38ab3c65174c13c071f56",
+    "address": "796 PINEWOOD Drive, Dunedin, FL 34698"
+  },
+  {
+    "client_item_id": "90a51b9e-b761-4e9c-94fb-801145a76fe9",
+    "quote_request_id": "6aa38ab4c65174c13c071f5e",
+    "address": "11138 59TH Avenue, Seminole, FL 33772"
+  },
+  {
+    "client_item_id": "upc-dp3-90a51b9e",
+    "quote_request_id": "6aa38ab470780d7ac20ed65c",
+    "address": "11138 59TH Avenue, Seminole, FL 33772"
+  },
+  {
+    "client_item_id": "923bff65-8380-415f-a037-91f532fe465b",
+    "quote_request_id": "6aa38ab470780d7ac20ed664",
+    "address": "1077 40TH Avenue NE, St Petersburg, FL 33703"
+  },
+  {
+    "client_item_id": "upc-dp3-923bff65",
+    "quote_request_id": "6aa38ab5c65174c13c071fae",
+    "address": "1077 40TH Avenue NE, St Petersburg, FL 33703"
+  },
+  {
+    "client_item_id": "938961c3-e808-49eb-8ebb-6279c65bedde",
+    "quote_request_id": "6aa38ab5c65174c13c071fb6",
+    "address": "11746 78TH Terrace, Seminole, FL 33772"
+  },
+  {
+    "client_item_id": "upc-dp3-938961c3",
+    "quote_request_id": "6aa38ab670780d7ac20ed6b4",
+    "address": "11746 78TH Terrace, Seminole, FL 33772"
+  },
+  {
+    "client_item_id": "96e95423-c866-426e-b6d9-9e6ffe095098",
+    "quote_request_id": "6aa38ab670780d7ac20ed6bc",
+    "address": "2845 59TH Circle S, St Petersburg, FL 33712"
+  },
+  {
+    "client_item_id": "upc-dp3-96e95423",
+    "quote_request_id": "6aa38ab6c65174c13c072006",
+    "address": "2845 59TH Circle S, St Petersburg, FL 33712"
+  },
+  {
+    "client_item_id": "9779aba0-e58f-4e46-a571-34bdf756b554",
+    "quote_request_id": "6aa38ab6c65174c13c07200e",
+    "address": "6044 BURLINGTON Avenue N, St Petersburg, FL 33710"
+  },
+  {
+    "client_item_id": "upc-dp3-9779aba0",
+    "quote_request_id": "6aa38ab770780d7ac20ed70c",
+    "address": "6044 BURLINGTON Avenue N, St Petersburg, FL 33710"
+  },
+  {
+    "client_item_id": "98ea5447-4f27-421a-a0ed-8d81570f1415",
+    "quote_request_id": "6aa38ab770780d7ac20ed714",
+    "address": "2443 4TH Avenue N, St Petersburg, FL 33713"
+  },
+  {
+    "client_item_id": "upc-dp3-98ea5447",
+    "quote_request_id": "6aa38ab8c65174c13c07205e",
+    "address": "2443 4TH Avenue N, St Petersburg, FL 33713"
+  },
+  {
+    "client_item_id": "99a2b3b0-5a27-4895-8fc3-a29fbe6e50db",
+    "quote_request_id": "6aa38ab8c65174c13c072066",
+    "address": "6489 34TH Terrace N, St Petersburg, FL 33710"
+  },
+  {
+    "client_item_id": "upc-dp3-99a2b3b0",
+    "quote_request_id": "6aa38ab870780d7ac20ed764",
+    "address": "6489 34TH Terrace N, St Petersburg, FL 33710"
+  },
+  {
+    "client_item_id": "9fa00062-8a07-45dc-ada9-3bd72fef9200",
+    "quote_request_id": "6aa38ab970780d7ac20ed76c",
+    "address": "11982 TANGELO Court, Seminole, FL 33772"
+  },
+  {
+    "client_item_id": "upc-dp3-9fa00062",
+    "quote_request_id": "6aa38ab9c65174c13c0720b6",
+    "address": "11982 TANGELO Court, Seminole, FL 33772"
+  },
+  {
+    "client_item_id": "a16210d9-a1f5-409f-991c-f70c154a8fd5",
+    "quote_request_id": "6aa38b2970780d7ac20ed7bb",
+    "address": "2172 UNIVERSITY Drive S, Clearwater, FL 33764"
+  },
+  {
+    "client_item_id": "upc-dp3-a16210d9",
+    "quote_request_id": "6aa38b2a70780d7ac20ed80b",
+    "address": "2172 UNIVERSITY Drive S, Clearwater, FL 33764"
+  },
+  {
+    "client_item_id": "a2e4483d-a952-4edf-abbd-ad655e7f3456",
+    "quote_request_id": "6aa38b2a70780d7ac20ed813",
+    "address": "4710 8TH Avenue S, St Petersburg, FL 33711"
+  },
+  {
+    "client_item_id": "upc-dp3-a2e4483d",
+    "quote_request_id": "6aa38b2aa7889788b70508f6",
+    "address": "4710 8TH Avenue S, St Petersburg, FL 33711"
+  },
+  {
+    "client_item_id": "a4d2c81f-a2a0-45ba-b2c2-28ac4e8efba5",
+    "quote_request_id": "6aa38b2ba7889788b70508fe",
+    "address": "8068 28TH Avenue N, St Petersburg, FL 33710"
+  },
+  {
+    "client_item_id": "upc-dp3-a4d2c81f",
+    "quote_request_id": "6aa38b2b77249097fc0682d5",
+    "address": "8068 28TH Avenue N, St Petersburg, FL 33710"
+  },
+  {
+    "client_item_id": "a7a26750-a693-48f6-b08f-8d3d277fc3b0",
+    "quote_request_id": "6aa38b2c77249097fc0682dd",
+    "address": "1617 43RD Street S, St Petersburg, FL 33711"
+  },
+  {
+    "client_item_id": "upc-dp3-a7a26750",
+    "quote_request_id": "6aa38b2ca7889788b705094e",
+    "address": "1617 43RD Street S, St Petersburg, FL 33711"
+  },
+  {
+    "client_item_id": "a7d82a7b-1556-48a6-aa3e-1c12492e9e02",
+    "quote_request_id": "6aa38b2ca7889788b7050956",
+    "address": "718 NORTHMOOR Avenue N, St Petersburg, FL 33702"
+  },
+  {
+    "client_item_id": "upc-dp3-a7d82a7b",
+    "quote_request_id": "6aa38b2d77249097fc06832d",
+    "address": "718 NORTHMOOR Avenue N, St Petersburg, FL 33702"
+  },
+  {
+    "client_item_id": "a8db8ccf-8d86-4a5d-a224-7a065661d81f",
+    "quote_request_id": "6aa38b2d77249097fc068335",
+    "address": "6743 16TH Avenue N, St Petersburg, FL 33710"
+  },
+  {
+    "client_item_id": "upc-dp3-a8db8ccf",
+    "quote_request_id": "6aa38b2da7889788b70509a6",
+    "address": "6743 16TH Avenue N, St Petersburg, FL 33710"
+  },
+  {
+    "client_item_id": "a9fbe7c2-0c8c-470e-b313-dd8bd4e46448",
+    "quote_request_id": "6aa38b2ea7889788b70509ae",
+    "address": "635 BELLINGHAM Place, Palm Harbor, FL 34684"
+  },
+  {
+    "client_item_id": "upc-dp3-a9fbe7c2",
+    "quote_request_id": "6aa38b2e77249097fc068385",
+    "address": "635 BELLINGHAM Place, Palm Harbor, FL 34684"
+  },
+  {
+    "client_item_id": "aafe38d1-c982-4dd4-8fde-f414a1d062de",
+    "quote_request_id": "6aa38b2e77249097fc06838d",
+    "address": "13248 HELM Street, Largo, FL 33774"
+  },
+  {
+    "client_item_id": "upc-dp3-aafe38d1",
+    "quote_request_id": "6aa38b2fa7889788b70509fe",
+    "address": "13248 HELM Street, Largo, FL 33774"
+  },
+  {
+    "client_item_id": "ae29b600-768c-44fb-b7b8-9de649fd3a6b",
+    "quote_request_id": "6aa38b2fa7889788b7050a06",
+    "address": "1308 ESSEX Drive N, St Petersburg, FL 33710"
+  },
+  {
+    "client_item_id": "upc-dp3-ae29b600",
+    "quote_request_id": "6aa38b3077249097fc0683dd",
+    "address": "1308 ESSEX Drive N, St Petersburg, FL 33710"
+  },
+  {
+    "client_item_id": "af4d7f25-6a8f-4080-90e7-091a71409ce7",
+    "quote_request_id": "6aa38b3077249097fc0683e5",
+    "address": "1949 TROTTER Road, Largo, FL 33774"
+  },
+  {
+    "client_item_id": "upc-dp3-af4d7f25",
+    "quote_request_id": "6aa38b31a7889788b7050a56",
+    "address": "1949 TROTTER Road, Largo, FL 33774"
+  },
+  {
+    "client_item_id": "b03ffc03-650c-4f65-934c-07b72a78339b",
+    "quote_request_id": "6aa38b31a7889788b7050a5e",
+    "address": "859 PINEWOOD Terrace W, Palm Harbor, FL 34683"
+  },
+  {
+    "client_item_id": "upc-dp3-b03ffc03",
+    "quote_request_id": "6aa38b3177249097fc068435",
+    "address": "859 PINEWOOD Terrace W, Palm Harbor, FL 34683"
+  },
+  {
+    "client_item_id": "b4519b0b-a80a-43bd-9158-7ff2bc6a6f3c",
+    "quote_request_id": "6aa38b3177249097fc06843d",
+    "address": "1773 EZELLE Avenue, Largo, FL 33770"
+  },
+  {
+    "client_item_id": "upc-dp3-b4519b0b",
+    "quote_request_id": "6aa38b32a7889788b7050aae",
+    "address": "1773 EZELLE Avenue, Largo, FL 33770"
+  },
+  {
+    "client_item_id": "b489352f-a241-4017-ac68-64d28bbcf8a0",
+    "quote_request_id": "6aa38b32a7889788b7050ab6",
+    "address": "212 ARBOR WOODS Circle, Oldsmar, FL 34677"
+  },
+  {
+    "client_item_id": "upc-dp3-b489352f",
+    "quote_request_id": "6aa38b3277249097fc06848d",
+    "address": "212 ARBOR WOODS Circle, Oldsmar, FL 34677"
+  },
+  {
+    "client_item_id": "b7a5ae71-cffe-4967-8fb5-529c0fc38353",
+    "quote_request_id": "6aa38b3377249097fc068495",
+    "address": "1511 S HILLCREST Avenue, Clearwater, FL 33756"
+  },
+  {
+    "client_item_id": "upc-dp3-b7a5ae71",
+    "quote_request_id": "6aa38b33a7889788b7050b06",
+    "address": "1511 S HILLCREST Avenue, Clearwater, FL 33756"
+  },
+  {
+    "client_item_id": "b9ad5bb1-1d92-4667-9582-9aab6615f6f0",
+    "quote_request_id": "6aa38b34a7889788b7050b0e",
+    "address": "2761 N WESTCHESTER Drive N, Clearwater, FL 33761"
+  },
+  {
+    "client_item_id": "upc-dp3-b9ad5bb1",
+    "quote_request_id": "6aa38b3477249097fc0684e5",
+    "address": "2761 N WESTCHESTER Drive N, Clearwater, FL 33761"
+  },
+  {
+    "client_item_id": "c4a2f034-e367-418e-9839-fc739a422cb4",
+    "quote_request_id": "6aa38b3477249097fc0684ed",
+    "address": "1631 ELIZABETH Lane, Clearwater, FL 33755"
+  },
+  {
+    "client_item_id": "upc-dp3-c4a2f034",
+    "quote_request_id": "6aa38b35a7889788b7050b5e",
+    "address": "1631 ELIZABETH Lane, Clearwater, FL 33755"
+  },
+  {
+    "client_item_id": "c542e1b3-e8f8-489b-a6cb-890550afcd41",
+    "quote_request_id": "6aa38b36a7889788b7050b66",
+    "address": "2529 INDIGO Drive, Dunedin, FL 34698"
+  },
+  {
+    "client_item_id": "upc-dp3-c542e1b3",
+    "quote_request_id": "6aa38b3677249097fc06853d",
+    "address": "2529 INDIGO Drive, Dunedin, FL 34698"
+  },
+  {
+    "client_item_id": "c82b0e9f-7654-47c2-b028-04917c8cbefd",
+    "quote_request_id": "6aa38b3677249097fc068545",
+    "address": "5 VENETIAN Court, Tarpon Springs, FL 34689"
+  },
+  {
+    "client_item_id": "upc-dp3-c82b0e9f",
+    "quote_request_id": "6aa38b37a7889788b7050bb6",
+    "address": "5 VENETIAN Court, Tarpon Springs, FL 34689"
+  },
+  {
+    "client_item_id": "c939df3e-8707-4923-91d4-4b72e503df60",
+    "quote_request_id": "6aa38b37a7889788b7050bbe",
+    "address": "6800 1ST Street N, St Petersburg, FL 33702"
+  },
+  {
+    "client_item_id": "upc-dp3-c939df3e",
+    "quote_request_id": "6aa38b3777249097fc068595",
+    "address": "6800 1ST Street N, St Petersburg, FL 33702"
+  },
+  {
+    "client_item_id": "ca5d896e-2577-4c2d-b424-7b980b44df9e",
+    "quote_request_id": "6aa38b3777249097fc06859d",
+    "address": "2548 LANGDON Avenue S, St Petersburg, FL 33712"
+  },
+  {
+    "client_item_id": "upc-dp3-ca5d896e",
+    "quote_request_id": "6aa38b38a7889788b7050c0e",
+    "address": "2548 LANGDON Avenue S, St Petersburg, FL 33712"
+  },
+  {
+    "client_item_id": "ca924fa8-1853-4cac-b54d-29f95c9ab555",
+    "quote_request_id": "6aa38b3877249097fc0685ed",
+    "address": "1818 LILLIAN Avenue, Tarpon Springs, FL 34689"
+  },
+  {
+    "client_item_id": "upc-dp3-ca924fa8",
+    "quote_request_id": "6aa38b38a7889788b7050c16",
+    "address": "1818 LILLIAN Avenue, Tarpon Springs, FL 34689"
+  },
+  {
+    "client_item_id": "cda85674-ee86-43dd-a901-0ea0d2d1109e",
+    "quote_request_id": "6aa38b39a7889788b7050c1e",
+    "address": "3626 JUSTIN Drive, Palm Harbor, FL 34685"
+  },
+  {
+    "client_item_id": "upc-dp3-cda85674",
+    "quote_request_id": "6aa38b3a77249097fc06863d",
+    "address": "3626 JUSTIN Drive, Palm Harbor, FL 34685"
+  },
+  {
+    "client_item_id": "ce8d76a9-6d21-422b-b3a5-7c6d93de1aae",
+    "quote_request_id": "6aa38b3a77249097fc068645",
+    "address": "8330 63RD Way N, Pinellas Park, FL 33781"
+  },
+  {
+    "client_item_id": "upc-dp3-ce8d76a9",
+    "quote_request_id": "6aa38b3aa7889788b7050c6e",
+    "address": "8330 63RD Way N, Pinellas Park, FL 33781"
+  },
+  {
+    "client_item_id": "d02588cb-c0ac-4e3d-b182-79405c8ca013",
+    "quote_request_id": "6aa38b3aa7889788b7050c76",
+    "address": "2706 GULF Boulevard, Indian Rocks Beach, FL 33785"
+  },
+  {
+    "client_item_id": "upc-dp3-d02588cb",
+    "quote_request_id": "6aa38b3b77249097fc068695",
+    "address": "2706 GULF Boulevard, Indian Rocks Beach, FL 33785"
+  },
+  {
+    "client_item_id": "d0cfef62-2f41-4a45-94e1-ced38d0caa4b",
+    "quote_request_id": "6aa38b3b77249097fc06869d",
+    "address": "6611 BLUE HERON Drive S, St Petersburg, FL 33707"
+  },
+  {
+    "client_item_id": "upc-dp3-d0cfef62",
+    "quote_request_id": "6aa38b3ba7889788b7050cc6",
+    "address": "6611 BLUE HERON Drive S, St Petersburg, FL 33707"
+  },
+  {
+    "client_item_id": "d19f88ce-679d-44c9-bfd4-a348912031c7",
+    "quote_request_id": "6aa38ba5a7889788b7050ccd",
+    "address": "1381 FOREST LAWN Court, Tarpon Springs, FL 34689"
+  },
+  {
+    "client_item_id": "upc-dp3-d19f88ce",
+    "quote_request_id": "6aa38ba577249097fc0686ec",
+    "address": "1381 FOREST LAWN Court, Tarpon Springs, FL 34689"
+  },
+  {
+    "client_item_id": "d2f06d82-6da3-4d54-88f8-219bdeb0e9e6",
+    "quote_request_id": "6aa38ba677249097fc0686f4",
+    "address": "345 10TH Avenue NE, St Petersburg, FL 33701"
+  },
+  {
+    "client_item_id": "upc-dp3-d2f06d82",
+    "quote_request_id": "6aa38ba6a7889788b7050d1d",
+    "address": "345 10TH Avenue NE, St Petersburg, FL 33701"
+  },
+  {
+    "client_item_id": "d8147747-c839-405b-913f-699214de83b9",
+    "quote_request_id": "6aa38ba6a7889788b7050d25",
+    "address": "2844 LUCE Drive N, Clearwater, FL 33761"
+  },
+  {
+    "client_item_id": "upc-dp3-d8147747",
+    "quote_request_id": "6aa38ba777249097fc068744",
+    "address": "2844 LUCE Drive N, Clearwater, FL 33761"
+  },
+  {
+    "client_item_id": "dd880f03-fc7b-48d4-b816-5ecb66114b19",
+    "quote_request_id": "6aa38ba777249097fc06874c",
+    "address": "7718 33RD Avenue N, St Petersburg, FL 33710"
+  },
+  {
+    "client_item_id": "upc-dp3-dd880f03",
+    "quote_request_id": "6aa38ba7a7889788b7050d75",
+    "address": "7718 33RD Avenue N, St Petersburg, FL 33710"
+  },
+  {
+    "client_item_id": "dd96e3cd-1101-4fe7-9ef5-aca6df76d665",
+    "quote_request_id": "6aa38ba7a7889788b7050d7d",
+    "address": "3731 6TH Avenue N, St Petersburg, FL 33713"
+  },
+  {
+    "client_item_id": "upc-dp3-dd96e3cd",
+    "quote_request_id": "6aa38ba877249097fc06879c",
+    "address": "3731 6TH Avenue N, St Petersburg, FL 33713"
+  },
+  {
+    "client_item_id": "e249aa3a-38ca-450e-ad75-d45cec6bd74a",
+    "quote_request_id": "6aa38ba977249097fc0687a4",
+    "address": "1377 S WASHINGTON Avenue, Clearwater, FL 33756"
+  },
+  {
+    "client_item_id": "upc-dp3-e249aa3a",
+    "quote_request_id": "6aa38ba9661993b8870a33a5",
+    "address": "1377 S WASHINGTON Avenue, Clearwater, FL 33756"
+  },
+  {
+    "client_item_id": "e2d32731-071b-48af-bb27-b3ad405a1034",
+    "quote_request_id": "6aa38ba9661993b8870a33ad",
+    "address": "3553 FAIRWAY FOREST Drive, Palm Harbor, FL 34685"
+  },
+  {
+    "client_item_id": "upc-dp3-e2d32731",
+    "quote_request_id": "6aa38baa77249097fc0687f4",
+    "address": "3553 FAIRWAY FOREST Drive, Palm Harbor, FL 34685"
+  },
+  {
+    "client_item_id": "e58a5c59-7e6b-4f01-8047-d84bba5842bd",
+    "quote_request_id": "6aa38baa77249097fc0687fc",
+    "address": "1980 DODGE Circle, Clearwater, FL 33760"
+  },
+  {
+    "client_item_id": "upc-dp3-e58a5c59",
+    "quote_request_id": "6aa38baa661993b8870a33fd",
+    "address": "1980 DODGE Circle, Clearwater, FL 33760"
+  },
+  {
+    "client_item_id": "e6537b6f-0ca5-495d-b4f6-9f41e7ca215c",
+    "quote_request_id": "6aa38baa661993b8870a3405",
+    "address": "9240 SAN MARTIN Boulevard NE, St Petersburg, FL 33702"
+  },
+  {
+    "client_item_id": "upc-dp3-e6537b6f",
+    "quote_request_id": "6aa38bab77249097fc06884c",
+    "address": "9240 SAN MARTIN Boulevard NE, St Petersburg, FL 33702"
+  },
+  {
+    "client_item_id": "e76ad6cf-a23c-4e7c-8fa4-f631a557d53c",
+    "quote_request_id": "6aa38bab77249097fc068854",
+    "address": "4115 FAIRFIELD Avenue S, St Petersburg, FL 33711"
+  },
+  {
+    "client_item_id": "upc-dp3-e76ad6cf",
+    "quote_request_id": "6aa38bac661993b8870a3455",
+    "address": "4115 FAIRFIELD Avenue S, St Petersburg, FL 33711"
+  },
+  {
+    "client_item_id": "e7b3f384-d28d-4ef8-8836-2b4887ec65e6",
+    "quote_request_id": "6aa38bac661993b8870a345d",
+    "address": "639 NORMANDY Road, Madeira Beach, FL 33708"
+  },
+  {
+    "client_item_id": "upc-dp3-e7b3f384",
+    "quote_request_id": "6aa38bad77249097fc0688a4",
+    "address": "639 NORMANDY Road, Madeira Beach, FL 33708"
+  },
+  {
+    "client_item_id": "ea5dcd6e-9120-49d9-899a-854a869c2847",
+    "quote_request_id": "6aa38bad77249097fc0688ac",
+    "address": "1650 WINNERS Circle, Tarpon Springs, FL 34689"
+  },
+  {
+    "client_item_id": "upc-dp3-ea5dcd6e",
+    "quote_request_id": "6aa38bad661993b8870a34ad",
+    "address": "1650 WINNERS Circle, Tarpon Springs, FL 34689"
+  },
+  {
+    "client_item_id": "eab9c1c1-876b-416c-a9e3-7f3f2e319835",
+    "quote_request_id": "6aa38bad661993b8870a34b5",
+    "address": "5860 LEELAND Street S, St Petersburg, FL 33715"
+  },
+  {
+    "client_item_id": "upc-dp3-eab9c1c1",
+    "quote_request_id": "6aa38bae77249097fc0688fc",
+    "address": "5860 LEELAND Street S, St Petersburg, FL 33715"
+  },
+  {
+    "client_item_id": "eaffb66e-1996-43e7-a854-47d70683e6b4",
+    "quote_request_id": "6aa38bae77249097fc068904",
+    "address": "9932 34TH Way N, Pinellas Park, FL 33782"
+  },
+  {
+    "client_item_id": "upc-dp3-eaffb66e",
+    "quote_request_id": "6aa38bae661993b8870a3505",
+    "address": "9932 34TH Way N, Pinellas Park, FL 33782"
+  },
+  {
+    "client_item_id": "eeff1384-f53a-4349-abdb-2df33e10c287",
+    "quote_request_id": "6aa38bae661993b8870a350d",
+    "address": "1889 SPRINGWOOD Circle N, Clearwater, FL 33763"
+  },
+  {
+    "client_item_id": "upc-dp3-eeff1384",
+    "quote_request_id": "6aa38baf77249097fc068954",
+    "address": "1889 SPRINGWOOD Circle N, Clearwater, FL 33763"
+  },
+  {
+    "client_item_id": "ef2c1912-03a9-49ce-88a7-3d74ab4391b5",
+    "quote_request_id": "6aa38baf77249097fc06895c",
+    "address": "4042 DARTMOUTH Avenue N, St Petersburg, FL 33713"
+  },
+  {
+    "client_item_id": "upc-dp3-ef2c1912",
+    "quote_request_id": "6aa38bb0661993b8870a355d",
+    "address": "4042 DARTMOUTH Avenue N, St Petersburg, FL 33713"
+  },
+  {
+    "client_item_id": "f5d80f86-d9fa-460e-884d-500658ad3701",
+    "quote_request_id": "6aa38bb0661993b8870a3565",
+    "address": "1423 42ND Avenue N, St Petersburg, FL 33703"
+  },
+  {
+    "client_item_id": "upc-dp3-f5d80f86",
+    "quote_request_id": "6aa38bb177249097fc0689ac",
+    "address": "1423 42ND Avenue N, St Petersburg, FL 33703"
+  },
+  {
+    "client_item_id": "f70b845d-24e6-40b5-b6cb-21cf3ded0ab4",
+    "quote_request_id": "6aa38bb177249097fc0689b4",
+    "address": "4883 W BREEZE Circle, Palm Harbor, FL 34683"
+  },
+  {
+    "client_item_id": "upc-dp3-f70b845d",
+    "quote_request_id": "6aa38bb1661993b8870a35b5",
+    "address": "4883 W BREEZE Circle, Palm Harbor, FL 34683"
+  },
+  {
+    "client_item_id": "f8c25968-d294-40d8-ba67-56fc6b8ce10c",
+    "quote_request_id": "6aa38bb1661993b8870a35bd",
+    "address": "1521 FOXCROFT Drive W, Palm Harbor, FL 34683"
+  },
+  {
+    "client_item_id": "upc-dp3-f8c25968",
+    "quote_request_id": "6aa38bb277249097fc068a04",
+    "address": "1521 FOXCROFT Drive W, Palm Harbor, FL 34683"
+  },
+  {
+    "client_item_id": "fa26796c-a1d8-45be-a132-25ba74c5ba9e",
+    "quote_request_id": "6aa38bb277249097fc068a0c",
+    "address": "4035 MAINLANDS Boulevard N, Pinellas Park, FL 33782"
+  },
+  {
+    "client_item_id": "upc-dp3-fa26796c",
+    "quote_request_id": "6aa38bb2661993b8870a360d",
+    "address": "4035 MAINLANDS Boulevard N, Pinellas Park, FL 33782"
+  },
+  {
+    "client_item_id": "fa39aa83-4048-4001-b1bc-2443f2ccd47f",
+    "quote_request_id": "6aa38bb2661993b8870a3615",
+    "address": "3432 79TH Street N, St Petersburg, FL 33710"
+  },
+  {
+    "client_item_id": "upc-dp3-fa39aa83",
+    "quote_request_id": "6aa38bb377249097fc068a5c",
+    "address": "3432 79TH Street N, St Petersburg, FL 33710"
+  },
+  {
+    "client_item_id": "fa951870-3b11-4d94-9dcb-d5ecdc0ea83b",
+    "quote_request_id": "6aa38bb377249097fc068a64",
+    "address": "9111 109TH Avenue, Seminole, FL 33777"
+  },
+  {
+    "client_item_id": "upc-dp3-fa951870",
+    "quote_request_id": "6aa38bb4661993b8870a3665",
+    "address": "9111 109TH Avenue, Seminole, FL 33777"
+  },
+  {
+    "client_item_id": "fcb5921a-30cf-4e0b-b9e9-861cba933c55",
+    "quote_request_id": "6aa38bb4661993b8870a366d",
+    "address": "1745 DUGALL Court, Palm Harbor, FL 34684"
+  },
+  {
+    "client_item_id": "upc-dp3-fcb5921a",
+    "quote_request_id": "6aa38bb577249097fc068ab4",
+    "address": "1745 DUGALL Court, Palm Harbor, FL 34684"
+  }
+]

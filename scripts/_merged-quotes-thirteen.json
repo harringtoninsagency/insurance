@@ -1,0 +1,3122 @@
+{
+  "27bd3789-5a25-4336-9f6a-6b817acbb198": {
+    "address": "1145 HIGHLAND Street S",
+    "standard_quote_request_id": "6aa3e4438cde3f5c300256de",
+    "dropped_universal_dp3": true,
+    "rate_count": 29,
+    "rates": [
+      {
+        "id": "6aa3e4438cde3f5c300256e0",
+        "carrier": "Frontline",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4438cde3f5c300256de"
+      },
+      {
+        "id": "6aa3e4438cde3f5c300256e2",
+        "carrier": "Frontline",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4438cde3f5c300256de"
+      },
+      {
+        "id": "6aa3e4438cde3f5c300256e5",
+        "carrier": "Olympus Insurance",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "6027",
+        "request_id": "6aa3e4438cde3f5c300256de"
+      },
+      {
+        "id": "6aa3e4438cde3f5c300256e8",
+        "carrier": "Olympus Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "4012",
+        "request_id": "6aa3e4438cde3f5c300256de"
+      },
+      {
+        "id": "6aa3e4438cde3f5c300256eb",
+        "carrier": "Florida Peninsula",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "4327.38",
+        "request_id": "6aa3e4438cde3f5c300256de"
+      },
+      {
+        "id": "6aa3e4438cde3f5c300256ee",
+        "carrier": "Florida Peninsula",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "4789.69",
+        "request_id": "6aa3e4438cde3f5c300256de"
+      },
+      {
+        "id": "6aa3e4438cde3f5c300256f1",
+        "carrier": "Cabrillo Coastal",
+        "form_type": "HO3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e4438cde3f5c300256de"
+      },
+      {
+        "id": "6aa3e4448cde3f5c300256f4",
+        "carrier": "Cabrillo Coastal",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e4438cde3f5c300256de"
+      },
+      {
+        "id": "6aa3e4448cde3f5c300256f7",
+        "carrier": "Universal P&C",
+        "form_type": "HO8",
+        "status": "success",
+        "premium": "8002.97",
+        "request_id": "6aa3e4438cde3f5c300256de"
+      },
+      {
+        "id": "6aa3e4448cde3f5c300256fa",
+        "carrier": "Universal P&C",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "7589.88",
+        "request_id": "6aa3e4438cde3f5c300256de"
+      },
+      {
+        "id": "6aa3e4448cde3f5c300256fd",
+        "carrier": "Universal P&C",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": "8004.99",
+        "request_id": "6aa3e4438cde3f5c300256de"
+      },
+      {
+        "id": "6aa3e4448cde3f5c30025703",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4438cde3f5c300256de"
+      },
+      {
+        "id": "6aa3e4448cde3f5c30025706",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4438cde3f5c300256de"
+      },
+      {
+        "id": "6aa3e4448cde3f5c30025709",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4438cde3f5c300256de"
+      },
+      {
+        "id": "6aa3e4448cde3f5c3002570c",
+        "carrier": "American Integrity",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "6216.42",
+        "request_id": "6aa3e4438cde3f5c300256de"
+      },
+      {
+        "id": "6aa3e4448cde3f5c3002570f",
+        "carrier": "American Integrity",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "6600.33",
+        "request_id": "6aa3e4438cde3f5c300256de"
+      },
+      {
+        "id": "6aa3e4448cde3f5c30025712",
+        "carrier": "American Integrity",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": "4301.57",
+        "request_id": "6aa3e4438cde3f5c300256de"
+      },
+      {
+        "id": "6aa3e4448cde3f5c30025715",
+        "carrier": "American Traditions",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4438cde3f5c300256de"
+      },
+      {
+        "id": "6aa3e4448cde3f5c30025718",
+        "carrier": "American Traditions",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4438cde3f5c300256de"
+      },
+      {
+        "id": "6aa3e4448cde3f5c3002571b",
+        "carrier": "Edison Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "5000.09",
+        "request_id": "6aa3e4438cde3f5c300256de"
+      },
+      {
+        "id": "6aa3e4448cde3f5c3002571e",
+        "carrier": "Monarch National",
+        "form_type": "HO3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e4438cde3f5c300256de"
+      },
+      {
+        "id": "6aa3e4448cde3f5c30025721",
+        "carrier": "Monarch National",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e4438cde3f5c300256de"
+      },
+      {
+        "id": "6aa3e4448cde3f5c30025724",
+        "carrier": "Slide Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "18172",
+        "request_id": "6aa3e4438cde3f5c300256de"
+      },
+      {
+        "id": "6aa3e4448cde3f5c30025727",
+        "carrier": "Slide Insurance",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e4438cde3f5c300256de"
+      },
+      {
+        "id": "6aa3e4448cde3f5c3002572a",
+        "carrier": "Ovation Home Insurance Exchange",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "5742.89",
+        "request_id": "6aa3e4438cde3f5c300256de"
+      },
+      {
+        "id": "6aa3e4448cde3f5c3002572d",
+        "carrier": "Amwins",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "0",
+        "request_id": "6aa3e4438cde3f5c300256de"
+      },
+      {
+        "id": "6aa3e4448cde3f5c30025730",
+        "carrier": "Amwins",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "0",
+        "request_id": "6aa3e4438cde3f5c300256de"
+      },
+      {
+        "id": "6aa3e4448cde3f5c30025733",
+        "carrier": "Patriot Select",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4438cde3f5c300256de"
+      },
+      {
+        "id": "6aa3e44483af54a3730fda14",
+        "carrier": "Universal P&C",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "8132.25",
+        "request_id": "6aa3e4438cde3f5c300256de"
+      }
+    ]
+  },
+  "d02abf70-6f0b-476c-b4ac-aa84a0674f7d": {
+    "address": "10723 109TH Street",
+    "standard_quote_request_id": "6aa3e4448cde3f5c30025742",
+    "dropped_universal_dp3": true,
+    "rate_count": 29,
+    "rates": [
+      {
+        "id": "6aa3e4448cde3f5c30025744",
+        "carrier": "Frontline",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "2968.81",
+        "request_id": "6aa3e4448cde3f5c30025742"
+      },
+      {
+        "id": "6aa3e4458cde3f5c30025746",
+        "carrier": "Frontline",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "5491.13",
+        "request_id": "6aa3e4448cde3f5c30025742"
+      },
+      {
+        "id": "6aa3e4458cde3f5c30025749",
+        "carrier": "Olympus Insurance",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "5682",
+        "request_id": "6aa3e4448cde3f5c30025742"
+      },
+      {
+        "id": "6aa3e4458cde3f5c3002574c",
+        "carrier": "Olympus Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "3640",
+        "request_id": "6aa3e4448cde3f5c30025742"
+      },
+      {
+        "id": "6aa3e4458cde3f5c3002574f",
+        "carrier": "Florida Peninsula",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "2635.04",
+        "request_id": "6aa3e4448cde3f5c30025742"
+      },
+      {
+        "id": "6aa3e4458cde3f5c30025752",
+        "carrier": "Florida Peninsula",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "3639.46",
+        "request_id": "6aa3e4448cde3f5c30025742"
+      },
+      {
+        "id": "6aa3e4458cde3f5c30025755",
+        "carrier": "Cabrillo Coastal",
+        "form_type": "HO3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e4448cde3f5c30025742"
+      },
+      {
+        "id": "6aa3e4458cde3f5c30025758",
+        "carrier": "Cabrillo Coastal",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e4448cde3f5c30025742"
+      },
+      {
+        "id": "6aa3e4458cde3f5c3002575b",
+        "carrier": "Universal P&C",
+        "form_type": "HO8",
+        "status": "success",
+        "premium": "4237.69",
+        "request_id": "6aa3e4448cde3f5c30025742"
+      },
+      {
+        "id": "6aa3e4458cde3f5c3002575e",
+        "carrier": "Universal P&C",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "4058.92",
+        "request_id": "6aa3e4448cde3f5c30025742"
+      },
+      {
+        "id": "6aa3e4458cde3f5c30025761",
+        "carrier": "Universal P&C",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": "128",
+        "request_id": "6aa3e4448cde3f5c30025742"
+      },
+      {
+        "id": "6aa3e4458cde3f5c30025767",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4448cde3f5c30025742"
+      },
+      {
+        "id": "6aa3e4458cde3f5c3002576a",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4448cde3f5c30025742"
+      },
+      {
+        "id": "6aa3e4458cde3f5c3002576d",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4448cde3f5c30025742"
+      },
+      {
+        "id": "6aa3e4458cde3f5c30025770",
+        "carrier": "American Integrity",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "3821.06",
+        "request_id": "6aa3e4448cde3f5c30025742"
+      },
+      {
+        "id": "6aa3e4458cde3f5c30025773",
+        "carrier": "American Integrity",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "4520.74",
+        "request_id": "6aa3e4448cde3f5c30025742"
+      },
+      {
+        "id": "6aa3e4458cde3f5c30025776",
+        "carrier": "American Integrity",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": "2910.80",
+        "request_id": "6aa3e4448cde3f5c30025742"
+      },
+      {
+        "id": "6aa3e4458cde3f5c30025779",
+        "carrier": "American Traditions",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4448cde3f5c30025742"
+      },
+      {
+        "id": "6aa3e4458cde3f5c3002577c",
+        "carrier": "American Traditions",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4448cde3f5c30025742"
+      },
+      {
+        "id": "6aa3e4458cde3f5c3002577f",
+        "carrier": "Edison Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "3797.43",
+        "request_id": "6aa3e4448cde3f5c30025742"
+      },
+      {
+        "id": "6aa3e4458cde3f5c30025782",
+        "carrier": "Monarch National",
+        "form_type": "HO3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e4448cde3f5c30025742"
+      },
+      {
+        "id": "6aa3e4458cde3f5c30025785",
+        "carrier": "Monarch National",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e4448cde3f5c30025742"
+      },
+      {
+        "id": "6aa3e4458cde3f5c30025788",
+        "carrier": "Slide Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "13452",
+        "request_id": "6aa3e4448cde3f5c30025742"
+      },
+      {
+        "id": "6aa3e4458cde3f5c3002578b",
+        "carrier": "Slide Insurance",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e4448cde3f5c30025742"
+      },
+      {
+        "id": "6aa3e4458cde3f5c3002578e",
+        "carrier": "Ovation Home Insurance Exchange",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "3755.4",
+        "request_id": "6aa3e4448cde3f5c30025742"
+      },
+      {
+        "id": "6aa3e4468cde3f5c30025791",
+        "carrier": "Amwins",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "0",
+        "request_id": "6aa3e4448cde3f5c30025742"
+      },
+      {
+        "id": "6aa3e4468cde3f5c30025794",
+        "carrier": "Amwins",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "0",
+        "request_id": "6aa3e4448cde3f5c30025742"
+      },
+      {
+        "id": "6aa3e4468cde3f5c30025797",
+        "carrier": "Patriot Select",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4448cde3f5c30025742"
+      },
+      {
+        "id": "6aa3e44683af54a3730fda78",
+        "carrier": "Universal P&C",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "5925.4",
+        "request_id": "6aa3e4448cde3f5c30025742"
+      }
+    ]
+  },
+  "55b0c9de-211a-4c5b-bf5e-d308b4581da6": {
+    "address": "675 11TH Place",
+    "standard_quote_request_id": "6aa3e4468cde3f5c3002579e",
+    "dropped_universal_dp3": true,
+    "rate_count": 29,
+    "rates": [
+      {
+        "id": "6aa3e4468cde3f5c300257a0",
+        "carrier": "Frontline",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4468cde3f5c3002579e"
+      },
+      {
+        "id": "6aa3e4468cde3f5c300257a2",
+        "carrier": "Frontline",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4468cde3f5c3002579e"
+      },
+      {
+        "id": "6aa3e4468cde3f5c300257a5",
+        "carrier": "Olympus Insurance",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "6726",
+        "request_id": "6aa3e4468cde3f5c3002579e"
+      },
+      {
+        "id": "6aa3e4468cde3f5c300257a8",
+        "carrier": "Olympus Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "5946",
+        "request_id": "6aa3e4468cde3f5c3002579e"
+      },
+      {
+        "id": "6aa3e4468cde3f5c300257ab",
+        "carrier": "Florida Peninsula",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "0",
+        "request_id": "6aa3e4468cde3f5c3002579e"
+      },
+      {
+        "id": "6aa3e4468cde3f5c300257ae",
+        "carrier": "Florida Peninsula",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "0",
+        "request_id": "6aa3e4468cde3f5c3002579e"
+      },
+      {
+        "id": "6aa3e4468cde3f5c300257b1",
+        "carrier": "Cabrillo Coastal",
+        "form_type": "HO3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e4468cde3f5c3002579e"
+      },
+      {
+        "id": "6aa3e4468cde3f5c300257b4",
+        "carrier": "Cabrillo Coastal",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e4468cde3f5c3002579e"
+      },
+      {
+        "id": "6aa3e4468cde3f5c300257b7",
+        "carrier": "Universal P&C",
+        "form_type": "HO8",
+        "status": "success",
+        "premium": "3511.5",
+        "request_id": "6aa3e4468cde3f5c3002579e"
+      },
+      {
+        "id": "6aa3e4468cde3f5c300257ba",
+        "carrier": "Universal P&C",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "3366.06",
+        "request_id": "6aa3e4468cde3f5c3002579e"
+      },
+      {
+        "id": "6aa3e4468cde3f5c300257bd",
+        "carrier": "Universal P&C",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": "128",
+        "request_id": "6aa3e4468cde3f5c3002579e"
+      },
+      {
+        "id": "6aa3e4468cde3f5c300257c3",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "HO3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e4468cde3f5c3002579e"
+      },
+      {
+        "id": "6aa3e4468cde3f5c300257c6",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4468cde3f5c3002579e"
+      },
+      {
+        "id": "6aa3e4468cde3f5c300257c9",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4468cde3f5c3002579e"
+      },
+      {
+        "id": "6aa3e4468cde3f5c300257cc",
+        "carrier": "American Integrity",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "5370.02",
+        "request_id": "6aa3e4468cde3f5c3002579e"
+      },
+      {
+        "id": "6aa3e4468cde3f5c300257cf",
+        "carrier": "American Integrity",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "4570.23",
+        "request_id": "6aa3e4468cde3f5c3002579e"
+      },
+      {
+        "id": "6aa3e4468cde3f5c300257d2",
+        "carrier": "American Integrity",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": "2734.05",
+        "request_id": "6aa3e4468cde3f5c3002579e"
+      },
+      {
+        "id": "6aa3e4468cde3f5c300257d5",
+        "carrier": "American Traditions",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4468cde3f5c3002579e"
+      },
+      {
+        "id": "6aa3e4468cde3f5c300257d8",
+        "carrier": "American Traditions",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4468cde3f5c3002579e"
+      },
+      {
+        "id": "6aa3e4478cde3f5c300257db",
+        "carrier": "Edison Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "0",
+        "request_id": "6aa3e4468cde3f5c3002579e"
+      },
+      {
+        "id": "6aa3e4478cde3f5c300257de",
+        "carrier": "Monarch National",
+        "form_type": "HO3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e4468cde3f5c3002579e"
+      },
+      {
+        "id": "6aa3e4478cde3f5c300257e1",
+        "carrier": "Monarch National",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e4468cde3f5c3002579e"
+      },
+      {
+        "id": "6aa3e4478cde3f5c300257e4",
+        "carrier": "Slide Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "11176",
+        "request_id": "6aa3e4468cde3f5c3002579e"
+      },
+      {
+        "id": "6aa3e4478cde3f5c300257e7",
+        "carrier": "Slide Insurance",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e4468cde3f5c3002579e"
+      },
+      {
+        "id": "6aa3e4478cde3f5c300257ea",
+        "carrier": "Ovation Home Insurance Exchange",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "0",
+        "request_id": "6aa3e4468cde3f5c3002579e"
+      },
+      {
+        "id": "6aa3e4478cde3f5c300257ed",
+        "carrier": "Amwins",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "0",
+        "request_id": "6aa3e4468cde3f5c3002579e"
+      },
+      {
+        "id": "6aa3e4478cde3f5c300257f0",
+        "carrier": "Amwins",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "0",
+        "request_id": "6aa3e4468cde3f5c3002579e"
+      },
+      {
+        "id": "6aa3e4478cde3f5c300257f3",
+        "carrier": "Patriot Select",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4468cde3f5c3002579e"
+      },
+      {
+        "id": "6aa3e44683af54a3730fda80",
+        "carrier": "Universal P&C",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "4996.2",
+        "request_id": "6aa3e4468cde3f5c3002579e"
+      }
+    ]
+  },
+  "2af3307c-ba4f-4970-8ae7-98aaa422507c": {
+    "address": "915 SEMINOLE Boulevard",
+    "standard_quote_request_id": "6aa3e44683af54a3730fda86",
+    "dropped_universal_dp3": true,
+    "rate_count": 29,
+    "rates": [
+      {
+        "id": "6aa3e44683af54a3730fda88",
+        "carrier": "Frontline",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44683af54a3730fda86"
+      },
+      {
+        "id": "6aa3e44683af54a3730fda8a",
+        "carrier": "Frontline",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44683af54a3730fda86"
+      },
+      {
+        "id": "6aa3e44683af54a3730fda8d",
+        "carrier": "Olympus Insurance",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "8196",
+        "request_id": "6aa3e44683af54a3730fda86"
+      },
+      {
+        "id": "6aa3e44683af54a3730fda90",
+        "carrier": "Olympus Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "6647",
+        "request_id": "6aa3e44683af54a3730fda86"
+      },
+      {
+        "id": "6aa3e44683af54a3730fda93",
+        "carrier": "Florida Peninsula",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "2911.14",
+        "request_id": "6aa3e44683af54a3730fda86"
+      },
+      {
+        "id": "6aa3e44683af54a3730fda96",
+        "carrier": "Florida Peninsula",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "3899.69",
+        "request_id": "6aa3e44683af54a3730fda86"
+      },
+      {
+        "id": "6aa3e44683af54a3730fda99",
+        "carrier": "Cabrillo Coastal",
+        "form_type": "HO3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44683af54a3730fda86"
+      },
+      {
+        "id": "6aa3e44683af54a3730fda9c",
+        "carrier": "Cabrillo Coastal",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44683af54a3730fda86"
+      },
+      {
+        "id": "6aa3e44683af54a3730fda9f",
+        "carrier": "Universal P&C",
+        "form_type": "HO8",
+        "status": "success",
+        "premium": "5417.37",
+        "request_id": "6aa3e44683af54a3730fda86"
+      },
+      {
+        "id": "6aa3e44683af54a3730fdaa2",
+        "carrier": "Universal P&C",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "5154.77",
+        "request_id": "6aa3e44683af54a3730fda86"
+      },
+      {
+        "id": "6aa3e44683af54a3730fdaa5",
+        "carrier": "Universal P&C",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": "128",
+        "request_id": "6aa3e44683af54a3730fda86"
+      },
+      {
+        "id": "6aa3e44683af54a3730fdaab",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44683af54a3730fda86"
+      },
+      {
+        "id": "6aa3e44683af54a3730fdaae",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44683af54a3730fda86"
+      },
+      {
+        "id": "6aa3e44683af54a3730fdab1",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44683af54a3730fda86"
+      },
+      {
+        "id": "6aa3e44683af54a3730fdab4",
+        "carrier": "American Integrity",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "5057.90",
+        "request_id": "6aa3e44683af54a3730fda86"
+      },
+      {
+        "id": "6aa3e44783af54a3730fdab7",
+        "carrier": "American Integrity",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "5260.06",
+        "request_id": "6aa3e44683af54a3730fda86"
+      },
+      {
+        "id": "6aa3e44783af54a3730fdaba",
+        "carrier": "American Integrity",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": "3815.76",
+        "request_id": "6aa3e44683af54a3730fda86"
+      },
+      {
+        "id": "6aa3e44783af54a3730fdabd",
+        "carrier": "American Traditions",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44683af54a3730fda86"
+      },
+      {
+        "id": "6aa3e44783af54a3730fdac0",
+        "carrier": "American Traditions",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44683af54a3730fda86"
+      },
+      {
+        "id": "6aa3e44783af54a3730fdac3",
+        "carrier": "Edison Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "4098.54",
+        "request_id": "6aa3e44683af54a3730fda86"
+      },
+      {
+        "id": "6aa3e44783af54a3730fdac6",
+        "carrier": "Monarch National",
+        "form_type": "HO3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44683af54a3730fda86"
+      },
+      {
+        "id": "6aa3e44783af54a3730fdac9",
+        "carrier": "Monarch National",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44683af54a3730fda86"
+      },
+      {
+        "id": "6aa3e44783af54a3730fdacc",
+        "carrier": "Slide Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "18569",
+        "request_id": "6aa3e44683af54a3730fda86"
+      },
+      {
+        "id": "6aa3e44783af54a3730fdacf",
+        "carrier": "Slide Insurance",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44683af54a3730fda86"
+      },
+      {
+        "id": "6aa3e44783af54a3730fdad2",
+        "carrier": "Ovation Home Insurance Exchange",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "4308.84",
+        "request_id": "6aa3e44683af54a3730fda86"
+      },
+      {
+        "id": "6aa3e44783af54a3730fdad5",
+        "carrier": "Amwins",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "9981.32",
+        "request_id": "6aa3e44683af54a3730fda86"
+      },
+      {
+        "id": "6aa3e44783af54a3730fdad8",
+        "carrier": "Amwins",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "9981.32",
+        "request_id": "6aa3e44683af54a3730fda86"
+      },
+      {
+        "id": "6aa3e44783af54a3730fdadb",
+        "carrier": "Patriot Select",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44683af54a3730fda86"
+      },
+      {
+        "id": "6aa3e4478cde3f5c300257fc",
+        "carrier": "Universal P&C",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "7238.4",
+        "request_id": "6aa3e44683af54a3730fda86"
+      }
+    ]
+  },
+  "02c28513-75a5-4047-b887-dbf78e236366": {
+    "address": "5440 96TH Avenue N",
+    "standard_quote_request_id": "6aa3e44983af54a3730fdb4e",
+    "dropped_universal_dp3": true,
+    "rate_count": 29,
+    "rates": [
+      {
+        "id": "6aa3e44983af54a3730fdb50",
+        "carrier": "Frontline",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44983af54a3730fdb4e"
+      },
+      {
+        "id": "6aa3e44983af54a3730fdb52",
+        "carrier": "Frontline",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44983af54a3730fdb4e"
+      },
+      {
+        "id": "6aa3e44983af54a3730fdb55",
+        "carrier": "Olympus Insurance",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "5625",
+        "request_id": "6aa3e44983af54a3730fdb4e"
+      },
+      {
+        "id": "6aa3e44983af54a3730fdb58",
+        "carrier": "Olympus Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "3958",
+        "request_id": "6aa3e44983af54a3730fdb4e"
+      },
+      {
+        "id": "6aa3e44983af54a3730fdb5b",
+        "carrier": "Florida Peninsula",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "2635.04",
+        "request_id": "6aa3e44983af54a3730fdb4e"
+      },
+      {
+        "id": "6aa3e44983af54a3730fdb5e",
+        "carrier": "Florida Peninsula",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "3426.26",
+        "request_id": "6aa3e44983af54a3730fdb4e"
+      },
+      {
+        "id": "6aa3e44983af54a3730fdb61",
+        "carrier": "Cabrillo Coastal",
+        "form_type": "HO3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44983af54a3730fdb4e"
+      },
+      {
+        "id": "6aa3e44983af54a3730fdb64",
+        "carrier": "Cabrillo Coastal",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44983af54a3730fdb4e"
+      },
+      {
+        "id": "6aa3e44983af54a3730fdb67",
+        "carrier": "Universal P&C",
+        "form_type": "HO8",
+        "status": "success",
+        "premium": "4396.26",
+        "request_id": "6aa3e44983af54a3730fdb4e"
+      },
+      {
+        "id": "6aa3e44983af54a3730fdb6a",
+        "carrier": "Universal P&C",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "4204.36",
+        "request_id": "6aa3e44983af54a3730fdb4e"
+      },
+      {
+        "id": "6aa3e44983af54a3730fdb6d",
+        "carrier": "Universal P&C",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": "128",
+        "request_id": "6aa3e44983af54a3730fdb4e"
+      },
+      {
+        "id": "6aa3e44983af54a3730fdb73",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44983af54a3730fdb4e"
+      },
+      {
+        "id": "6aa3e44983af54a3730fdb76",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44983af54a3730fdb4e"
+      },
+      {
+        "id": "6aa3e44983af54a3730fdb79",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44983af54a3730fdb4e"
+      },
+      {
+        "id": "6aa3e44983af54a3730fdb7c",
+        "carrier": "American Integrity",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "3316.76",
+        "request_id": "6aa3e44983af54a3730fdb4e"
+      },
+      {
+        "id": "6aa3e44983af54a3730fdb7f",
+        "carrier": "American Integrity",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "4010.69",
+        "request_id": "6aa3e44983af54a3730fdb4e"
+      },
+      {
+        "id": "6aa3e44983af54a3730fdb82",
+        "carrier": "American Integrity",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": "2444.18",
+        "request_id": "6aa3e44983af54a3730fdb4e"
+      },
+      {
+        "id": "6aa3e44983af54a3730fdb85",
+        "carrier": "American Traditions",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44983af54a3730fdb4e"
+      },
+      {
+        "id": "6aa3e44983af54a3730fdb88",
+        "carrier": "American Traditions",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44983af54a3730fdb4e"
+      },
+      {
+        "id": "6aa3e44983af54a3730fdb8b",
+        "carrier": "Edison Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "3549.3",
+        "request_id": "6aa3e44983af54a3730fdb4e"
+      },
+      {
+        "id": "6aa3e44983af54a3730fdb8e",
+        "carrier": "Monarch National",
+        "form_type": "HO3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44983af54a3730fdb4e"
+      },
+      {
+        "id": "6aa3e44983af54a3730fdb91",
+        "carrier": "Monarch National",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44983af54a3730fdb4e"
+      },
+      {
+        "id": "6aa3e44983af54a3730fdb94",
+        "carrier": "Slide Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "11556",
+        "request_id": "6aa3e44983af54a3730fdb4e"
+      },
+      {
+        "id": "6aa3e44983af54a3730fdb97",
+        "carrier": "Slide Insurance",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44983af54a3730fdb4e"
+      },
+      {
+        "id": "6aa3e44983af54a3730fdb9a",
+        "carrier": "Ovation Home Insurance Exchange",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "3494.49",
+        "request_id": "6aa3e44983af54a3730fdb4e"
+      },
+      {
+        "id": "6aa3e44983af54a3730fdb9d",
+        "carrier": "Amwins",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "11798.00",
+        "request_id": "6aa3e44983af54a3730fdb4e"
+      },
+      {
+        "id": "6aa3e44983af54a3730fdba0",
+        "carrier": "Amwins",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "11798.00",
+        "request_id": "6aa3e44983af54a3730fdb4e"
+      },
+      {
+        "id": "6aa3e44983af54a3730fdba3",
+        "carrier": "Patriot Select",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44983af54a3730fdb4e"
+      },
+      {
+        "id": "6aa3e4498cde3f5c300258c4",
+        "carrier": "Universal P&C",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "6102.15",
+        "request_id": "6aa3e44983af54a3730fdb4e"
+      }
+    ]
+  },
+  "74b481ee-c429-4b8f-83f9-5585cc23ee51": {
+    "address": "1401 45TH Avenue N",
+    "standard_quote_request_id": "6aa3e44a8cde3f5c300258ca",
+    "dropped_universal_dp3": true,
+    "rate_count": 29,
+    "rates": [
+      {
+        "id": "6aa3e44a8cde3f5c300258cc",
+        "carrier": "Frontline",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44a8cde3f5c300258ca"
+      },
+      {
+        "id": "6aa3e44a8cde3f5c300258ce",
+        "carrier": "Frontline",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44a8cde3f5c300258ca"
+      },
+      {
+        "id": "6aa3e44a8cde3f5c300258d1",
+        "carrier": "Olympus Insurance",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "8251",
+        "request_id": "6aa3e44a8cde3f5c300258ca"
+      },
+      {
+        "id": "6aa3e44a8cde3f5c300258d4",
+        "carrier": "Olympus Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "5200",
+        "request_id": "6aa3e44a8cde3f5c300258ca"
+      },
+      {
+        "id": "6aa3e44a8cde3f5c300258d7",
+        "carrier": "Florida Peninsula",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "5947.22",
+        "request_id": "6aa3e44a8cde3f5c300258ca"
+      },
+      {
+        "id": "6aa3e44a8cde3f5c300258da",
+        "carrier": "Florida Peninsula",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "6069.33",
+        "request_id": "6aa3e44a8cde3f5c300258ca"
+      },
+      {
+        "id": "6aa3e44a8cde3f5c300258dd",
+        "carrier": "Cabrillo Coastal",
+        "form_type": "HO3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44a8cde3f5c300258ca"
+      },
+      {
+        "id": "6aa3e44a8cde3f5c300258e0",
+        "carrier": "Cabrillo Coastal",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44a8cde3f5c300258ca"
+      },
+      {
+        "id": "6aa3e44a8cde3f5c300258e3",
+        "carrier": "Universal P&C",
+        "form_type": "HO8",
+        "status": "success",
+        "premium": "10797.64",
+        "request_id": "6aa3e44a8cde3f5c300258ca"
+      },
+      {
+        "id": "6aa3e44a8cde3f5c300258e6",
+        "carrier": "Universal P&C",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "10162.35",
+        "request_id": "6aa3e44a8cde3f5c300258ca"
+      },
+      {
+        "id": "6aa3e44a8cde3f5c300258e9",
+        "carrier": "Universal P&C",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": "128",
+        "request_id": "6aa3e44a8cde3f5c300258ca"
+      },
+      {
+        "id": "6aa3e44a8cde3f5c300258ef",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44a8cde3f5c300258ca"
+      },
+      {
+        "id": "6aa3e44a8cde3f5c300258f2",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44a8cde3f5c300258ca"
+      },
+      {
+        "id": "6aa3e44a8cde3f5c300258f5",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44a8cde3f5c300258ca"
+      },
+      {
+        "id": "6aa3e44a8cde3f5c300258f8",
+        "carrier": "American Integrity",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "7556.33",
+        "request_id": "6aa3e44a8cde3f5c300258ca"
+      },
+      {
+        "id": "6aa3e44a8cde3f5c300258fb",
+        "carrier": "American Integrity",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "10042.41",
+        "request_id": "6aa3e44a8cde3f5c300258ca"
+      },
+      {
+        "id": "6aa3e44a8cde3f5c300258fe",
+        "carrier": "American Integrity",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": "6321.57",
+        "request_id": "6aa3e44a8cde3f5c300258ca"
+      },
+      {
+        "id": "6aa3e44a8cde3f5c30025901",
+        "carrier": "American Traditions",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44a8cde3f5c300258ca"
+      },
+      {
+        "id": "6aa3e44a8cde3f5c30025904",
+        "carrier": "American Traditions",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44a8cde3f5c300258ca"
+      },
+      {
+        "id": "6aa3e44a8cde3f5c30025907",
+        "carrier": "Edison Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "6388.59",
+        "request_id": "6aa3e44a8cde3f5c300258ca"
+      },
+      {
+        "id": "6aa3e44a8cde3f5c3002590a",
+        "carrier": "Monarch National",
+        "form_type": "HO3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44a8cde3f5c300258ca"
+      },
+      {
+        "id": "6aa3e44a8cde3f5c3002590d",
+        "carrier": "Monarch National",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44a8cde3f5c300258ca"
+      },
+      {
+        "id": "6aa3e44a8cde3f5c30025910",
+        "carrier": "Slide Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "26068",
+        "request_id": "6aa3e44a8cde3f5c300258ca"
+      },
+      {
+        "id": "6aa3e44a8cde3f5c30025913",
+        "carrier": "Slide Insurance",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44a8cde3f5c300258ca"
+      },
+      {
+        "id": "6aa3e44a8cde3f5c30025916",
+        "carrier": "Ovation Home Insurance Exchange",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "6594.54",
+        "request_id": "6aa3e44a8cde3f5c300258ca"
+      },
+      {
+        "id": "6aa3e44a8cde3f5c30025919",
+        "carrier": "Amwins",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "13671.17",
+        "request_id": "6aa3e44a8cde3f5c300258ca"
+      },
+      {
+        "id": "6aa3e44a8cde3f5c3002591c",
+        "carrier": "Amwins",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "13671.17",
+        "request_id": "6aa3e44a8cde3f5c300258ca"
+      },
+      {
+        "id": "6aa3e44b8cde3f5c3002591f",
+        "carrier": "Patriot Select",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44a8cde3f5c300258ca"
+      },
+      {
+        "id": "6aa3e44a83af54a3730fdbac",
+        "carrier": "Universal P&C",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "11483.43",
+        "request_id": "6aa3e44a8cde3f5c300258ca"
+      }
+    ]
+  },
+  "b86e74f8-b024-4f60-8386-4b36e9befe9c": {
+    "address": "4027 7TH Street S",
+    "standard_quote_request_id": "6aa3e44a83af54a3730fdbb2",
+    "dropped_universal_dp3": true,
+    "rate_count": 29,
+    "rates": [
+      {
+        "id": "6aa3e44a83af54a3730fdbb4",
+        "carrier": "Frontline",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44a83af54a3730fdbb2"
+      },
+      {
+        "id": "6aa3e44a83af54a3730fdbb6",
+        "carrier": "Frontline",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44a83af54a3730fdbb2"
+      },
+      {
+        "id": "6aa3e44a83af54a3730fdbb9",
+        "carrier": "Olympus Insurance",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "11418",
+        "request_id": "6aa3e44a83af54a3730fdbb2"
+      },
+      {
+        "id": "6aa3e44a83af54a3730fdbbc",
+        "carrier": "Olympus Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "9996",
+        "request_id": "6aa3e44a83af54a3730fdbb2"
+      },
+      {
+        "id": "6aa3e44a83af54a3730fdbbf",
+        "carrier": "Florida Peninsula",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "2996.24",
+        "request_id": "6aa3e44a83af54a3730fdbb2"
+      },
+      {
+        "id": "6aa3e44a83af54a3730fdbc2",
+        "carrier": "Florida Peninsula",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "4467.88",
+        "request_id": "6aa3e44a83af54a3730fdbb2"
+      },
+      {
+        "id": "6aa3e44a83af54a3730fdbc5",
+        "carrier": "Cabrillo Coastal",
+        "form_type": "HO3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44a83af54a3730fdbb2"
+      },
+      {
+        "id": "6aa3e44a83af54a3730fdbc8",
+        "carrier": "Cabrillo Coastal",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44a83af54a3730fdbb2"
+      },
+      {
+        "id": "6aa3e44a83af54a3730fdbcb",
+        "carrier": "Universal P&C",
+        "form_type": "HO8",
+        "status": "success",
+        "premium": "6051.65",
+        "request_id": "6aa3e44a83af54a3730fdbb2"
+      },
+      {
+        "id": "6aa3e44a83af54a3730fdbce",
+        "carrier": "Universal P&C",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "5895.1",
+        "request_id": "6aa3e44a83af54a3730fdbb2"
+      },
+      {
+        "id": "6aa3e44a83af54a3730fdbd1",
+        "carrier": "Universal P&C",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": "128",
+        "request_id": "6aa3e44a83af54a3730fdbb2"
+      },
+      {
+        "id": "6aa3e44a83af54a3730fdbd7",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44a83af54a3730fdbb2"
+      },
+      {
+        "id": "6aa3e44a83af54a3730fdbda",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44a83af54a3730fdbb2"
+      },
+      {
+        "id": "6aa3e44a83af54a3730fdbdd",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44a83af54a3730fdbb2"
+      },
+      {
+        "id": "6aa3e44a83af54a3730fdbe0",
+        "carrier": "American Integrity",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "5155.44",
+        "request_id": "6aa3e44a83af54a3730fdbb2"
+      },
+      {
+        "id": "6aa3e44a83af54a3730fdbe3",
+        "carrier": "American Integrity",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "5691.33",
+        "request_id": "6aa3e44a83af54a3730fdbb2"
+      },
+      {
+        "id": "6aa3e44a83af54a3730fdbe6",
+        "carrier": "American Integrity",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": "3876.36",
+        "request_id": "6aa3e44a83af54a3730fdbb2"
+      },
+      {
+        "id": "6aa3e44a83af54a3730fdbe9",
+        "carrier": "American Traditions",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44a83af54a3730fdbb2"
+      },
+      {
+        "id": "6aa3e44a83af54a3730fdbec",
+        "carrier": "American Traditions",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44a83af54a3730fdbb2"
+      },
+      {
+        "id": "6aa3e44a83af54a3730fdbef",
+        "carrier": "Edison Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "4664.79",
+        "request_id": "6aa3e44a83af54a3730fdbb2"
+      },
+      {
+        "id": "6aa3e44a83af54a3730fdbf2",
+        "carrier": "Monarch National",
+        "form_type": "HO3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44a83af54a3730fdbb2"
+      },
+      {
+        "id": "6aa3e44a83af54a3730fdbf5",
+        "carrier": "Monarch National",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44a83af54a3730fdbb2"
+      },
+      {
+        "id": "6aa3e44b83af54a3730fdbf8",
+        "carrier": "Slide Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "15396",
+        "request_id": "6aa3e44a83af54a3730fdbb2"
+      },
+      {
+        "id": "6aa3e44b83af54a3730fdbfb",
+        "carrier": "Slide Insurance",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44a83af54a3730fdbb2"
+      },
+      {
+        "id": "6aa3e44b83af54a3730fdbfe",
+        "carrier": "Ovation Home Insurance Exchange",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "5441.45",
+        "request_id": "6aa3e44a83af54a3730fdbb2"
+      },
+      {
+        "id": "6aa3e44b83af54a3730fdc01",
+        "carrier": "Amwins",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "9152.03",
+        "request_id": "6aa3e44a83af54a3730fdbb2"
+      },
+      {
+        "id": "6aa3e44b83af54a3730fdc04",
+        "carrier": "Amwins",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "9152.03",
+        "request_id": "6aa3e44a83af54a3730fdbb2"
+      },
+      {
+        "id": "6aa3e44b83af54a3730fdc07",
+        "carrier": "Patriot Select",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44a83af54a3730fdbb2"
+      },
+      {
+        "id": "6aa3e44b8cde3f5c30025928",
+        "carrier": "Universal P&C",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "6646.54",
+        "request_id": "6aa3e44a83af54a3730fdbb2"
+      }
+    ]
+  },
+  "5713cdf6-21fe-46d9-a5bf-d387f0f80126": {
+    "address": "5318 9TH Avenue N",
+    "standard_quote_request_id": "6aa3e44383af54a3730fd9b6",
+    "dropped_universal_dp3": true,
+    "rate_count": 29,
+    "rates": [
+      {
+        "id": "6aa3e44383af54a3730fd9b8",
+        "carrier": "Frontline",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44383af54a3730fd9b6"
+      },
+      {
+        "id": "6aa3e44383af54a3730fd9ba",
+        "carrier": "Frontline",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44383af54a3730fd9b6"
+      },
+      {
+        "id": "6aa3e44383af54a3730fd9bd",
+        "carrier": "Olympus Insurance",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "5900",
+        "request_id": "6aa3e44383af54a3730fd9b6"
+      },
+      {
+        "id": "6aa3e44383af54a3730fd9c0",
+        "carrier": "Olympus Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "3539",
+        "request_id": "6aa3e44383af54a3730fd9b6"
+      },
+      {
+        "id": "6aa3e44383af54a3730fd9c3",
+        "carrier": "Florida Peninsula",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "4259.69",
+        "request_id": "6aa3e44383af54a3730fd9b6"
+      },
+      {
+        "id": "6aa3e44383af54a3730fd9c6",
+        "carrier": "Florida Peninsula",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "3594.07",
+        "request_id": "6aa3e44383af54a3730fd9b6"
+      },
+      {
+        "id": "6aa3e44383af54a3730fd9c9",
+        "carrier": "Cabrillo Coastal",
+        "form_type": "HO3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44383af54a3730fd9b6"
+      },
+      {
+        "id": "6aa3e44383af54a3730fd9cc",
+        "carrier": "Cabrillo Coastal",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44383af54a3730fd9b6"
+      },
+      {
+        "id": "6aa3e44383af54a3730fd9cf",
+        "carrier": "Universal P&C",
+        "form_type": "HO8",
+        "status": "success",
+        "premium": "4931.56",
+        "request_id": "6aa3e44383af54a3730fd9b6"
+      },
+      {
+        "id": "6aa3e44383af54a3730fd9d2",
+        "carrier": "Universal P&C",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "4721.48",
+        "request_id": "6aa3e44383af54a3730fd9b6"
+      },
+      {
+        "id": "6aa3e44383af54a3730fd9d5",
+        "carrier": "Universal P&C",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": "128",
+        "request_id": "6aa3e44383af54a3730fd9b6"
+      },
+      {
+        "id": "6aa3e44383af54a3730fd9db",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44383af54a3730fd9b6"
+      },
+      {
+        "id": "6aa3e44483af54a3730fd9de",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44383af54a3730fd9b6"
+      },
+      {
+        "id": "6aa3e44483af54a3730fd9e1",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44383af54a3730fd9b6"
+      },
+      {
+        "id": "6aa3e44483af54a3730fd9e4",
+        "carrier": "American Integrity",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "4306.42",
+        "request_id": "6aa3e44383af54a3730fd9b6"
+      },
+      {
+        "id": "6aa3e44483af54a3730fd9e7",
+        "carrier": "American Integrity",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "5637.80",
+        "request_id": "6aa3e44383af54a3730fd9b6"
+      },
+      {
+        "id": "6aa3e44483af54a3730fd9ea",
+        "carrier": "American Integrity",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": "3275.41",
+        "request_id": "6aa3e44383af54a3730fd9b6"
+      },
+      {
+        "id": "6aa3e44483af54a3730fd9ed",
+        "carrier": "American Traditions",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44383af54a3730fd9b6"
+      },
+      {
+        "id": "6aa3e44483af54a3730fd9f0",
+        "carrier": "American Traditions",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44383af54a3730fd9b6"
+      },
+      {
+        "id": "6aa3e44483af54a3730fd9f3",
+        "carrier": "Edison Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "3694.96",
+        "request_id": "6aa3e44383af54a3730fd9b6"
+      },
+      {
+        "id": "6aa3e44483af54a3730fd9f6",
+        "carrier": "Monarch National",
+        "form_type": "HO3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44383af54a3730fd9b6"
+      },
+      {
+        "id": "6aa3e44483af54a3730fd9f9",
+        "carrier": "Monarch National",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44383af54a3730fd9b6"
+      },
+      {
+        "id": "6aa3e44483af54a3730fd9fc",
+        "carrier": "Slide Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "20427",
+        "request_id": "6aa3e44383af54a3730fd9b6"
+      },
+      {
+        "id": "6aa3e44483af54a3730fd9ff",
+        "carrier": "Slide Insurance",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44383af54a3730fd9b6"
+      },
+      {
+        "id": "6aa3e44483af54a3730fda02",
+        "carrier": "Ovation Home Insurance Exchange",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "4030.3",
+        "request_id": "6aa3e44383af54a3730fd9b6"
+      },
+      {
+        "id": "6aa3e44483af54a3730fda05",
+        "carrier": "Amwins",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "8198.53",
+        "request_id": "6aa3e44383af54a3730fd9b6"
+      },
+      {
+        "id": "6aa3e44483af54a3730fda08",
+        "carrier": "Amwins",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "8198.53",
+        "request_id": "6aa3e44383af54a3730fd9b6"
+      },
+      {
+        "id": "6aa3e44483af54a3730fda0b",
+        "carrier": "Patriot Select",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44383af54a3730fd9b6"
+      },
+      {
+        "id": "6aa3e4438cde3f5c300256d8",
+        "carrier": "Universal P&C",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "5408.28",
+        "request_id": "6aa3e44383af54a3730fd9b6"
+      }
+    ]
+  },
+  "e5db1070-394f-4f3a-a875-c07d3ad57a53": {
+    "address": "400 4TH Avenue NW",
+    "standard_quote_request_id": "6aa3e44483af54a3730fda1a",
+    "dropped_universal_dp3": true,
+    "rate_count": 29,
+    "rates": [
+      {
+        "id": "6aa3e44483af54a3730fda1c",
+        "carrier": "Frontline",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44483af54a3730fda1a"
+      },
+      {
+        "id": "6aa3e44483af54a3730fda1e",
+        "carrier": "Frontline",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44483af54a3730fda1a"
+      },
+      {
+        "id": "6aa3e44483af54a3730fda21",
+        "carrier": "Olympus Insurance",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "5900",
+        "request_id": "6aa3e44483af54a3730fda1a"
+      },
+      {
+        "id": "6aa3e44483af54a3730fda24",
+        "carrier": "Olympus Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "3440",
+        "request_id": "6aa3e44483af54a3730fda1a"
+      },
+      {
+        "id": "6aa3e44483af54a3730fda27",
+        "carrier": "Florida Peninsula",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "3583.93",
+        "request_id": "6aa3e44483af54a3730fda1a"
+      },
+      {
+        "id": "6aa3e44483af54a3730fda2a",
+        "carrier": "Florida Peninsula",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "3894.07",
+        "request_id": "6aa3e44483af54a3730fda1a"
+      },
+      {
+        "id": "6aa3e44583af54a3730fda2d",
+        "carrier": "Cabrillo Coastal",
+        "form_type": "HO3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44483af54a3730fda1a"
+      },
+      {
+        "id": "6aa3e44583af54a3730fda30",
+        "carrier": "Cabrillo Coastal",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44483af54a3730fda1a"
+      },
+      {
+        "id": "6aa3e44583af54a3730fda33",
+        "carrier": "Universal P&C",
+        "form_type": "HO8",
+        "status": "success",
+        "premium": "4859.85",
+        "request_id": "6aa3e44483af54a3730fda1a"
+      },
+      {
+        "id": "6aa3e44583af54a3730fda36",
+        "carrier": "Universal P&C",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "4663.91",
+        "request_id": "6aa3e44483af54a3730fda1a"
+      },
+      {
+        "id": "6aa3e44583af54a3730fda39",
+        "carrier": "Universal P&C",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": "128",
+        "request_id": "6aa3e44483af54a3730fda1a"
+      },
+      {
+        "id": "6aa3e44583af54a3730fda3f",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44483af54a3730fda1a"
+      },
+      {
+        "id": "6aa3e44583af54a3730fda42",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44483af54a3730fda1a"
+      },
+      {
+        "id": "6aa3e44583af54a3730fda45",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44483af54a3730fda1a"
+      },
+      {
+        "id": "6aa3e44583af54a3730fda48",
+        "carrier": "American Integrity",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "4279.79",
+        "request_id": "6aa3e44483af54a3730fda1a"
+      },
+      {
+        "id": "6aa3e44583af54a3730fda4b",
+        "carrier": "American Integrity",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "5089.37",
+        "request_id": "6aa3e44483af54a3730fda1a"
+      },
+      {
+        "id": "6aa3e44583af54a3730fda4e",
+        "carrier": "American Integrity",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": "3401.66",
+        "request_id": "6aa3e44483af54a3730fda1a"
+      },
+      {
+        "id": "6aa3e44583af54a3730fda51",
+        "carrier": "American Traditions",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44483af54a3730fda1a"
+      },
+      {
+        "id": "6aa3e44583af54a3730fda54",
+        "carrier": "American Traditions",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44483af54a3730fda1a"
+      },
+      {
+        "id": "6aa3e44583af54a3730fda57",
+        "carrier": "Edison Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "4018.9",
+        "request_id": "6aa3e44483af54a3730fda1a"
+      },
+      {
+        "id": "6aa3e44583af54a3730fda5a",
+        "carrier": "Monarch National",
+        "form_type": "HO3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44483af54a3730fda1a"
+      },
+      {
+        "id": "6aa3e44583af54a3730fda5d",
+        "carrier": "Monarch National",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44483af54a3730fda1a"
+      },
+      {
+        "id": "6aa3e44583af54a3730fda60",
+        "carrier": "Slide Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "17378",
+        "request_id": "6aa3e44483af54a3730fda1a"
+      },
+      {
+        "id": "6aa3e44583af54a3730fda63",
+        "carrier": "Slide Insurance",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44483af54a3730fda1a"
+      },
+      {
+        "id": "6aa3e44583af54a3730fda66",
+        "carrier": "Ovation Home Insurance Exchange",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "4297.43",
+        "request_id": "6aa3e44483af54a3730fda1a"
+      },
+      {
+        "id": "6aa3e44583af54a3730fda69",
+        "carrier": "Amwins",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "13349.62",
+        "request_id": "6aa3e44483af54a3730fda1a"
+      },
+      {
+        "id": "6aa3e44583af54a3730fda6c",
+        "carrier": "Amwins",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "13349.62",
+        "request_id": "6aa3e44483af54a3730fda1a"
+      },
+      {
+        "id": "6aa3e44583af54a3730fda6f",
+        "carrier": "Patriot Select",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44483af54a3730fda1a"
+      },
+      {
+        "id": "6aa3e4448cde3f5c3002573c",
+        "carrier": "Universal P&C",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "6369.8",
+        "request_id": "6aa3e44483af54a3730fda1a"
+      }
+    ]
+  },
+  "f72f9443-bf41-43e7-a13f-01f7e5c45414": {
+    "address": "5300 39TH Avenue N",
+    "standard_quote_request_id": "6aa3e44783af54a3730fdae2",
+    "dropped_universal_dp3": true,
+    "rate_count": 29,
+    "rates": [
+      {
+        "id": "6aa3e44783af54a3730fdae4",
+        "carrier": "Frontline",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44783af54a3730fdae2"
+      },
+      {
+        "id": "6aa3e44783af54a3730fdae6",
+        "carrier": "Frontline",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44783af54a3730fdae2"
+      },
+      {
+        "id": "6aa3e44783af54a3730fdae9",
+        "carrier": "Olympus Insurance",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "6230",
+        "request_id": "6aa3e44783af54a3730fdae2"
+      },
+      {
+        "id": "6aa3e44783af54a3730fdaec",
+        "carrier": "Olympus Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "3959",
+        "request_id": "6aa3e44783af54a3730fdae2"
+      },
+      {
+        "id": "6aa3e44783af54a3730fdaef",
+        "carrier": "Florida Peninsula",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "4324.8",
+        "request_id": "6aa3e44783af54a3730fdae2"
+      },
+      {
+        "id": "6aa3e44783af54a3730fdaf2",
+        "carrier": "Florida Peninsula",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "3582.54",
+        "request_id": "6aa3e44783af54a3730fdae2"
+      },
+      {
+        "id": "6aa3e44783af54a3730fdaf5",
+        "carrier": "Cabrillo Coastal",
+        "form_type": "HO3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44783af54a3730fdae2"
+      },
+      {
+        "id": "6aa3e44783af54a3730fdaf8",
+        "carrier": "Cabrillo Coastal",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44783af54a3730fdae2"
+      },
+      {
+        "id": "6aa3e44783af54a3730fdafb",
+        "carrier": "Universal P&C",
+        "form_type": "HO8",
+        "status": "success",
+        "premium": "5798.14",
+        "request_id": "6aa3e44783af54a3730fdae2"
+      },
+      {
+        "id": "6aa3e44783af54a3730fdafe",
+        "carrier": "Universal P&C",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "5539.58",
+        "request_id": "6aa3e44783af54a3730fdae2"
+      },
+      {
+        "id": "6aa3e44783af54a3730fdb01",
+        "carrier": "Universal P&C",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": "128",
+        "request_id": "6aa3e44783af54a3730fdae2"
+      },
+      {
+        "id": "6aa3e44783af54a3730fdb07",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44783af54a3730fdae2"
+      },
+      {
+        "id": "6aa3e44883af54a3730fdb0a",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44783af54a3730fdae2"
+      },
+      {
+        "id": "6aa3e44883af54a3730fdb0d",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44783af54a3730fdae2"
+      },
+      {
+        "id": "6aa3e44883af54a3730fdb10",
+        "carrier": "American Integrity",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "3751.22",
+        "request_id": "6aa3e44783af54a3730fdae2"
+      },
+      {
+        "id": "6aa3e44883af54a3730fdb13",
+        "carrier": "American Integrity",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "5313.59",
+        "request_id": "6aa3e44783af54a3730fdae2"
+      },
+      {
+        "id": "6aa3e44883af54a3730fdb16",
+        "carrier": "American Integrity",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": "3275.41",
+        "request_id": "6aa3e44783af54a3730fdae2"
+      },
+      {
+        "id": "6aa3e44883af54a3730fdb19",
+        "carrier": "American Traditions",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44783af54a3730fdae2"
+      },
+      {
+        "id": "6aa3e44883af54a3730fdb1c",
+        "carrier": "American Traditions",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44783af54a3730fdae2"
+      },
+      {
+        "id": "6aa3e44883af54a3730fdb1f",
+        "carrier": "Edison Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "3693.34",
+        "request_id": "6aa3e44783af54a3730fdae2"
+      },
+      {
+        "id": "6aa3e44883af54a3730fdb22",
+        "carrier": "Monarch National",
+        "form_type": "HO3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44783af54a3730fdae2"
+      },
+      {
+        "id": "6aa3e44883af54a3730fdb25",
+        "carrier": "Monarch National",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44783af54a3730fdae2"
+      },
+      {
+        "id": "6aa3e44883af54a3730fdb28",
+        "carrier": "Slide Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "19217",
+        "request_id": "6aa3e44783af54a3730fdae2"
+      },
+      {
+        "id": "6aa3e44883af54a3730fdb2b",
+        "carrier": "Slide Insurance",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44783af54a3730fdae2"
+      },
+      {
+        "id": "6aa3e44883af54a3730fdb2e",
+        "carrier": "Ovation Home Insurance Exchange",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "3838.7",
+        "request_id": "6aa3e44783af54a3730fdae2"
+      },
+      {
+        "id": "6aa3e44883af54a3730fdb31",
+        "carrier": "Amwins",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "17289.93",
+        "request_id": "6aa3e44783af54a3730fdae2"
+      },
+      {
+        "id": "6aa3e44883af54a3730fdb34",
+        "carrier": "Amwins",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "17289.93",
+        "request_id": "6aa3e44783af54a3730fdae2"
+      },
+      {
+        "id": "6aa3e44883af54a3730fdb37",
+        "carrier": "Patriot Select",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44783af54a3730fdae2"
+      },
+      {
+        "id": "6aa3e4478cde3f5c30025804",
+        "carrier": "Universal P&C",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "6228.4",
+        "request_id": "6aa3e44783af54a3730fdae2"
+      }
+    ]
+  },
+  "bed78930-ca96-4c97-a79d-be9b95741f80": {
+    "address": "4626 10TH Avenue N",
+    "standard_quote_request_id": "6aa3e4478cde3f5c3002580a",
+    "dropped_universal_dp3": true,
+    "rate_count": 29,
+    "rates": [
+      {
+        "id": "6aa3e4478cde3f5c3002580c",
+        "carrier": "Frontline",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4478cde3f5c3002580a"
+      },
+      {
+        "id": "6aa3e4478cde3f5c3002580e",
+        "carrier": "Frontline",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4478cde3f5c3002580a"
+      },
+      {
+        "id": "6aa3e4478cde3f5c30025811",
+        "carrier": "Olympus Insurance",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "3305",
+        "request_id": "6aa3e4478cde3f5c3002580a"
+      },
+      {
+        "id": "6aa3e4478cde3f5c30025814",
+        "carrier": "Olympus Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "1604",
+        "request_id": "6aa3e4478cde3f5c3002580a"
+      },
+      {
+        "id": "6aa3e4478cde3f5c30025817",
+        "carrier": "Florida Peninsula",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "3651.72",
+        "request_id": "6aa3e4478cde3f5c3002580a"
+      },
+      {
+        "id": "6aa3e4478cde3f5c3002581a",
+        "carrier": "Florida Peninsula",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "2521.4",
+        "request_id": "6aa3e4478cde3f5c3002580a"
+      },
+      {
+        "id": "6aa3e4478cde3f5c3002581d",
+        "carrier": "Cabrillo Coastal",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "2617.65",
+        "request_id": "6aa3e4478cde3f5c3002580a"
+      },
+      {
+        "id": "6aa3e4478cde3f5c30025820",
+        "carrier": "Cabrillo Coastal",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e4478cde3f5c3002580a"
+      },
+      {
+        "id": "6aa3e4488cde3f5c30025823",
+        "carrier": "Universal P&C",
+        "form_type": "HO8",
+        "status": "success",
+        "premium": "4696.23",
+        "request_id": "6aa3e4478cde3f5c3002580a"
+      },
+      {
+        "id": "6aa3e4488cde3f5c30025826",
+        "carrier": "Universal P&C",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "4020.54",
+        "request_id": "6aa3e4478cde3f5c3002580a"
+      },
+      {
+        "id": "6aa3e4488cde3f5c30025829",
+        "carrier": "Universal P&C",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": "128",
+        "request_id": "6aa3e4478cde3f5c3002580a"
+      },
+      {
+        "id": "6aa3e4488cde3f5c3002582f",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "2573.34",
+        "request_id": "6aa3e4478cde3f5c3002580a"
+      },
+      {
+        "id": "6aa3e4488cde3f5c30025832",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "3758.82",
+        "request_id": "6aa3e4478cde3f5c3002580a"
+      },
+      {
+        "id": "6aa3e4488cde3f5c30025835",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": "3989.7",
+        "request_id": "6aa3e4478cde3f5c3002580a"
+      },
+      {
+        "id": "6aa3e4488cde3f5c30025838",
+        "carrier": "American Integrity",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "3127.22",
+        "request_id": "6aa3e4478cde3f5c3002580a"
+      },
+      {
+        "id": "6aa3e4488cde3f5c3002583b",
+        "carrier": "American Integrity",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "4229.86",
+        "request_id": "6aa3e4478cde3f5c3002580a"
+      },
+      {
+        "id": "6aa3e4488cde3f5c3002583e",
+        "carrier": "American Integrity",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": "2965.34",
+        "request_id": "6aa3e4478cde3f5c3002580a"
+      },
+      {
+        "id": "6aa3e4488cde3f5c30025841",
+        "carrier": "American Traditions",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4478cde3f5c3002580a"
+      },
+      {
+        "id": "6aa3e4488cde3f5c30025844",
+        "carrier": "American Traditions",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4478cde3f5c3002580a"
+      },
+      {
+        "id": "6aa3e4488cde3f5c30025847",
+        "carrier": "Edison Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "2684.56",
+        "request_id": "6aa3e4478cde3f5c3002580a"
+      },
+      {
+        "id": "6aa3e4488cde3f5c3002584a",
+        "carrier": "Monarch National",
+        "form_type": "HO3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e4478cde3f5c3002580a"
+      },
+      {
+        "id": "6aa3e4488cde3f5c3002584d",
+        "carrier": "Monarch National",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e4478cde3f5c3002580a"
+      },
+      {
+        "id": "6aa3e4488cde3f5c30025850",
+        "carrier": "Slide Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "4777",
+        "request_id": "6aa3e4478cde3f5c3002580a"
+      },
+      {
+        "id": "6aa3e4488cde3f5c30025853",
+        "carrier": "Slide Insurance",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e4478cde3f5c3002580a"
+      },
+      {
+        "id": "6aa3e4488cde3f5c30025856",
+        "carrier": "Ovation Home Insurance Exchange",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "2071.18",
+        "request_id": "6aa3e4478cde3f5c3002580a"
+      },
+      {
+        "id": "6aa3e4488cde3f5c30025859",
+        "carrier": "Amwins",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "3369.28",
+        "request_id": "6aa3e4478cde3f5c3002580a"
+      },
+      {
+        "id": "6aa3e4488cde3f5c3002585c",
+        "carrier": "Amwins",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "3369.28",
+        "request_id": "6aa3e4478cde3f5c3002580a"
+      },
+      {
+        "id": "6aa3e4488cde3f5c3002585f",
+        "carrier": "Patriot Select",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4478cde3f5c3002580a"
+      },
+      {
+        "id": "6aa3e44883af54a3730fdb40",
+        "carrier": "Universal P&C",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "5103.26",
+        "request_id": "6aa3e4478cde3f5c3002580a"
+      }
+    ]
+  },
+  "420328a1-c461-4a6c-99f0-c91e991d436d": {
+    "address": "2921 57TH Avenue N",
+    "standard_quote_request_id": "6aa3e4488cde3f5c30025866",
+    "dropped_universal_dp3": true,
+    "rate_count": 29,
+    "rates": [
+      {
+        "id": "6aa3e4488cde3f5c30025868",
+        "carrier": "Frontline",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4488cde3f5c30025866"
+      },
+      {
+        "id": "6aa3e4488cde3f5c3002586a",
+        "carrier": "Frontline",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4488cde3f5c30025866"
+      },
+      {
+        "id": "6aa3e4488cde3f5c3002586d",
+        "carrier": "Olympus Insurance",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "5221",
+        "request_id": "6aa3e4488cde3f5c30025866"
+      },
+      {
+        "id": "6aa3e4498cde3f5c30025870",
+        "carrier": "Olympus Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "2908",
+        "request_id": "6aa3e4488cde3f5c30025866"
+      },
+      {
+        "id": "6aa3e4498cde3f5c30025873",
+        "carrier": "Florida Peninsula",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "3159.73",
+        "request_id": "6aa3e4488cde3f5c30025866"
+      },
+      {
+        "id": "6aa3e4498cde3f5c30025876",
+        "carrier": "Florida Peninsula",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "3260.55",
+        "request_id": "6aa3e4488cde3f5c30025866"
+      },
+      {
+        "id": "6aa3e4498cde3f5c30025879",
+        "carrier": "Cabrillo Coastal",
+        "form_type": "HO3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e4488cde3f5c30025866"
+      },
+      {
+        "id": "6aa3e4498cde3f5c3002587c",
+        "carrier": "Cabrillo Coastal",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e4488cde3f5c30025866"
+      },
+      {
+        "id": "6aa3e4498cde3f5c3002587f",
+        "carrier": "Universal P&C",
+        "form_type": "HO8",
+        "status": "success",
+        "premium": "4822.48",
+        "request_id": "6aa3e4488cde3f5c30025866"
+      },
+      {
+        "id": "6aa3e4498cde3f5c30025882",
+        "carrier": "Universal P&C",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "4604.32",
+        "request_id": "6aa3e4488cde3f5c30025866"
+      },
+      {
+        "id": "6aa3e4498cde3f5c30025885",
+        "carrier": "Universal P&C",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": "128",
+        "request_id": "6aa3e4488cde3f5c30025866"
+      },
+      {
+        "id": "6aa3e4498cde3f5c3002588b",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4488cde3f5c30025866"
+      },
+      {
+        "id": "6aa3e4498cde3f5c3002588e",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4488cde3f5c30025866"
+      },
+      {
+        "id": "6aa3e4498cde3f5c30025891",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4488cde3f5c30025866"
+      },
+      {
+        "id": "6aa3e4498cde3f5c30025894",
+        "carrier": "American Integrity",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "3638.55",
+        "request_id": "6aa3e4488cde3f5c30025866"
+      },
+      {
+        "id": "6aa3e4498cde3f5c30025897",
+        "carrier": "American Integrity",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "5320.66",
+        "request_id": "6aa3e4488cde3f5c30025866"
+      },
+      {
+        "id": "6aa3e4498cde3f5c3002589a",
+        "carrier": "American Integrity",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": "2831.01",
+        "request_id": "6aa3e4488cde3f5c30025866"
+      },
+      {
+        "id": "6aa3e4498cde3f5c3002589d",
+        "carrier": "American Traditions",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4488cde3f5c30025866"
+      },
+      {
+        "id": "6aa3e4498cde3f5c300258a0",
+        "carrier": "American Traditions",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4488cde3f5c30025866"
+      },
+      {
+        "id": "6aa3e4498cde3f5c300258a3",
+        "carrier": "Edison Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "3350.75",
+        "request_id": "6aa3e4488cde3f5c30025866"
+      },
+      {
+        "id": "6aa3e4498cde3f5c300258a6",
+        "carrier": "Monarch National",
+        "form_type": "HO3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e4488cde3f5c30025866"
+      },
+      {
+        "id": "6aa3e4498cde3f5c300258a9",
+        "carrier": "Monarch National",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e4488cde3f5c30025866"
+      },
+      {
+        "id": "6aa3e4498cde3f5c300258ac",
+        "carrier": "Slide Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "11742",
+        "request_id": "6aa3e4488cde3f5c30025866"
+      },
+      {
+        "id": "6aa3e4498cde3f5c300258af",
+        "carrier": "Slide Insurance",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e4488cde3f5c30025866"
+      },
+      {
+        "id": "6aa3e4498cde3f5c300258b2",
+        "carrier": "Ovation Home Insurance Exchange",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "3527.87",
+        "request_id": "6aa3e4488cde3f5c30025866"
+      },
+      {
+        "id": "6aa3e4498cde3f5c300258b5",
+        "carrier": "Amwins",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "10350.94",
+        "request_id": "6aa3e4488cde3f5c30025866"
+      },
+      {
+        "id": "6aa3e4498cde3f5c300258b8",
+        "carrier": "Amwins",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "10350.94",
+        "request_id": "6aa3e4488cde3f5c30025866"
+      },
+      {
+        "id": "6aa3e4498cde3f5c300258bb",
+        "carrier": "Patriot Select",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e4488cde3f5c30025866"
+      },
+      {
+        "id": "6aa3e44883af54a3730fdb48",
+        "carrier": "Universal P&C",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "6593.01",
+        "request_id": "6aa3e4488cde3f5c30025866"
+      }
+    ]
+  },
+  "a97b67f5-d80c-446f-b358-d72e759491c0": {
+    "address": "5435 18TH Avenue N",
+    "standard_quote_request_id": "6aa3e44b8cde3f5c3002592e",
+    "dropped_universal_dp3": true,
+    "rate_count": 29,
+    "rates": [
+      {
+        "id": "6aa3e44b8cde3f5c30025930",
+        "carrier": "Frontline",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44b8cde3f5c3002592e"
+      },
+      {
+        "id": "6aa3e44b8cde3f5c30025932",
+        "carrier": "Frontline",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44b8cde3f5c3002592e"
+      },
+      {
+        "id": "6aa3e44b8cde3f5c30025935",
+        "carrier": "Olympus Insurance",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "6264",
+        "request_id": "6aa3e44b8cde3f5c3002592e"
+      },
+      {
+        "id": "6aa3e44b8cde3f5c30025938",
+        "carrier": "Olympus Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "5722",
+        "request_id": "6aa3e44b8cde3f5c3002592e"
+      },
+      {
+        "id": "6aa3e44b8cde3f5c3002593b",
+        "carrier": "Florida Peninsula",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "0",
+        "request_id": "6aa3e44b8cde3f5c3002592e"
+      },
+      {
+        "id": "6aa3e44b8cde3f5c3002593e",
+        "carrier": "Florida Peninsula",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "0",
+        "request_id": "6aa3e44b8cde3f5c3002592e"
+      },
+      {
+        "id": "6aa3e44b8cde3f5c30025941",
+        "carrier": "Cabrillo Coastal",
+        "form_type": "HO3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44b8cde3f5c3002592e"
+      },
+      {
+        "id": "6aa3e44b8cde3f5c30025944",
+        "carrier": "Cabrillo Coastal",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44b8cde3f5c3002592e"
+      },
+      {
+        "id": "6aa3e44b8cde3f5c30025947",
+        "carrier": "Universal P&C",
+        "form_type": "HO8",
+        "status": "success",
+        "premium": "3981.15",
+        "request_id": "6aa3e44b8cde3f5c3002592e"
+      },
+      {
+        "id": "6aa3e44b8cde3f5c3002594a",
+        "carrier": "Universal P&C",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "3806.42",
+        "request_id": "6aa3e44b8cde3f5c3002592e"
+      },
+      {
+        "id": "6aa3e44b8cde3f5c3002594d",
+        "carrier": "Universal P&C",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": "128",
+        "request_id": "6aa3e44b8cde3f5c3002592e"
+      },
+      {
+        "id": "6aa3e44b8cde3f5c30025953",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44b8cde3f5c3002592e"
+      },
+      {
+        "id": "6aa3e44b8cde3f5c30025956",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44b8cde3f5c3002592e"
+      },
+      {
+        "id": "6aa3e44b8cde3f5c30025959",
+        "carrier": "Tower Hill Insurance",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44b8cde3f5c3002592e"
+      },
+      {
+        "id": "6aa3e44b8cde3f5c3002595c",
+        "carrier": "American Integrity",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "5163.77",
+        "request_id": "6aa3e44b8cde3f5c3002592e"
+      },
+      {
+        "id": "6aa3e44b8cde3f5c3002595f",
+        "carrier": "American Integrity",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "4856.06",
+        "request_id": "6aa3e44b8cde3f5c3002592e"
+      },
+      {
+        "id": "6aa3e44b8cde3f5c30025962",
+        "carrier": "American Integrity",
+        "form_type": "DP1",
+        "status": "success",
+        "premium": "2910.80",
+        "request_id": "6aa3e44b8cde3f5c3002592e"
+      },
+      {
+        "id": "6aa3e44b8cde3f5c30025965",
+        "carrier": "American Traditions",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44b8cde3f5c3002592e"
+      },
+      {
+        "id": "6aa3e44b8cde3f5c30025968",
+        "carrier": "American Traditions",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44b8cde3f5c3002592e"
+      },
+      {
+        "id": "6aa3e44b8cde3f5c3002596b",
+        "carrier": "Edison Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "0",
+        "request_id": "6aa3e44b8cde3f5c3002592e"
+      },
+      {
+        "id": "6aa3e44b8cde3f5c3002596e",
+        "carrier": "Monarch National",
+        "form_type": "HO3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44b8cde3f5c3002592e"
+      },
+      {
+        "id": "6aa3e44c8cde3f5c30025971",
+        "carrier": "Monarch National",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44b8cde3f5c3002592e"
+      },
+      {
+        "id": "6aa3e44c8cde3f5c30025974",
+        "carrier": "Slide Insurance",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "16658",
+        "request_id": "6aa3e44b8cde3f5c3002592e"
+      },
+      {
+        "id": "6aa3e44c8cde3f5c30025977",
+        "carrier": "Slide Insurance",
+        "form_type": "DP3",
+        "status": "error",
+        "premium": null,
+        "request_id": "6aa3e44b8cde3f5c3002592e"
+      },
+      {
+        "id": "6aa3e44c8cde3f5c3002597a",
+        "carrier": "Ovation Home Insurance Exchange",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "0",
+        "request_id": "6aa3e44b8cde3f5c3002592e"
+      },
+      {
+        "id": "6aa3e44c8cde3f5c3002597d",
+        "carrier": "Amwins",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": "0",
+        "request_id": "6aa3e44b8cde3f5c3002592e"
+      },
+      {
+        "id": "6aa3e44c8cde3f5c30025980",
+        "carrier": "Amwins",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "0",
+        "request_id": "6aa3e44b8cde3f5c3002592e"
+      },
+      {
+        "id": "6aa3e44c8cde3f5c30025983",
+        "carrier": "Patriot Select",
+        "form_type": "HO3",
+        "status": "success",
+        "premium": null,
+        "request_id": "6aa3e44b8cde3f5c3002592e"
+      },
+      {
+        "id": "6aa3e44b83af54a3730fdc10",
+        "carrier": "Universal P&C",
+        "form_type": "DP3",
+        "status": "success",
+        "premium": "4691.18",
+        "request_id": "6aa3e44b8cde3f5c3002592e"
+      }
+    ]
+  }
+}
