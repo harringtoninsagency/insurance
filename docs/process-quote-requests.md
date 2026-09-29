@@ -29,6 +29,13 @@ that's an environment configuration problem — stop, send exactly one push noti
 variables, and end the run. Do not work around it by writing a `.env.local` file, asking for the values in
 chat, or any other substitute; those values must only ever be set directly in this environment's own settings.
 
+If the variables ARE all present but a Supabase call still fails with `Host not in allowlist:
+ustvvbyvvnglsgovkgkh.supabase.co`, that is not a credentials problem — it's this environment's egress proxy
+(HTTPS_PROXY/https_proxy) not being used. `loadEnvIfPresent()` already sets `NODE_USE_ENV_PROXY=1` to fix this
+(confirmed live: identical calls failed until that flag was set, even with correct credentials and a correctly
+configured proxy allowlist). If it still fails after that, the proxy's own allowlist is the real problem — stop
+and notify, same as a missing-variable failure, rather than retrying workarounds.
+
 ## Steps
 
 ### 1. Find pending requests
