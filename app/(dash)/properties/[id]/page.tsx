@@ -86,6 +86,7 @@ export default async function PropertyDetailPage({
           {property.year_built ? `Built ${property.year_built}` : "Year built unknown"}
           {property.sqft ? ` · ${property.sqft.toLocaleString()} sqft` : ""}
           {property.construction ? ` · ${property.construction}` : ""}
+          {property.roof_year ? ` · Roof ${property.roof_year}` : ""}
         </p>
         <span className="mt-2 inline-block rounded-full bg-[#8291AC]/15 px-2 py-1 text-xs font-medium text-[#003049]">
           {property.status}

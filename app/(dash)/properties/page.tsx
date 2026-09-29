@@ -5,7 +5,7 @@ export default async function PropertiesPage() {
   const supabase = await createServerSupabase();
   const { data: properties, error } = await supabase
     .from("properties")
-    .select("id, address, status, list_price, listing_agent_name, created_at")
+    .select("id, address, status, list_price, listing_agent_name, roof_year, created_at")
     .order("created_at", { ascending: false });
 
   return (
@@ -34,6 +34,7 @@ export default async function PropertiesPage() {
                 <th className="px-4 py-3">Address</th>
                 <th className="px-4 py-3">Listing agent</th>
                 <th className="px-4 py-3">List price</th>
+                <th className="px-4 py-3">Roof year</th>
                 <th className="px-4 py-3">Status</th>
               </tr>
             </thead>
@@ -53,6 +54,9 @@ export default async function PropertiesPage() {
                   </td>
                   <td className="px-4 py-3 text-slate-600">
                     {p.list_price ? `$${Number(p.list_price).toLocaleString()}` : "—"}
+                  </td>
+                  <td className="px-4 py-3 text-slate-600">
+                    {p.roof_year ?? "—"}
                   </td>
                   <td className="px-4 py-3">
                     <span className="rounded-full bg-[#8291AC]/15 px-2 py-1 text-xs font-medium text-[#003049]">
