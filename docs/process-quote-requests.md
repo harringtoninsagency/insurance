@@ -29,12 +29,23 @@ that's an environment configuration problem — stop, send exactly one push noti
 variables, and end the run. Do not work around it by writing a `.env.local` file, asking for the values in
 chat, or any other substitute; those values must only ever be set directly in this environment's own settings.
 
-If the variables ARE all present but a Supabase call still fails with `Host not in allowlist:
-ustvvbyvvnglsgovkgkh.supabase.co`, that is not a credentials problem — it's this environment's egress proxy
-(HTTPS_PROXY/https_proxy) not being used. `loadEnvIfPresent()` already sets `NODE_USE_ENV_PROXY=1` to fix this
-(confirmed live: identical calls failed until that flag was set, even with correct credentials and a correctly
-configured proxy allowlist). If it still fails after that, the proxy's own allowlist is the real problem — stop
-and notify, same as a missing-variable failure, rather than retrying workarounds.
+**Always run every script below (every step that touches Supabase) as:**
+
+```
+NODE_USE_ENV_PROXY=1 npx tsx scripts/_yourscript.mts
+```
+
+Never bare `npx tsx ...` in this environment. Without that prefix, a Supabase call fails with `Host not in
+allowlist: ustvvbyvvnglsgovkgkh.supabase.co` — this environment's egress proxy (HTTPS_PROXY/https_proxy) is
+required, and Node's fetch only honors it when `NODE_USE_ENV_PROXY=1` is a real process environment variable
+*before Node starts*. Setting `process.env.NODE_USE_ENV_PROXY` from inside a script does NOT work — confirmed
+live, twice — because ES module imports (including `@supabase/supabase-js`, which initializes its own
+fetch/undici dispatcher as a side effect of being imported) are evaluated before any top-level statement in the
+importing file runs, so by the time such a line would execute, it's already too late. The prefix must be on the
+shell command that starts the `node`/`tsx` process itself.
+
+If a Supabase call still fails with that same error even with the prefix, the proxy's own allowlist is the real
+problem — stop and notify, same as a missing-variable failure, rather than retrying workarounds.
 
 ## Steps
 

@@ -20,15 +20,18 @@ export function loadEnvIfPresent(): void {
   const envPath = resolve(here, "../.env.local");
   if (existsSync(envPath)) process.loadEnvFile(envPath);
 
-  // The scheduled cloud routine's sandbox routes all outbound traffic
-  // through an egress proxy (CCR's agent-proxy, advertised via
-  // HTTPS_PROXY/https_proxy) — a direct connection to any non-preapproved
-  // host (Supabase included) is refused by the sandbox's own network layer
-  // with "Host not in allowlist", regardless of that proxy's own allowlist
-  // state. Node's built-in fetch (undici) does NOT honor HTTPS_PROXY unless
-  // this flag is set — confirmed live: identical Supabase calls failed with
-  // that exact error until this was set, even after the proxy's allowlist
-  // itself had already been corrected. Harmless everywhere else (local dev,
-  // Vercel) since HTTPS_PROXY is unset there and this is a no-op.
-  process.env.NODE_USE_ENV_PROXY ??= "1";
+  // NOTE on the cloud routine's egress proxy: its sandbox routes all
+  // outbound traffic through an agent-proxy (HTTPS_PROXY/https_proxy), and a
+  // direct connection to Supabase is refused by the sandbox's own network
+  // layer ("Host not in allowlist") unless Node's fetch is told to honor
+  // that proxy via NODE_USE_ENV_PROXY=1. Setting `process.env.NODE_USE_ENV_PROXY`
+  // from HERE does NOT work — confirmed live, twice: ES module imports are
+  // evaluated before any top-level statement in the importing file runs, so
+  // `@supabase/supabase-js` (imported after this function textually, but
+  // resolved before this function's body executes) has already initialized
+  // its fetch/undici dispatcher by the time this line would run. The only
+  // fix that has worked is setting the env var before the Node process
+  // starts at all — see the "Credentials" section of
+  // docs/process-quote-requests.md, which now requires prefixing every
+  // script invocation with `NODE_USE_ENV_PROXY=1`.
 }
