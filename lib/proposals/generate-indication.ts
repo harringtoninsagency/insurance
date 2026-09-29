@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { PDFDocument, StandardFonts, rgb, type PDFImage } from "pdf-lib";
 import { createServiceSupabase } from "@/lib/supabase/server";
 import { coverageLines, resolveCoverages } from "@/lib/quotes/coverage";
+import type { ReferralPartnerInfo } from "@/lib/quote-requests/referral-partner";
 
 export interface GenerateIndicationResult {
   proposalId: string;
@@ -51,8 +52,17 @@ function formatCurrency(value: number): string {
  * quotes and enrichment data, uploads it to the `proposals` bucket, and
  * records a `proposals` row. Purely reads our own Supabase data — no
  * external network calls.
+ *
+ * `referralPartner`, when given, credits the realtor/mortgage broker who
+ * requested this quote on the buyer's behalf (see
+ * lib/quote-requests/referral-partner.ts) with a line near the top of the
+ * document. Omit it (the default for every manually-run quote) and the
+ * layout is exactly what it always was — this never shifts anything else.
  */
-export async function generateIndicationProposal(propertyId: string): Promise<GenerateIndicationResult> {
+export async function generateIndicationProposal(
+  propertyId: string,
+  referralPartner?: ReferralPartnerInfo | null
+): Promise<GenerateIndicationResult> {
   const supabase = createServiceSupabase();
 
   const { data: property, error: propertyError } = await supabase
@@ -137,7 +147,21 @@ export async function generateIndicationProposal(propertyId: string): Promise<Ge
     font,
     color: PERIWINKLE_GREY,
   });
-  y -= 28;
+  y -= 15;
+
+  if (referralPartner) {
+    const referralLine = [
+      `Referred by ${referralPartner.name}`,
+      referralPartner.companyName,
+      referralPartner.phone,
+      referralPartner.email,
+    ]
+      .filter(Boolean)
+      .join("  ·  ");
+    page.drawText(referralLine, { x: MARGIN, y, size: 9, font: boldFont, color: DEEP_BLUE });
+    y -= 15;
+  }
+  y -= 13;
 
   function drawSectionHeader(label: string) {
     page.drawRectangle({ x: MARGIN, y: y - 8, width: 8, height: 8, color: BRIGHT_YELLOW });

@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { PDFDocument, StandardFonts, rgb, type PDFImage } from "pdf-lib";
 import { createServiceSupabase } from "@/lib/supabase/server";
 import { resolveCoverages } from "@/lib/quotes/coverage";
+import type { ReferralPartnerInfo } from "@/lib/quote-requests/referral-partner";
 
 export interface GenerateListingSnapshotResult {
   proposalId: string;
@@ -83,7 +84,16 @@ function sniffImageKind(bytes: Uint8Array): "jpg" | "png" {
  * photo-led sibling to generate-indication.ts aimed at a prospective buyer
  * rather than the listing agent, from the same quotes/property data.
  */
-export async function generateListingSnapshotProposal(propertyId: string): Promise<GenerateListingSnapshotResult> {
+/**
+ * `referralPartner`, when given, credits the realtor/mortgage broker who
+ * requested this snapshot with a compact line under the header. Omit it (the
+ * default) and the layout is exactly what it always was — see the matching
+ * note in lib/proposals/generate-indication.ts.
+ */
+export async function generateListingSnapshotProposal(
+  propertyId: string,
+  referralPartner?: ReferralPartnerInfo | null
+): Promise<GenerateListingSnapshotResult> {
   const supabase = createServiceSupabase();
 
   const { data: property, error: propertyError } = await supabase
@@ -150,7 +160,21 @@ export async function generateListingSnapshotProposal(propertyId: string): Promi
     font,
     color: PERIWINKLE_GREY,
   });
-  y -= 14;
+  y -= 12;
+
+  if (referralPartner) {
+    const referralLine = [
+      `Referred by ${referralPartner.name}`,
+      referralPartner.companyName,
+      referralPartner.phone,
+      referralPartner.email,
+    ]
+      .filter(Boolean)
+      .join("  ·  ");
+    page.drawText(referralLine, { x: MARGIN, y, size: 8.5, font: boldFont, color: DEEP_BLUE });
+    y -= 12;
+  }
+  y -= 2;
 
   // --- Photo box (left) + starting-indication box (right) ---
   const photoWidth = 300;
