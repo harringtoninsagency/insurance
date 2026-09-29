@@ -52,7 +52,7 @@ problem — stop and notify, same as a missing-variable failure, rather than ret
 ### 1. Find pending requests
 
 ```ts
-// scripts/_find-pending.ts (scratch — delete when done)
+// scripts/_find-pending.mts (scratch — delete when done; .mts, not .ts — these use top-level await)
 import { loadEnvIfPresent } from "@/lib/env";
 loadEnvIfPresent();
 import { createServiceSupabase } from "@/lib/supabase/server";
@@ -71,7 +71,7 @@ If there are none, stop — nothing to do.
 ### 2. For each pending request, build the Fetch items
 
 ```ts
-// scripts/_build-items.ts (scratch)
+// scripts/_build-items.mts (scratch; .mts, not .ts)
 import { loadEnvIfPresent } from "@/lib/env";
 loadEnvIfPresent();
 import { createServiceSupabase } from "@/lib/supabase/server";
@@ -99,7 +99,7 @@ Fetch returns (one per item: the standard item, and the `upc-dp3-...` override i
 Call `GetQuoteStatus(quote_request_id, include_rates: true)` for both Fetch quote_request_ids. Then:
 
 ```ts
-// scripts/_merge.ts (scratch)
+// scripts/_merge.mts (scratch; .mts, not .ts)
 import { mergeFetchRates, type RawFetchRate } from "@/lib/quote-requests/fetch-pipeline";
 const standardRates: RawFetchRate[] = [...]; // paste from GetQuoteStatus's `rates` array — keep id, carrier, form_type, status, premium, carrier_response_messages
 const overrideRates: RawFetchRate[] = [...];
@@ -115,7 +115,7 @@ placeholder), replacing it with the override item's real DP3 rate.
 ### 5. Finalize
 
 ```ts
-// scripts/_finalize.ts (scratch)
+// scripts/_finalize.mts (scratch; .mts, not .ts)
 import { loadEnvIfPresent } from "@/lib/env";
 loadEnvIfPresent();
 import { finalizeQuoteRequest } from "@/lib/quote-requests/fetch-pipeline";
