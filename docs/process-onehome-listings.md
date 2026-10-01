@@ -31,33 +31,30 @@ missing variables, and end the run. Do not work around it by writing a `.env.loc
 in chat, or any other substitute; those values must only ever be set directly in this environment's own
 settings.
 
-## Browser — this environment's setup script must install a system Chromium
+## The scheduled daily routine is email-only — no browser involved
 
-Step 1b (the portal scrape) needs a real browser. Playwright's own `npx playwright install chromium` downloads
-one from `cdn.playwright.dev` — confirmed live, repeatedly, that this cloud sandbox blocks that host outright
-(`Host not in allowlist`), unlike a specific SaaS API host such as Supabase's. Adding `cdn.playwright.dev` to
-the network allowlist did not fix it even after repeated confirmed attempts — treat that path as a dead end,
-not something to keep retrying.
+Step 1 below (parsing the email's own ~10-25 "Highlights" listings) needs no browser and runs fine unattended.
+Step 1b (scraping the full 100+ listing portal backlog) needs headless Chromium, and getting that working
+unattended in this cloud sandbox turned out to be a real, unresolved infrastructure wall, not a settings
+problem — tried and confirmed dead-end, in order:
 
-The environment's setup script instead installs Chromium via `apt` (already proven to work in this sandbox —
-other apt packages install fine there):
+1. Playwright's own downloader (`npx playwright install chromium`) fetches from `cdn.playwright.dev`, which
+   this sandbox blocks outright (`Host not in allowlist`) — confirmed live, repeatedly, even after adding that
+   host to the network allowlist.
+2. `apt-get install chromium` on this Ubuntu version is a **snap-only transitional package** — confirmed live:
+   it pulls in `snapd`/`apparmor`/`squashfs-tools` as dependencies, and a sandboxed container generally can't
+   run snap packages at all (no systemd, no snapd).
 
-```
-cd insurance && npm install && apt-get install -y chromium
-```
+**Decision: step 1b is manual-only.** The scheduled routine's prompt only runs step 1 (email parsing +
+quoting) and does not attempt the portal scrape — no browser, no Chromium, no `CHROMIUM_EXECUTABLE_PATH` needed
+for the unattended path. If the setup script still has an `apt-get install chromium` line from an earlier
+attempt, remove it — it's unnecessary now and was the thing causing setup failures.
 
-Then set `CHROMIUM_EXECUTABLE_PATH` as a real environment variable/credential in the environment's settings
-(the same place `GMAIL_IMAP_USER` etc. live), value `/usr/bin/chromium` — **not** via `export`/`~/.bashrc` in
-the setup script. A setup-script `export` doesn't reliably reach the separate process Claude Code later starts
-from (same class of bug as the `NODE_USE_ENV_PROXY` issue documented in
-`docs/process-quote-requests.md` — a value only set mid-script, in one process, isn't guaranteed to be present
-in a different process started afterward). A real environment-level variable is the only thing that's
-consistently worked for cross-process values in this sandbox.
-
-If a run ever shows a browser-launch error (not the Incapsula/bot-detection kind — an actual "executable not
-found" or similar), check first whether `CHROMIUM_EXECUTABLE_PATH` is set and whether `apt-get install -y
-chromium` actually succeeded in the setup script log before assuming the code is wrong — this has been the
-single most failure-prone part of this whole pipeline to get right in the cloud environment.
+Step 1b still works great **interactively** (run by an agent with a real browser tool, e.g. a live Claude Code
+session, not the scheduled routine) — confirmed live, repeatedly: 98-102 listings scraped with 100% photo
+match. Run it by hand whenever the full backlog is wanted, not as part of the daily unattended process. If a
+genuinely working unattended path is found later (e.g. a direct, non-snap Chrome `.deb` from a host that turns
+out not to be blocked), revisit this — but don't re-attempt options 1 or 2 above, both are confirmed dead ends.
 
 **Always run every script below as:**
 
@@ -93,7 +90,11 @@ for (const m of messages) {
 console.log(JSON.stringify({ listingCount: allListings.length, photoCount: allPhotos.length, allListings, allPhotos }, null, 1));
 ```
 
-### 1b. Also pull the full portal backlog (optional, but recommended)
+### 1b. Also pull the full portal backlog (manual/interactive only — NOT part of the scheduled routine)
+
+**Skip this step entirely if you're the unattended scheduled routine.** See "The scheduled daily routine is
+email-only" above — this needs a real browser the scheduled routine's sandbox can't provide. Only run this when
+asked to interactively, with a live browser tool available.
 
 The email only inlines ~10-25 "Highlights" listings. The saved search's actual full result set (all current
 matches, often 100+) is one click away via the email's "View All Properties"/"N new or updated listings" link,
