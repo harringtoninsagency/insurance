@@ -31,6 +31,34 @@ missing variables, and end the run. Do not work around it by writing a `.env.loc
 in chat, or any other substitute; those values must only ever be set directly in this environment's own
 settings.
 
+## Browser — this environment's setup script must install a system Chromium
+
+Step 1b (the portal scrape) needs a real browser. Playwright's own `npx playwright install chromium` downloads
+one from `cdn.playwright.dev` — confirmed live, repeatedly, that this cloud sandbox blocks that host outright
+(`Host not in allowlist`), unlike a specific SaaS API host such as Supabase's. Adding `cdn.playwright.dev` to
+the network allowlist did not fix it even after repeated confirmed attempts — treat that path as a dead end,
+not something to keep retrying.
+
+The environment's setup script instead installs Chromium via `apt` (already proven to work in this sandbox —
+other apt packages install fine there):
+
+```
+cd insurance && npm install && apt-get install -y chromium
+```
+
+Then set `CHROMIUM_EXECUTABLE_PATH` as a real environment variable/credential in the environment's settings
+(the same place `GMAIL_IMAP_USER` etc. live), value `/usr/bin/chromium` — **not** via `export`/`~/.bashrc` in
+the setup script. A setup-script `export` doesn't reliably reach the separate process Claude Code later starts
+from (same class of bug as the `NODE_USE_ENV_PROXY` issue documented in
+`docs/process-quote-requests.md` — a value only set mid-script, in one process, isn't guaranteed to be present
+in a different process started afterward). A real environment-level variable is the only thing that's
+consistently worked for cross-process values in this sandbox.
+
+If a run ever shows a browser-launch error (not the Incapsula/bot-detection kind — an actual "executable not
+found" or similar), check first whether `CHROMIUM_EXECUTABLE_PATH` is set and whether `apt-get install -y
+chromium` actually succeeded in the setup script log before assuming the code is wrong — this has been the
+single most failure-prone part of this whole pipeline to get right in the cloud environment.
+
 **Always run every script below as:**
 
 ```

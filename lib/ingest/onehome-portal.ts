@@ -157,7 +157,17 @@ export interface PortalScrapeResult {
  * force a specific view.
  */
 export async function scrapePortalListings(portalUrl: string): Promise<PortalScrapeResult> {
-  const browser = await chromium.launch({ headless: true });
+  // The cloud routine's sandbox blocks Playwright's own browser download
+  // (cdn.playwright.dev isn't reachable there, confirmed live, repeatedly —
+  // unlike a specific SaaS API host, this is a large third-party binary
+  // fetch the sandbox's network policy doesn't allow at all). Use the
+  // system's own apt-installed Chromium there instead — see the setup
+  // script in docs/process-onehome-listings.md, which installs it via
+  // `apt-get install chromium` (already proven to work in that sandbox,
+  // unlike cdn.playwright.dev) and sets this env var to its path. Locally,
+  // this var is unset and Playwright's own bundled browser is used as normal.
+  const executablePath = process.env.CHROMIUM_EXECUTABLE_PATH || undefined;
+  const browser = await chromium.launch({ headless: true, executablePath });
   try {
     const page = await browser.newPage({ userAgent: USER_AGENT });
     await page.goto(portalUrl, { waitUntil: "networkidle", timeout: 30_000 });
