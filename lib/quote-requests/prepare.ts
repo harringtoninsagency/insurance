@@ -1,6 +1,7 @@
 import { createServiceSupabase } from "@/lib/supabase/server";
 import { applyCountyEnrichment } from "@/lib/enrichment/apply-county-enrichment";
 import { splitStreetAddress } from "@/lib/ingest/onehome-email";
+import { todayEt } from "@/lib/dates";
 
 export interface PrepareResult {
   status: "processing" | "needs_review";
@@ -56,6 +57,7 @@ export async function prepareQuoteRequest(requestId: string): Promise<PrepareRes
       baths: request.baths,
       construction: request.construction,
       list_price: request.list_price,
+      date_quoted: todayEt(),
       status: "new",
     })
     .select("id")

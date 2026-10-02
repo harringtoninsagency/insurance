@@ -16,6 +16,15 @@ export interface ContactInput {
   city?: string | null;
   source: ContactSource;
   sourceDetail?: string | null;
+  /**
+   * For an edit a person made by hand (not a bulk import): phone numbers they
+   * typed replace the ones on file when different, since they're correcting
+   * or updating a record they're looking at. Everything else — and every
+   * import — still only fills blanks.
+   */
+  updateExisting?: boolean;
+  /** Update this specific directory entry instead of searching for a match by the values given. */
+  matchContactId?: string;
 }
 
 export type UpsertOutcome =
@@ -50,7 +59,12 @@ export async function upsertContact(supabase: Client, agencyId: string, input: C
     city: cleanText(input.city),
   };
 
-  const existing = await findExisting(supabase, agencyId, input.contactType, fullName, candidate);
+  let existing: ContactRow | null = null;
+  if (input.matchContactId) {
+    const { data } = await supabase.from("industry_contacts").select("*").eq("agency_id", agencyId).eq("id", input.matchContactId).maybeSingle();
+    existing = data ?? null;
+  }
+  existing ??= await findExisting(supabase, agencyId, input.contactType, fullName, candidate);
 
   if (!existing) {
     const { data, error } = await supabase
@@ -73,6 +87,13 @@ export async function upsertContact(supabase: Client, agencyId: string, input: C
   for (const field of FILLABLE) {
     if (existing[field] == null && candidate[field] != null) patch[field] = candidate[field] as never;
   }
+  if (input.updateExisting) {
+    for (const field of ["cell_phone", "office_phone"] as const) {
+      const incoming = candidate[field];
+      const alreadyOnFile = incoming != null && (incoming === existing.cell_phone || incoming === existing.office_phone);
+      if (incoming != null && !alreadyOnFile) patch[field] = incoming;
+    }
+  }
   if (!Object.keys(patch).length) return { result: "unchanged", id: existing.id };
 
   const { error } = await supabase
@@ -90,7 +111,7 @@ async function findExisting(
   agencyId: string,
   contactType: ContactType,
   fullName: string,
-  candidate: { email: string | null; license_number: string | null; company_name: string | null }
+  candidate: { email: string | null; license_number: string | null; company_name: string | null; cell_phone: string | null; office_phone: string | null }
 ): Promise<ContactRow | null> {
   const base = () => supabase.from("industry_contacts").select("*").eq("agency_id", agencyId);
 
@@ -110,6 +131,15 @@ async function findExisting(
       .ilike("full_name", escapeLike(fullName))
       .ilike("company_name", escapeLike(candidate.company_name))
       .limit(1);
+    if (data?.[0]) return data[0];
+  }
+  // Same name AND same phone number is the same person even with no email or
+  // company on either record — without this, saving a listing agent who has
+  // only a name and a phone created a new directory entry every time.
+  const phones = [candidate.cell_phone, candidate.office_phone].filter((p): p is string => !!p);
+  if (phones.length) {
+    const phoneClause = phones.flatMap((p) => [`cell_phone.eq.${p}`, `office_phone.eq.${p}`]).join(",");
+    const { data } = await base().eq("contact_type", contactType).ilike("full_name", escapeLike(fullName)).or(phoneClause).limit(1);
     if (data?.[0]) return data[0];
   }
   return null;

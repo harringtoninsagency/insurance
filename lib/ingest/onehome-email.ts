@@ -87,6 +87,20 @@ export interface ListingPhoto {
 const MEDIA_IMG_RE = /<img[^>]*\bsrc="(https:\/\/media\.stellar\.mlsmatrix\.com\/[^"]+)"[^>]*>/gi;
 const MLS_ID_RE = /MLS\s*#\s*(?:<[^>]*>\s*)*([A-Z0-9]{6,})/i;
 
+// Splits the HTML on the same Stellar-media <img> markers extractListingPhotos
+// uses, pairing each with the markup that follows it up to the next photo (or
+// the end of the document) — same "photo, then everything up to the next
+// photo" windowing, so listing detail and photo extraction stay paired by
+// construction instead of needing to be correlated after the fact.
+function listingWindows(html: string): string[] {
+  const imgs = [...html.matchAll(MEDIA_IMG_RE)];
+  return imgs.map((img, i) => {
+    const start = (img.index ?? 0) + img[0].length;
+    const end = imgs[i + 1]?.index ?? html.length;
+    return html.slice(start, end);
+  });
+}
+
 /**
  * Pulls each listing's photo out of a OneHome saved-search email's HTML. Each
  * highlighted listing is an <img> on Stellar's media server followed by its
@@ -99,12 +113,70 @@ export function extractListingPhotos(html: string): ListingPhoto[] {
   const imgs = [...html.matchAll(MEDIA_IMG_RE)];
   const photos: ListingPhoto[] = [];
   imgs.forEach((img, i) => {
-    const start = (img.index ?? 0) + img[0].length;
     const end = imgs[i + 1]?.index ?? html.length;
-    const mls = html.slice(start, end).match(MLS_ID_RE)?.[1];
+    const window = html.slice((img.index ?? 0) + img[0].length, end);
+    const mls = window.match(MLS_ID_RE)?.[1];
     if (mls) photos.push({ mlsId: mls.toUpperCase(), url: img[1]!.replace(/&amp;/g, "&") });
   });
   return photos;
+}
+
+// Tolerant of the source template's inconsistent quoting (price uses single
+// quotes, the rest double) and arbitrary inline `style="..."` attributes
+// between the class and the `>` — matches on the class name only, not the
+// full tag.
+function fieldText(window: string, className: string): string | null {
+  const re = new RegExp(`class=['"]${className}['"][^>]*>([^<]*)<`, "i");
+  return window.match(re)?.[1]?.trim() || null;
+}
+
+/**
+ * Extracts each highlighted listing's price/type/address/specs/MLS# directly
+ * from a OneHome saved-search email's HTML, instead of from a plain-text
+ * body. Needed because Gmail (via IMAP) doesn't server-side-convert HTML to
+ * plain text the way Microsoft Graph did for the Outlook mailbox this was
+ * originally built against — a Gmail-sourced message's "plain text" can be
+ * the raw HTML source with tags stripped, not a clean linearized layout, so
+ * `parseOneHomeListingsFromText`'s block regex never matches it. Same
+ * source-agnostic reasoning as `extractListingPhotos`: works on HTML from a
+ * .msg file, an .eml/Gmail message, or Microsoft Graph.
+ */
+export function parseOneHomeListingsFromHtml(html: string): ParsedListing[] {
+  const listings: ParsedListing[] = [];
+
+  for (const window of listingWindows(html)) {
+    const priceText = fieldText(window, "highlight-price");
+    const propertyType = fieldText(window, "highlight-title");
+    const streetAddress = fieldText(window, "highlight-description");
+    const cityState = fieldText(window, "highlight-address");
+    const mlsId = window.match(MLS_ID_RE)?.[1];
+
+    const price = priceText?.match(/\$?([\d,]+)/)?.[1];
+    const cityMatch = cityState?.match(/^([A-Za-z .'-]+),\s*Florida\s+(\d{5})$/);
+    const beds = window.match(/>(\d+)\s*bd</)?.[1];
+    const baths = window.match(/>(\d+)\s*ba</)?.[1];
+    const sqft = window.match(/>([\d,]+)\s*sqft</)?.[1];
+
+    if (!price || !propertyType || !streetAddress || !cityMatch || !beds || !baths || !sqft || !mlsId) {
+      console.warn("Skipping unparseable listing window near MLS:", mlsId ?? "(none found)");
+      continue;
+    }
+
+    listings.push({
+      listPrice: toNumber(price),
+      propertyType,
+      streetAddress,
+      city: cityMatch[1]!.trim(),
+      state: "FL",
+      zip: cityMatch[2]!,
+      beds: toNumber(beds),
+      baths: toNumber(baths),
+      sqft: toNumber(sqft),
+      mlsId: mlsId.toUpperCase(),
+    });
+  }
+
+  return listings;
 }
 
 /**

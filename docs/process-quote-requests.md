@@ -15,17 +15,61 @@ part that needs an agent.
 
 `https://github.com/harringtoninsagency/insurance`, branch `main`. Agency id: `ccb0a58e-0b78-4799-b236-66d1bda42f67`.
 
+## Credentials — read this before step 1
+
+Every script below starts with `import { loadEnvIfPresent } from "@/lib/env"; loadEnvIfPresent();`. On a local
+machine `.env.local` exists and this loads it. In this routine's cloud environment there is no such file — the
+three Supabase variables (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+`SUPABASE_SERVICE_ROLE_KEY`) are meant to be provided directly as real process environment variables instead,
+already set on the environment before this process starts — `loadEnvIfPresent()` does nothing in that case,
+which is correct (calling `process.loadEnvFile` on a path that doesn't exist throws).
+
+**Check first**, before running anything else: `env | grep -i supabase`. If the three variables aren't there,
+that's an environment configuration problem — stop, send exactly one push notification naming the missing
+variables, and end the run. Do not work around it by writing a `.env.local` file, asking for the values in
+chat, or any other substitute; those values must only ever be set directly in this environment's own settings.
+
+**Always run every script below (every step that touches Supabase) as:**
+
+```
+NODE_USE_ENV_PROXY=1 npx tsx scripts/_yourscript.mts
+```
+
+Never bare `npx tsx ...` in this environment. Without that prefix, a Supabase call fails with `Host not in
+allowlist: ustvvbyvvnglsgovkgkh.supabase.co` — this environment's egress proxy (HTTPS_PROXY/https_proxy) is
+required, and Node's fetch only honors it when `NODE_USE_ENV_PROXY=1` is a real process environment variable
+*before Node starts*. Setting `process.env.NODE_USE_ENV_PROXY` from inside a script does NOT work — confirmed
+live, twice — because ES module imports (including `@supabase/supabase-js`, which initializes its own
+fetch/undici dispatcher as a side effect of being imported) are evaluated before any top-level statement in the
+importing file runs, so by the time such a line would execute, it's already too late. The prefix must be on the
+shell command that starts the `node`/`tsx` process itself.
+
+If a Supabase call still fails with that same error even with the prefix, the proxy's own allowlist is the real
+problem — stop and notify, same as a missing-variable failure, rather than retrying workarounds.
+
 ## Steps
 
-### 1. Find pending requests
+### 1. Find and claim pending requests
+
+Several runs can overlap (the hourly schedule plus on-demand fires from the dashboard's "Run quote now"), so this
+step **claims** requests atomically. Only requests this script returns are yours; anything another run already
+claimed is skipped. A claim older than 45 minutes counts as abandoned and can be re-taken.
 
 ```ts
-// scripts/_find-pending.ts (scratch — delete when done)
-import { resolve } from "node:path";
-process.loadEnvFile(resolve(import.meta.dirname, "../.env.local"));
+// scripts/_find-pending.mts (scratch — delete when done; .mts, not .ts — these use top-level await)
+import { loadEnvIfPresent } from "@/lib/env";
+loadEnvIfPresent();
 import { createServiceSupabase } from "@/lib/supabase/server";
 const s = createServiceSupabase();
-const { data } = await s.from("quote_requests").select("id, property_id, address_line, city, request_kind, dwelling_a, personal_property_pct").eq("status", "processing").order("created_at");
+const staleBefore = new Date(Date.now() - 45 * 60 * 1000).toISOString();
+const { data, error } = await s
+  .from("quote_requests")
+  .update({ claimed_at: new Date().toISOString() })
+  .eq("status", "processing")
+  .or(`claimed_at.is.null,claimed_at.lt.${staleBefore}`)
+  .select("id, property_id, address_line, city, request_kind, dwelling_a, personal_property_pct, created_at")
+  .order("created_at");
+if (error) throw error;
 console.log(JSON.stringify(data, null, 1));
 ```
 
@@ -34,14 +78,18 @@ at submission — see `lib/quote-requests/prepare.ts`). `status = 'needs_review'
 automatically and needs a producer to add property details by hand first (check `/quote-requests` in the app,
 or `status_detail` on the row) — skip those here.
 
-If there are none, stop — nothing to do.
+If the script returns none, stop — nothing to do (or nothing unclaimed).
+
+**Before ending the run** (after step 6), run this script once more. A request queued while you were busy would
+otherwise wait for the next hourly run; if it returns anything new, process those too, then check again until it
+comes back empty.
 
 ### 2. For each pending request, build the Fetch items
 
 ```ts
-// scripts/_build-items.ts (scratch)
-import { resolve } from "node:path";
-process.loadEnvFile(resolve(import.meta.dirname, "../.env.local"));
+// scripts/_build-items.mts (scratch; .mts, not .ts)
+import { loadEnvIfPresent } from "@/lib/env";
+loadEnvIfPresent();
 import { createServiceSupabase } from "@/lib/supabase/server";
 import { buildFetchQuoteItems } from "@/lib/quote-requests/fetch-pipeline";
 const s = createServiceSupabase();
@@ -67,7 +115,7 @@ Fetch returns (one per item: the standard item, and the `upc-dp3-...` override i
 Call `GetQuoteStatus(quote_request_id, include_rates: true)` for both Fetch quote_request_ids. Then:
 
 ```ts
-// scripts/_merge.ts (scratch)
+// scripts/_merge.mts (scratch; .mts, not .ts)
 import { mergeFetchRates, type RawFetchRate } from "@/lib/quote-requests/fetch-pipeline";
 const standardRates: RawFetchRate[] = [...]; // paste from GetQuoteStatus's `rates` array — keep id, carrier, form_type, status, premium, carrier_response_messages
 const overrideRates: RawFetchRate[] = [...];
@@ -83,9 +131,9 @@ placeholder), replacing it with the override item's real DP3 rate.
 ### 5. Finalize
 
 ```ts
-// scripts/_finalize.ts (scratch)
-import { resolve } from "node:path";
-process.loadEnvFile(resolve(import.meta.dirname, "../.env.local"));
+// scripts/_finalize.mts (scratch; .mts, not .ts)
+import { loadEnvIfPresent } from "@/lib/env";
+loadEnvIfPresent();
 import { finalizeQuoteRequest } from "@/lib/quote-requests/fetch-pipeline";
 const result = await finalizeQuoteRequest(REQUEST_ID, STANDARD_FETCH_QUOTE_REQUEST_ID, mergedRates);
 console.log(JSON.stringify(result));
@@ -107,3 +155,14 @@ saved, proposal kind(s) generated, and anything that ended up `needs_review` or 
   reason rather than silently producing an empty proposal — that's expected behavior, not a bug to fix.
 - This procedure is idempotent per request as long as a fresh `runSuffix` (the request id) is used each time
   it's actually run — but don't call it twice for the same request without a reason; check `status` first.
+
+## Requests queued by the team ("Run quote now")
+
+Staff can queue a quote from the dashboard (Properties page, a property's page, or `/quote-requests/new`). The app
+then fires this routine immediately through the routine's API trigger (`lib/quote-requests/fire-routine.ts`, needs
+`QUOTE_ROUTINE_ID` and `QUOTE_ROUTINE_TOKEN` set on Vercel), so a run starts within seconds instead of waiting for the
+hourly schedule. The hourly run stays as the safety net if that fire fails. Those rows
+arrive in exactly the same shape as any other request — `status = 'processing'`, `property_id` already set — with
+`requester_type = 'internal'` and `requested_by` set to the team member. Nothing in steps 1-5 changes. The one
+difference: an internal request points at the property that was already in the system (no dedicated copy is made, since
+there's no partner whose visibility needs isolating), so re-quoting a property just upserts onto its existing quote rows.

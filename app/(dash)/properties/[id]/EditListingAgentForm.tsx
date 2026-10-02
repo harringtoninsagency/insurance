@@ -1,9 +1,11 @@
 "use client";
 
 import { useActionState } from "react";
+import Link from "next/link";
 import { updateListingAgentAction } from "./actions";
+import type { ListingAgentResult } from "@/lib/properties/listing-agent";
 
-type State = { saved: true } | { error: string } | null;
+type State = ListingAgentResult | null;
 
 interface Props {
   propertyId: string;
@@ -14,12 +16,7 @@ interface Props {
 
 export function EditListingAgentForm({ propertyId, name, email, phone }: Props) {
   async function runAction(_prev: State, formData: FormData): Promise<State> {
-    try {
-      await updateListingAgentAction(propertyId, formData);
-      return { saved: true };
-    } catch (err) {
-      return { error: err instanceof Error ? err.message : "Failed to save listing agent" };
-    }
+    return updateListingAgentAction(propertyId, formData);
   }
 
   const [state, formAction, isPending] = useActionState<State, FormData>(runAction, null);
@@ -70,8 +67,21 @@ export function EditListingAgentForm({ propertyId, name, email, phone }: Props) 
         >
           {isPending ? "Saving..." : "Save"}
         </button>
-        {state && "saved" in state && <span className="text-sm text-slate-500">Saved.</span>}
-        {state && "error" in state && <span className="text-sm text-red-600">{state.error}</span>}
+        {state?.ok && (
+          <span className="text-sm text-slate-600">
+            Saved.{" "}
+            {state.directory === "added" && "Added to the Realtors & Brokers directory. "}
+            {state.directory === "updated" && "Directory entry updated. "}
+            {state.directory === "unchanged" && "Already in the directory. "}
+            {state.contactId && (
+              <Link href={`/contacts/${state.contactId}`} className="font-medium text-[#003049] underline">
+                View in directory
+              </Link>
+            )}
+            {state.note && <span className="text-amber-700">{state.note}</span>}
+          </span>
+        )}
+        {state && !state.ok && <span className="text-sm text-red-600">{state.error}</span>}
       </div>
     </form>
   );

@@ -33,10 +33,17 @@ export default async function QuoteRequestsPage() {
 
   return (
     <div>
-      <h1 className="text-xl font-semibold text-[#003049]">Quote requests</h1>
-      <div className="mb-2 mt-2 h-[3px] w-16 bg-[#F0FF00]" />
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-semibold text-[#003049]">Quote requests</h1>
+          <div className="mb-2 mt-2 h-[3px] w-16 bg-[#F0FF00]" />
+        </div>
+        <Link href="/quote-requests/new" className="shrink-0 rounded bg-[#003049] px-4 py-2 text-sm font-semibold text-white">
+          Run a quote now
+        </Link>
+      </div>
       <p className="mb-6 text-sm text-slate-500">
-        Inbound requests from the public quote-request page and the partner portal. Property matching happens
+        Requests from the public quote-request page, the partner portal, and your team (Run a quote now). Property matching happens
         automatically; the carrier quote and PDFs still need an agent session (ask Claude to process the queue, or
         wait for the scheduled routine) — nothing here can trigger that from the browser.
       </p>
@@ -84,6 +91,8 @@ export default async function QuoteRequestsPage() {
                               {contact.company_name ?? "directory contact"}
                             </Link>
                           </>
+                        ) : r.requester_type === "internal" ? (
+                          "Team"
                         ) : (
                           "Public"
                         )}{" "}

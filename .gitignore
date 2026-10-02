@@ -22,3 +22,8 @@ supabase/.temp
 npm-debug.log*
 logs/
 *.tsbuildinfo
+
+# scratch scripts/data (convention: underscore-prefixed, deleted at end of
+# each session's run per docs/process-*.md — ignored too, as a backstop,
+# since these can carry real customer data from local debugging/test runs)
+scripts/_*

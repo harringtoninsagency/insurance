@@ -171,6 +171,9 @@ export async function finalizeQuoteRequest(quoteRequestId: string, standardQuote
     return { status: "failed", proposalIds, detail };
   }
 
+  // Same end state as finalizeOneHomeListing; leave closed/dead properties alone.
+  await supabase.from("properties").update({ status: "quoted" }).eq("id", request.property_id).not("status", "in", "(closed,dead)");
+
   const detail = `Completed with ${mergedRates.length} carrier rate(s).`;
   await supabase.from("quote_requests").update({ status: "completed", status_detail: detail, processed_at: new Date().toISOString() }).eq("id", quoteRequestId);
   return { status: "completed", proposalIds, detail };
