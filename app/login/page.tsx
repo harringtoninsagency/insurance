@@ -28,7 +28,7 @@ export default function LoginPage() {
     setLoading(false);
 
     if (error) {
-      setError(error.message);
+      setError(/banned/i.test(error.message) ? "This account has been deactivated. Ask an admin at your agency." : error.message);
       return;
     }
 
