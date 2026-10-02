@@ -31,9 +31,9 @@ function refresh(propertyId?: string) {
 /** `started` = the quote routine was kicked off now (quotes in a few minutes) rather than left for the hourly run. */
 export type QueueActionResult = QueueResult & { started?: boolean };
 
-/** Kicks the routine only for a freshly queued request; a failure just means the hourly run handles it. */
+/** Kicks the routine for a queued request (also when it was already queued, in case the first start failed); a failure just means the hourly run handles it. */
 async function startRoutineFor(result: QueueResult): Promise<boolean> {
-  if (!result.ok || result.alreadyQueued) return false;
+  if (!result.ok) return false;
   return (await fireQuoteRoutine(result.requestId)).started;
 }
 

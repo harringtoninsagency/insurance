@@ -13,9 +13,22 @@ const FIRE_TIMEOUT_MS = 8000;
  * Without them this is a no-op and the hourly schedule does all the work.
  */
 export async function fireQuoteRoutine(requestId: string): Promise<{ started: boolean; reason?: string }> {
+  const result = await tryFire(requestId);
+  if (!result.started) {
+    // Surface why on the request itself (property page / quote requests list) so a failed fire is diagnosable.
+    await createServiceSupabase()
+      .from("quote_requests")
+      .update({ status_detail: `Queued by a team member — couldn't start the quote run now (${result.reason}); the hourly run will pick it up.` })
+      .eq("id", requestId)
+      .eq("status", "processing");
+  }
+  return result;
+}
+
+async function tryFire(requestId: string): Promise<{ started: boolean; reason?: string }> {
   const routineId = process.env.QUOTE_ROUTINE_ID;
   const token = process.env.QUOTE_ROUTINE_TOKEN;
-  if (!routineId || !token) return { started: false, reason: "not configured" };
+  if (!routineId || !token) return { started: false, reason: "QUOTE_ROUTINE_ID / QUOTE_ROUTINE_TOKEN not set on the server" };
 
   try {
     const supabase = createServiceSupabase();

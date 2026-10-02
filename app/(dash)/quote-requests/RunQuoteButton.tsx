@@ -18,7 +18,9 @@ export function RunQuoteButton({ propertyId, compact = false, label = "Run quote
           ? {
               tone: "ok",
               text: result.alreadyQueued
-                ? "Already queued."
+                ? result.started
+                  ? "Already queued — quote run started."
+                  : "Already queued."
                 : result.started
                   ? "Started — quotes usually appear in a few minutes."
                   : "Queued — quotes will appear after the next run.",
