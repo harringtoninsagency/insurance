@@ -28,7 +28,12 @@ export async function fireQuoteRoutine(requestId: string): Promise<{ started: bo
 async function tryFire(requestId: string): Promise<{ started: boolean; reason?: string }> {
   const routineId = process.env.QUOTE_ROUTINE_ID;
   const token = process.env.QUOTE_ROUTINE_TOKEN;
-  if (!routineId || !token) return { started: false, reason: "QUOTE_ROUTINE_ID / QUOTE_ROUTINE_TOKEN not set on the server" };
+  if (!routineId || !token) {
+    const missing = [!routineId && "QUOTE_ROUTINE_ID", !token && "QUOTE_ROUTINE_TOKEN"].filter(Boolean).join(" and ");
+    // Names only (never values) of any similarly named variables, to spot typos or stray whitespace.
+    const similar = Object.keys(process.env).filter((k) => /quote|routine/i.test(k));
+    return { started: false, reason: `${missing} not set on the server; similar variable names seen: ${similar.length ? similar.map((k) => JSON.stringify(k)).join(", ") : "none"}` };
+  }
 
   try {
     const supabase = createServiceSupabase();
