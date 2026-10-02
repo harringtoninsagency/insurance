@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { createBrowserSupabase } from "@/lib/supabase/client";
+import { establishSessionFromUrl } from "@/lib/supabase/establish-session";
 import brightwayLogo from "@/assets/branding/brightway-harrington-horizontal-deep-blue.png";
 
 // Landing page for both a team invite and a password-reset email: Supabase's
@@ -20,12 +21,7 @@ export default function SetPasswordPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // The session can land a beat after first paint; check once, then again on the auth event.
-    supabase.auth.getSession().then(({ data }) => setReady(!!data.session));
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) setReady(true);
-    });
-    return () => sub.subscription.unsubscribe();
+    establishSessionFromUrl(supabase).then(setReady);
   }, [supabase]);
 
   async function handleSubmit(e: React.FormEvent) {

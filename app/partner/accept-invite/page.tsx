@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { createBrowserSupabase } from "@/lib/supabase/client";
+import { establishSessionFromUrl } from "@/lib/supabase/establish-session";
 import brightwayLogo from "@/assets/branding/brightway-harrington-horizontal-deep-blue.png";
 import { activatePartnerAccountAction } from "./actions";
 
@@ -21,7 +22,7 @@ export default function AcceptInvitePage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setReady(!!data.session));
+    establishSessionFromUrl(supabase).then(setReady);
   }, [supabase]);
 
   async function handleSubmit(e: React.FormEvent) {
