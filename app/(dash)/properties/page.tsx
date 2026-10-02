@@ -7,7 +7,7 @@ export default async function PropertiesPage() {
   const supabase = await createServerSupabase();
   const { data: properties, error } = await supabase
     .from("properties")
-    .select("id, address, status, list_price, listing_agent_name, date_quoted, created_at")
+    .select("id, address, status, list_price, listing_agent_name, roof_year, date_quoted, created_at")
     .order("created_at", { ascending: false });
 
   // Properties with a quote already queued show "Queued" instead of a button.
@@ -47,6 +47,7 @@ export default async function PropertiesPage() {
                 <th className="px-4 py-3">Address</th>
                 <th className="px-4 py-3">Listing agent</th>
                 <th className="px-4 py-3">List price</th>
+                <th className="px-4 py-3">Roof year</th>
                 <th className="px-4 py-3">Date quoted</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">Quote</th>
@@ -68,6 +69,9 @@ export default async function PropertiesPage() {
                   </td>
                   <td className="px-4 py-3 text-slate-600">
                     {p.list_price ? `$${Number(p.list_price).toLocaleString()}` : "—"}
+                  </td>
+                  <td className="px-4 py-3 text-slate-600">
+                    {p.roof_year ?? "—"}
                   </td>
                   <td className="px-4 py-3 text-slate-600">{formatDateOnly(p.date_quoted)}</td>
                   <td className="px-4 py-3">
