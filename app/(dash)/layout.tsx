@@ -3,6 +3,7 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
 import brightwayLogo from "@/assets/branding/brightway-harrington-horizontal-deep-blue.png";
+import { SignOutButton } from "./SignOutButton";
 
 export default async function DashLayout({
   children,
@@ -22,9 +23,22 @@ export default async function DashLayout({
   // (realtor/mortgage broker) is a real Supabase Auth user too, just with no
   // profiles row. RLS already returns them zero rows anywhere in here, but
   // send them to their own portal rather than showing internal-looking chrome.
-  const { data: profile } = await supabase.from("profiles").select("id").eq("id", user.id).maybeSingle();
+  const { data: profile } = await supabase.from("profiles").select("id, role, active, full_name, email").eq("id", user.id).maybeSingle();
   if (!profile) {
     redirect("/partner");
+  }
+  // RLS already hands a deactivated user zero rows everywhere (see
+  // current_agency_id()), so show a plain explanation instead of empty pages.
+  if (!profile.active) {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-4">
+        <div className="max-w-sm space-y-3 text-center">
+          <h1 className="text-lg font-semibold text-[#003049]">This account has been deactivated</h1>
+          <p className="text-sm text-slate-600">Ask an admin at your agency if you think that&apos;s a mistake.</p>
+          <SignOutButton />
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -66,7 +80,24 @@ export default async function DashLayout({
               Realtors &amp; brokers
             </Link>
           </li>
+          {profile.role === "admin" && (
+            <li>
+              <Link
+                href="/team"
+                className="block rounded px-3 py-2 font-medium text-[#003049] hover:bg-[#003049]/5"
+              >
+                Team
+              </Link>
+            </li>
+          )}
         </ul>
+        <div className="mt-8 space-y-2 border-t border-slate-200 pt-4">
+          <div className="text-xs">
+            <div className="truncate font-medium text-slate-800">{profile.full_name ?? profile.email}</div>
+            <div className="text-slate-500">{profile.role === "admin" ? "Admin" : "Agent"}</div>
+          </div>
+          <SignOutButton />
+        </div>
       </nav>
       <main className="flex-1 p-8">{children}</main>
     </div>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { createBrowserSupabase } from "@/lib/supabase/client";
 import brightwayLogo from "@/assets/branding/brightway-harrington-horizontal-deep-blue.png";
 
@@ -97,6 +98,12 @@ export default function LoginPage() {
         >
           {loading ? "Signing in..." : "Sign in"}
         </button>
+
+        <p className="text-center text-sm">
+          <Link href="/forgot-password" className="text-[#003049] underline">
+            Forgot password?
+          </Link>
+        </p>
 
         <p className="text-center text-xs italic text-[#8291AC]">The brighter way to do insurance.</p>
       </form>

@@ -73,6 +73,8 @@ export interface Database {
           agency_id: string;
           email: string;
           role: "producer" | "admin";
+          full_name: string | null;
+          active: boolean;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["profiles"]["Row"]> & {

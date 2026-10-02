@@ -15,6 +15,8 @@ const PUBLIC_PATHS = [
   "/request-quote",
   "/partner/login",
   "/partner/accept-invite",
+  "/set-password",
+  "/forgot-password",
 ];
 
 type CookieToSet = { name: string; value: string; options: CookieOptions };
