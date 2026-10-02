@@ -15,7 +15,14 @@ export function RunQuoteButton({ propertyId, compact = false, label = "Run quote
       const result = await runQuoteForPropertyAction(propertyId, kind);
       setMessage(
         result.ok
-          ? { tone: "ok", text: result.alreadyQueued ? "Already queued." : "Queued — quotes will appear after the next run." }
+          ? {
+              tone: "ok",
+              text: result.alreadyQueued
+                ? "Already queued."
+                : result.started
+                  ? "Started — quotes usually appear in a few minutes."
+                  : "Queued — quotes will appear after the next run.",
+            }
           : { tone: "error", text: result.error }
       );
     });

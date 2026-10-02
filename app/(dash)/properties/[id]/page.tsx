@@ -109,7 +109,7 @@ export default async function PropertyDetailPage({
         </h2>
         {latestRequest && (latestRequest.status === "new" || latestRequest.status === "processing") ? (
           <p className="rounded bg-amber-50 px-3 py-2 text-sm text-amber-900">
-            Quote queued {new Date(latestRequest.created_at).toLocaleString()} — it will be pulled on the next quote run (hourly).
+            Quote queued {new Date(latestRequest.created_at).toLocaleString()} — it will be pulled by the quote run now in progress, or at the latest the next hourly run.
           </p>
         ) : (
           <>

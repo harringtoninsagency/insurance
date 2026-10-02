@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { queueNewAddressQuote, queuePropertyQuote, type QueueResult, type Requester } from "@/lib/quote-requests/queue-quote";
+import { fireQuoteRoutine } from "@/lib/quote-requests/fire-routine";
 import type { QuoteRequestKind } from "@/lib/types/database";
 
 const KINDS: QuoteRequestKind[] = ["quote_summary", "listing_snapshot", "both"];
@@ -27,18 +28,28 @@ function refresh(propertyId?: string) {
   if (propertyId) revalidatePath(`/properties/${propertyId}`);
 }
 
-export async function runQuoteForPropertyAction(propertyId: string, kind: QuoteRequestKind = "both"): Promise<QueueResult> {
+/** `started` = the quote routine was kicked off now (quotes in a few minutes) rather than left for the hourly run. */
+export type QueueActionResult = QueueResult & { started?: boolean };
+
+/** Kicks the routine only for a freshly queued request; a failure just means the hourly run handles it. */
+async function startRoutineFor(result: QueueResult): Promise<boolean> {
+  if (!result.ok || result.alreadyQueued) return false;
+  return (await fireQuoteRoutine(result.requestId)).started;
+}
+
+export async function runQuoteForPropertyAction(propertyId: string, kind: QuoteRequestKind = "both"): Promise<QueueActionResult> {
   try {
     const { supabase, requester } = await teamMember();
     const result = await queuePropertyQuote(supabase, propertyId, requester, asKind(kind));
+    const started = await startRoutineFor(result);
     refresh(propertyId);
-    return result;
+    return { ...result, started };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "Something went wrong." };
   }
 }
 
-export type NewQuoteState = { queued: { propertyId: string; alreadyQueued: boolean } } | { error: string } | null;
+export type NewQuoteState = { queued: { propertyId: string; alreadyQueued: boolean; started: boolean } } | { error: string } | null;
 
 export async function runQuoteForAddressAction(_prev: NewQuoteState, formData: FormData): Promise<NewQuoteState> {
   const str = (key: string) => String(formData.get(key) ?? "").trim();
@@ -64,8 +75,9 @@ export async function runQuoteForAddressAction(_prev: NewQuoteState, formData: F
       requester
     );
     if (!result.ok) return { error: result.error };
+    const started = await startRoutineFor(result);
     refresh(result.propertyId);
-    return { queued: { propertyId: result.propertyId, alreadyQueued: result.alreadyQueued } };
+    return { queued: { propertyId: result.propertyId, alreadyQueued: result.alreadyQueued, started } };
   } catch (err) {
     return { error: err instanceof Error ? err.message : "Something went wrong." };
   }

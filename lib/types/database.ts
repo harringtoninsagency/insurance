@@ -432,6 +432,8 @@ export interface Database {
           status_detail: string | null;
           property_id: string | null;
           requested_by: string | null;
+          claimed_at: string | null;
+          routine_fired_at: string | null;
           created_at: string;
           processed_at: string | null;
         };

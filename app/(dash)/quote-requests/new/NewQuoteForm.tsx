@@ -25,7 +25,9 @@ export function NewQuoteForm() {
       <div className="rounded-lg border border-green-200 bg-green-50 px-5 py-5 text-sm text-green-900">
         <p className="font-semibold">{state.queued.alreadyQueued ? "That property already has a quote queued." : "Quote queued."}</p>
         <p className="mt-1">
-          It&apos;s matched to county records and will be quoted on the next run. Results show up on the property page.
+          {state.queued.started
+            ? "It's matched to county records and the quote run has started — results usually show up on the property page within a few minutes."
+            : "It's matched to county records and will be quoted on the next run. Results show up on the property page."}
         </p>
         <div className="mt-3 flex gap-4">
           <Link href={`/properties/${state.queued.propertyId}`} className="font-medium text-[#003049] underline">

@@ -49,7 +49,11 @@ problem — stop and notify, same as a missing-variable failure, rather than ret
 
 ## Steps
 
-### 1. Find pending requests
+### 1. Find and claim pending requests
+
+Several runs can overlap (the hourly schedule plus on-demand fires from the dashboard's "Run quote now"), so this
+step **claims** requests atomically. Only requests this script returns are yours; anything another run already
+claimed is skipped. A claim older than 45 minutes counts as abandoned and can be re-taken.
 
 ```ts
 // scripts/_find-pending.mts (scratch — delete when done; .mts, not .ts — these use top-level await)
@@ -57,7 +61,15 @@ import { loadEnvIfPresent } from "@/lib/env";
 loadEnvIfPresent();
 import { createServiceSupabase } from "@/lib/supabase/server";
 const s = createServiceSupabase();
-const { data } = await s.from("quote_requests").select("id, property_id, address_line, city, request_kind, dwelling_a, personal_property_pct").eq("status", "processing").order("created_at");
+const staleBefore = new Date(Date.now() - 45 * 60 * 1000).toISOString();
+const { data, error } = await s
+  .from("quote_requests")
+  .update({ claimed_at: new Date().toISOString() })
+  .eq("status", "processing")
+  .or(`claimed_at.is.null,claimed_at.lt.${staleBefore}`)
+  .select("id, property_id, address_line, city, request_kind, dwelling_a, personal_property_pct, created_at")
+  .order("created_at");
+if (error) throw error;
 console.log(JSON.stringify(data, null, 1));
 ```
 
@@ -66,7 +78,11 @@ at submission — see `lib/quote-requests/prepare.ts`). `status = 'needs_review'
 automatically and needs a producer to add property details by hand first (check `/quote-requests` in the app,
 or `status_detail` on the row) — skip those here.
 
-If there are none, stop — nothing to do.
+If the script returns none, stop — nothing to do (or nothing unclaimed).
+
+**Before ending the run** (after step 6), run this script once more. A request queued while you were busy would
+otherwise wait for the next hourly run; if it returns anything new, process those too, then check again until it
+comes back empty.
 
 ### 2. For each pending request, build the Fetch items
 
@@ -142,7 +158,10 @@ saved, proposal kind(s) generated, and anything that ended up `needs_review` or 
 
 ## Requests queued by the team ("Run quote now")
 
-Staff can queue a quote from the dashboard (Properties page, a property's page, or `/quote-requests/new`). Those rows
+Staff can queue a quote from the dashboard (Properties page, a property's page, or `/quote-requests/new`). The app
+then fires this routine immediately through the routine's API trigger (`lib/quote-requests/fire-routine.ts`, needs
+`QUOTE_ROUTINE_ID` and `QUOTE_ROUTINE_TOKEN` set on Vercel), so a run starts within seconds instead of waiting for the
+hourly schedule. The hourly run stays as the safety net if that fire fails. Those rows
 arrive in exactly the same shape as any other request — `status = 'processing'`, `property_id` already set — with
 `requester_type = 'internal'` and `requested_by` set to the team member. Nothing in steps 1-5 changes. The one
 difference: an internal request points at the property that was already in the system (no dedicated copy is made, since
