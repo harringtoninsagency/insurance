@@ -47,7 +47,7 @@ export type QuoteAdapterName =
   | "fetch_quoting";
 export type ListingSourceName = "bridge" | "trestle" | "mlsgrid" | "county" | "onehome" | "quote_request";
 export type PartnerAccountStatus = "invited" | "active" | "disabled";
-export type QuoteRequesterType = "partner" | "public";
+export type QuoteRequesterType = "partner" | "public" | "internal";
 export type QuoteRequestKind = "quote_summary" | "listing_snapshot" | "both";
 export type QuoteRequestStatus = "new" | "processing" | "completed" | "failed" | "needs_review";
 
@@ -112,6 +112,7 @@ export interface Database {
           listing_agent_email: string | null;
           listing_agent_phone: string | null;
           photo_path: string | null;
+          date_quoted: string | null;
           status: PropertyStatus;
           created_at: string;
           updated_at: string;
@@ -430,6 +431,7 @@ export interface Database {
           status: QuoteRequestStatus;
           status_detail: string | null;
           property_id: string | null;
+          requested_by: string | null;
           created_at: string;
           processed_at: string | null;
         };

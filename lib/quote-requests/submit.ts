@@ -47,7 +47,11 @@ function parseOptionalNumber(raw: string | undefined, label: string): { ok: true
  * contactId, which the caller must derive itself (contactId from a verified
  * partner session, never from form input) rather than trusting the submitter.
  */
-export async function submitQuoteRequest(supabase: SupabaseClient<Database>, input: SubmitQuoteRequestInput): Promise<SubmitResult> {
+export async function submitQuoteRequest(
+  supabase: SupabaseClient<Database>,
+  input: SubmitQuoteRequestInput,
+  options: { agencyId?: string; requestedBy?: string } = {}
+): Promise<SubmitResult> {
   const name = cleanText(input.requesterName);
   if (!name) return { ok: false, error: "Please enter your name." };
   if (name.length > MAX_TEXT) return { ok: false, error: "That name is too long." };
@@ -95,8 +99,9 @@ export async function submitQuoteRequest(supabase: SupabaseClient<Database>, inp
   const { data, error } = await supabase
     .from("quote_requests")
     .insert({
-      agency_id: PUBLIC_FORM_AGENCY_ID,
+      agency_id: options.agencyId ?? PUBLIC_FORM_AGENCY_ID,
       contact_id: input.contactId ?? null,
+      requested_by: options.requestedBy ?? null,
       requester_type: input.requesterType,
       requester_name: name,
       requester_email: email,

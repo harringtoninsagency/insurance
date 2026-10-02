@@ -6,6 +6,8 @@ import { GenerateListingSnapshotButton } from "./GenerateListingSnapshotButton";
 import { PhotoUploadForm } from "./PhotoUploadForm";
 import { EditListingAgentForm } from "./EditListingAgentForm";
 import { QueueOutreachForm } from "./QueueOutreachForm";
+import { DateQuotedForm } from "./DateQuotedForm";
+import { RunQuoteButton } from "../../quote-requests/RunQuoteButton";
 
 export default async function PropertyDetailPage({
   params,
@@ -25,6 +27,14 @@ export default async function PropertyDetailPage({
     .neq("email_consent", "opted_out")
     .order("full_name")
     .limit(1000);
+
+  const { data: latestRequest } = await supabase
+    .from("quote_requests")
+    .select("status, status_detail, created_at")
+    .eq("property_id", id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
   const [{ data: property }, { data: enrichment }, { data: riskProfile }, { data: quotes }, { data: proposals }] =
     await Promise.all([
@@ -95,6 +105,31 @@ export default async function PropertyDetailPage({
       <section>
         <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase text-[#003049]">
           <span className="inline-block h-2 w-2 shrink-0 bg-[#F0FF00]" />
+          Run a quote
+        </h2>
+        {latestRequest && (latestRequest.status === "new" || latestRequest.status === "processing") ? (
+          <p className="rounded bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            Quote queued {new Date(latestRequest.created_at).toLocaleString()} — it will be pulled on the next quote run (hourly).
+          </p>
+        ) : (
+          <>
+            <RunQuoteButton propertyId={property.id} />
+            {latestRequest && (
+              <p className="mt-2 text-xs text-slate-500">
+                Last request: {latestRequest.status.replace(/_/g, " ")}
+                {latestRequest.status_detail ? ` — ${latestRequest.status_detail}` : ""}
+              </p>
+            )}
+          </>
+        )}
+        <div className="mt-4">
+          <DateQuotedForm propertyId={property.id} value={property.date_quoted} />
+        </div>
+      </section>
+
+      <section>
+        <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase text-[#003049]">
+          <span className="inline-block h-2 w-2 shrink-0 bg-[#F0FF00]" />
           Listing agent
         </h2>
         <EditListingAgentForm
@@ -104,7 +139,7 @@ export default async function PropertyDetailPage({
           phone={property.listing_agent_phone}
         />
         <p className="mt-1 text-xs text-slate-500">
-          Not captured by CSV import today — fill this in from the MLS listing when known.
+          Saving here also adds the agent to (or updates them in) the Realtors & Brokers directory.
         </p>
       </section>
 

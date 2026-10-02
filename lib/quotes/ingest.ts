@@ -2,6 +2,7 @@ import { createServiceSupabase } from "@/lib/supabase/server";
 import { fetchQuotingAdapter, type FetchRate } from "@/lib/adapters/fetch-quoting";
 import type { QuoteCoverages } from "@/lib/quotes/coverage";
 import type { Json } from "@/lib/types/database";
+import { todayEt } from "@/lib/dates";
 
 /**
  * Writes results from a Fetch quoting run (CreateQuoteRequest + GetQuoteStatus,
@@ -48,6 +49,11 @@ export async function ingestFetchQuoteResults(
   if (error) {
     throw new Error(`Failed to ingest quotes for property ${propertyId}: ${error.message}`);
   }
+
+  // Quotes that arrive for a property nobody queued from the dashboard (a
+  // listing-feed run, a manual ingest) still get a "date quoted": the day they
+  // landed. A date already there (the day it was submitted) is kept.
+  await supabase.from("properties").update({ date_quoted: todayEt() }).eq("id", propertyId).is("date_quoted", null);
 
   return data;
 }

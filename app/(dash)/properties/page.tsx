@@ -1,17 +1,30 @@
 import Link from "next/link";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { formatDateOnly } from "@/lib/dates";
+import { RunQuoteButton } from "../quote-requests/RunQuoteButton";
 
 export default async function PropertiesPage() {
   const supabase = await createServerSupabase();
   const { data: properties, error } = await supabase
     .from("properties")
-    .select("id, address, status, list_price, listing_agent_name, created_at")
+    .select("id, address, status, list_price, listing_agent_name, date_quoted, created_at")
     .order("created_at", { ascending: false });
+
+  // Properties with a quote already queued show "Queued" instead of a button.
+  const { data: queued } = await supabase.from("quote_requests").select("property_id").in("status", ["new", "processing"]).not("property_id", "is", null);
+  const queuedIds = new Set((queued ?? []).map((r) => r.property_id as string));
 
   return (
     <div>
-      <h1 className="text-xl font-semibold text-[#003049]">Properties</h1>
-      <div className="mb-6 mt-2 h-[3px] w-16 bg-[#F0FF00]" />
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-semibold text-[#003049]">Properties</h1>
+          <div className="mb-6 mt-2 h-[3px] w-16 bg-[#F0FF00]" />
+        </div>
+        <Link href="/quote-requests/new" className="shrink-0 rounded bg-[#003049] px-4 py-2 text-sm font-semibold text-white">
+          Run a quote now
+        </Link>
+      </div>
 
       {error && (
         <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -34,7 +47,9 @@ export default async function PropertiesPage() {
                 <th className="px-4 py-3">Address</th>
                 <th className="px-4 py-3">Listing agent</th>
                 <th className="px-4 py-3">List price</th>
+                <th className="px-4 py-3">Date quoted</th>
                 <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3">Quote</th>
               </tr>
             </thead>
             <tbody>
@@ -54,10 +69,18 @@ export default async function PropertiesPage() {
                   <td className="px-4 py-3 text-slate-600">
                     {p.list_price ? `$${Number(p.list_price).toLocaleString()}` : "—"}
                   </td>
+                  <td className="px-4 py-3 text-slate-600">{formatDateOnly(p.date_quoted)}</td>
                   <td className="px-4 py-3">
                     <span className="rounded-full bg-[#8291AC]/15 px-2 py-1 text-xs font-medium text-[#003049]">
                       {p.status}
                     </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    {queuedIds.has(p.id) ? (
+                      <span className="rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">Queued</span>
+                    ) : (
+                      <RunQuoteButton propertyId={p.id} compact label="Run quote" />
+                    )}
                   </td>
                 </tr>
               ))}

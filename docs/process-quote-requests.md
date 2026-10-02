@@ -139,3 +139,11 @@ saved, proposal kind(s) generated, and anything that ended up `needs_review` or 
   reason rather than silently producing an empty proposal — that's expected behavior, not a bug to fix.
 - This procedure is idempotent per request as long as a fresh `runSuffix` (the request id) is used each time
   it's actually run — but don't call it twice for the same request without a reason; check `status` first.
+
+## Requests queued by the team ("Run quote now")
+
+Staff can queue a quote from the dashboard (Properties page, a property's page, or `/quote-requests/new`). Those rows
+arrive in exactly the same shape as any other request — `status = 'processing'`, `property_id` already set — with
+`requester_type = 'internal'` and `requested_by` set to the team member. Nothing in steps 1-5 changes. The one
+difference: an internal request points at the property that was already in the system (no dedicated copy is made, since
+there's no partner whose visibility needs isolating), so re-quoting a property just upserts onto its existing quote rows.
