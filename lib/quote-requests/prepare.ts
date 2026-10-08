@@ -77,7 +77,9 @@ export async function prepareQuoteRequest(requestId: string): Promise<PrepareRes
     ? "Matched to county records — waiting for a carrier quote."
     : enrichment.matched
       ? "Matched to a county record, but it's missing year built or square footage — a producer needs to fill these in before it can be quoted."
-      : `No matching county property record was found, and no year built / square footage was given with the request. ${describeCountyParcelMiss(enrichment.missReason)}`;
+      : enrichment.missReason === "usps_address_not_found"
+        ? describeCountyParcelMiss(enrichment.missReason)
+        : `No matching county property record was found, and no year built / square footage was given with the request. ${describeCountyParcelMiss(enrichment.missReason)}`;
 
   await supabase.from("quote_requests").update({ status, status_detail: detail }).eq("id", requestId);
   return { status, propertyId: property.id, detail };

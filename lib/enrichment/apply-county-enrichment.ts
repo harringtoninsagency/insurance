@@ -1,5 +1,6 @@
 import { createServiceSupabase } from "@/lib/supabase/server";
 import { findCountyParcel, type CountyParcelMissReason } from "@/lib/enrichment/county-parcels";
+import { validateAddress } from "@/lib/address/usps-validate";
 import { isBdrsCovered } from "@/lib/enrichment/building-jurisdiction";
 import { findLatestRoofPermitYear, resolveRoofYearFromPermit } from "@/lib/enrichment/roof-permits";
 import { lookupFloodZone } from "@/lib/enrichment/flood-zone";
@@ -47,6 +48,25 @@ export async function applyCountyEnrichment(propertyId: string): Promise<ApplyCo
 
   if (propertyError || !property) {
     throw new Error(`Property ${propertyId} not found: ${propertyError?.message ?? "no row"}`);
+  }
+
+  // Confirm the address is real before spending a county-matching attempt on
+  // it. Only acts on a confirmed "not found" — never on a USPS outage or
+  // missing credentials, which come back as "error" and fall straight
+  // through to matching as if this check hadn't run at all.
+  if (property.house_number && property.street) {
+    const usps = await validateAddress({
+      streetAddress: `${property.house_number} ${property.street}`,
+      city: property.city,
+      state: property.state,
+      zipCode: property.zipcode,
+    });
+    if (usps.status === "not_found") {
+      return { matched: false, missReason: "usps_address_not_found" };
+    }
+    if (usps.status === "error") {
+      console.warn(`USPS address validation skipped for ${propertyId}: ${usps.message}`);
+    }
   }
 
   const { parcel, missReason } = await findCountyParcel(property);
