@@ -10,7 +10,9 @@ import { todayEt } from "@/lib/dates";
 type Client = SupabaseClient<Database>;
 
 export interface Requester {
-  userId: string;
+  // null for an unattended/automated caller (e.g. the OneHome auto-ingest
+  // script) — requested_by is a nullable FK, there's no signed-in team member.
+  userId: string | null;
   name: string;
   email: string;
   agencyId: string;
@@ -113,7 +115,7 @@ export async function queueNewAddressQuote(supabase: Client, input: NewAddressIn
   const submitted = await submitQuoteRequest(
     supabase,
     { ...input, requesterType: "internal", requesterName: requester.name, requesterEmail: requester.email },
-    { agencyId: requester.agencyId, requestedBy: requester.userId }
+    { agencyId: requester.agencyId, requestedBy: requester.userId ?? undefined }
   );
   if (!submitted.ok) return submitted;
 

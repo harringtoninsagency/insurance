@@ -63,13 +63,16 @@ npm run dev
 ## Automated OneHome ingest
 
 `scripts/auto-ingest-onehome.ts` polls a mailbox for the daily OneHome
-saved-search email, upserts any highlighted listings into `properties`, and
-pulls county enrichment for anything new — the same two steps you'd otherwise
-trigger by hand via `scripts/ingest-onehome-email.ts` + the "Pull county
-data" button. It deliberately stops there: running Fetch quotes needs a live
-Claude session (the quoting MCP tools aren't callable from a standalone
-script), so that step still means asking Claude to run the bulk-quote
-pipeline for whatever this script ingested.
+saved-search email, upserts any highlighted listings into `properties`,
+pulls county enrichment for anything new, and queues a carrier quote for
+anything enriched enough to quote (the same `quote_requests` row "Run quote
+now" produces) — the first two steps are what you'd otherwise trigger by
+hand via `scripts/ingest-onehome-email.ts` + the "Pull county data" button.
+Quoting itself still runs through the scheduled cloud routine described in
+`docs/process-quote-requests.md` (Fetch's quoting tools only exist inside a
+Claude session, not a plain script), but this script starts that routine
+immediately via `QUOTE_ROUTINE_ID`/`QUOTE_ROUTINE_TOKEN` rather than waiting
+for the hourly run.
 
 It's meant to run as a Windows Scheduled Task on whatever machine is
 normally on, not as a deployed server — there's no cloud hosting for this
