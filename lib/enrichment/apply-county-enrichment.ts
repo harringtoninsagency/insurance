@@ -1,5 +1,5 @@
 import { createServiceSupabase } from "@/lib/supabase/server";
-import { findCountyParcel } from "@/lib/enrichment/county-parcels";
+import { findCountyParcel, type CountyParcelMissReason } from "@/lib/enrichment/county-parcels";
 import { isBdrsCovered } from "@/lib/enrichment/building-jurisdiction";
 import { findLatestRoofPermitYear, resolveRoofYearFromPermit } from "@/lib/enrichment/roof-permits";
 import { lookupFloodZone } from "@/lib/enrichment/flood-zone";
@@ -28,6 +28,7 @@ function mapExteriorWallsToConstruction(exteriorWalls: string | null): string {
 
 export interface ApplyCountyEnrichmentResult {
   matched: boolean;
+  missReason?: CountyParcelMissReason;
 }
 
 /**
@@ -48,8 +49,8 @@ export async function applyCountyEnrichment(propertyId: string): Promise<ApplyCo
     throw new Error(`Property ${propertyId} not found: ${propertyError?.message ?? "no row"}`);
   }
 
-  const parcel = await findCountyParcel(property);
-  if (!parcel) return { matched: false };
+  const { parcel, missReason } = await findCountyParcel(property);
+  if (!parcel) return { matched: false, missReason };
 
   // Real permit history first (county_roof_permits, synced from PCPAO's
   // countywide permit export). With no roof permit on record, fall back to the

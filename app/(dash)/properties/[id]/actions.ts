@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { applyCountyEnrichment } from "@/lib/enrichment/apply-county-enrichment";
+import { describeCountyParcelMiss } from "@/lib/enrichment/county-parcels";
 import { generateIndicationProposal } from "@/lib/proposals/generate-indication";
 import { generateListingSnapshotProposal } from "@/lib/proposals/generate-listing-snapshot";
 import { uploadListingPhoto } from "@/lib/proposals/listing-photo";
@@ -13,7 +14,7 @@ import { createServiceSupabase } from "@/lib/supabase/server";
 export async function pullCountyDataAction(propertyId: string) {
   const result = await applyCountyEnrichment(propertyId);
   revalidatePath(`/properties/${propertyId}`);
-  return result;
+  return { matched: result.matched, message: result.matched ? null : describeCountyParcelMiss(result.missReason) };
 }
 
 export async function generateProposalAction(propertyId: string) {

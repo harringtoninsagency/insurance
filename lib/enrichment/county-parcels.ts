@@ -271,13 +271,44 @@ function extractParcelDirectional(siteAddress: string | null): string | null {
   return last ? (DIRECTIONAL_ABBREVIATIONS[last] ?? null) : null;
 }
 
+// Why findCountyParcel came back empty — lets the caller tell a producer
+// "this address looks wrong" apart from "this address is probably right but
+// our matching has a gap", without needing a third-party address validator.
+export type CountyParcelMissReason =
+  | "no_candidates_at_house_number" // nothing in county records at this house number, on any street — likely a typo'd number, or outside Pinellas/Pasco coverage
+  | "no_street_name_match" // other parcels exist at this house number, but none share this street name — likely a typo'd/misheard street name
+  | "ambiguous_match"; // multiple parcels share this house number + street name and couldn't be narrowed down — needs a human to pick
+
+export interface CountyParcelLookup {
+  parcel: CountyParcelRow | null;
+  missReason?: CountyParcelMissReason;
+}
+
+// Human-readable version of the above, shared by the quote-request intake
+// flow and the "Pull county data" button on a property page — both places
+// that need to tell a producer whether a no-match looks like a bad address
+// (worth retyping) or a gap in our own matching (worth flagging, not retyping).
+export function describeCountyParcelMiss(reason: CountyParcelMissReason | undefined): string {
+  switch (reason) {
+    case "no_street_name_match":
+      return "Other properties exist at this house number, but none on this street — double-check the street name for a typo.";
+    case "ambiguous_match":
+      return "Multiple county property records matched this address and couldn't be narrowed down automatically — a producer needs to confirm the correct one.";
+    case "no_candidates_at_house_number":
+    default:
+      return "No county property record exists at this house number — double-check the address for a typo, or it may be outside Pinellas/Pasco County coverage.";
+  }
+}
+
 /**
  * Matches a property to a synced county_parcels row by street number + name
- * (+ zip as a confidence check). Returns null rather than guessing on zero or
- * multiple matches — ambiguity needs a human, not a silent wrong pick.
+ * (+ zip as a confidence check). Returns a null parcel rather than guessing on
+ * zero or multiple matches — ambiguity needs a human, not a silent wrong pick.
  */
-export async function findCountyParcel(property: PropertyRow): Promise<CountyParcelRow | null> {
-  if (!property.house_number || !property.street) return null;
+export async function findCountyParcel(property: PropertyRow): Promise<CountyParcelLookup> {
+  if (!property.house_number || !property.street) {
+    return { parcel: null, missReason: "no_candidates_at_house_number" };
+  }
 
   const supabase = createServiceSupabase();
   let { data, error } = await supabase
@@ -296,7 +327,7 @@ export async function findCountyParcel(property: PropertyRow): Promise<CountyPar
     if (error) throw new Error(`County parcel lookup failed: ${error.message}`);
   }
 
-  if (!data?.length) return null;
+  if (!data?.length) return { parcel: null, missReason: "no_candidates_at_house_number" };
 
   const targetStreet = normalizeStreetName(property.street);
   // row.str_name is already the county's own bare base name, with no suffix
@@ -306,30 +337,25 @@ export async function findCountyParcel(property: PropertyRow): Promise<CountyPar
   // loses "isle", since "isle" is itself a valid street suffix elsewhere).
   const matches = data.filter((row) => row.str_name && row.str_name.trim().toLowerCase() === targetStreet);
 
-  if (matches.length === 1) return matches[0] ?? null;
+  if (matches.length === 0) return { parcel: null, missReason: "no_street_name_match" };
+  if (matches.length === 1) return { parcel: matches[0] ?? null };
 
-  if (matches.length > 1 && property.zipcode) {
+  if (property.zipcode) {
     const zipMatches = matches.filter((row) => row.zipcode === property.zipcode);
-    if (zipMatches.length === 1) return zipMatches[0] ?? null;
+    if (zipMatches.length === 1) return { parcel: zipMatches[0] ?? null };
   }
 
-  if (matches.length > 1) {
-    const suffixAbbrev = extractSuffixAbbreviation(property.street);
-    if (suffixAbbrev) {
-      const suffixMatches = matches.filter((row) => row.str_sfx?.toLowerCase() === suffixAbbrev);
-      if (suffixMatches.length === 1) return suffixMatches[0] ?? null;
-    }
+  const suffixAbbrev = extractSuffixAbbreviation(property.street);
+  if (suffixAbbrev) {
+    const suffixMatches = matches.filter((row) => row.str_sfx?.toLowerCase() === suffixAbbrev);
+    if (suffixMatches.length === 1) return { parcel: suffixMatches[0] ?? null };
   }
 
-  if (matches.length > 1) {
-    const directional = extractDirectional(property.street);
-    if (directional) {
-      const directionalMatches = matches.filter(
-        (row) => extractParcelDirectional(row.site_address) === directional
-      );
-      if (directionalMatches.length === 1) return directionalMatches[0] ?? null;
-    }
+  const directional = extractDirectional(property.street);
+  if (directional) {
+    const directionalMatches = matches.filter((row) => extractParcelDirectional(row.site_address) === directional);
+    if (directionalMatches.length === 1) return { parcel: directionalMatches[0] ?? null };
   }
 
-  return null;
+  return { parcel: null, missReason: "ambiguous_match" };
 }
