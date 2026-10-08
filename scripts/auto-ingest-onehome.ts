@@ -1,8 +1,10 @@
 // Scheduled-task entry point: polls the configured mailbox for recent
 // OneHome saved-search emails, upserts any highlighted listings into
-// `properties`, and pulls county enrichment for newly-touched ones.
-// Deliberately stops there — running Fetch quotes still requires an agent
-// session (see README's "Automated OneHome ingest" section).
+// `properties`, pulls county enrichment for newly-touched ones, then queues
+// a carrier quote for anything that's enriched enough to quote and not
+// already queued/quoted — the same quote_requests row "Run quote now"
+// produces, so the scheduled routine (or the immediate fire below) picks it
+// up unchanged. See docs/process-quote-requests.md for that half.
 //
 // Usage: npx tsx scripts/auto-ingest-onehome.ts
 
@@ -16,6 +18,8 @@ import { applyOneHomeListings } from "@/lib/ingest/apply-onehome-listings";
 import { applyCountyEnrichment } from "@/lib/enrichment/apply-county-enrichment";
 import { createServiceSupabase } from "@/lib/supabase/server";
 import { sendSlackAlert } from "@/lib/alerts/slack";
+import { queuePropertyQuote, type Requester } from "@/lib/quote-requests/queue-quote";
+import { fireQuoteRoutine } from "@/lib/quote-requests/fire-routine";
 
 const AGENCY_ID = "ccb0a58e-0b78-4799-b236-66d1bda42f67";
 // Wider than the daily cadence this is meant to run on, so a missed run (the
@@ -64,7 +68,7 @@ async function main() {
   const mlsIds = allListings.map((l) => l.mlsId);
   const { data: touchedProperties, error } = await supabase
     .from("properties")
-    .select("id, mls_id")
+    .select("id, mls_id, status")
     .eq("agency_id", AGENCY_ID)
     .in("mls_id", mlsIds);
   if (error) {
@@ -82,7 +86,36 @@ async function main() {
     }
   }
   log(`Enriched ${enrichedCount} of ${touchedProperties?.length ?? 0} touched properties with county data.`);
-  log("Done. Quoting still requires asking Claude to run the bulk-quote pipeline for these properties.");
+
+  // Queue a carrier quote for anything not already quoted (status stays
+  // "new" until a quote completes). queuePropertyQuote is idempotent — a
+  // property already sitting in new/processing on quote_requests is
+  // reported back as alreadyQueued rather than duplicated, so re-running
+  // this against the same listing (or one that previously failed to quote
+  // and is being retried) is always safe.
+  const requester: Requester = {
+    userId: null,
+    name: "OneHome auto-ingest",
+    email: process.env.ONEHOME_MAILBOX ?? "automation@fetchrival.internal",
+    agencyId: AGENCY_ID,
+  };
+  const toQuote = (touchedProperties ?? []).filter((p) => p.status === "new");
+  let queuedCount = 0;
+  let firedCount = 0;
+  for (const property of toQuote) {
+    const result = await queuePropertyQuote(supabase, property.id, requester, "both");
+    if (!result.ok) {
+      log(`  Couldn't queue a quote for property ${property.id} (mls ${property.mls_id}): ${result.error}`);
+      continue;
+    }
+    if (result.alreadyQueued) continue;
+    queuedCount += 1;
+    const fired = await fireQuoteRoutine(result.requestId);
+    if (fired.started) firedCount += 1;
+    else log(`  Queued property ${property.id} (mls ${property.mls_id}) but couldn't start the quote run now (${fired.reason}); the hourly run will pick it up.`);
+  }
+  log(`Queued ${queuedCount} new quote request(s) out of ${toQuote.length} unquoted touched properties; started the quote run immediately for ${firedCount} of them.`);
+  log("Done.");
 }
 
 main().catch((err) => {
