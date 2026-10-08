@@ -2,6 +2,8 @@ import { createServiceSupabase } from "@/lib/supabase/server";
 import { findCountyParcel } from "@/lib/enrichment/county-parcels";
 import { isBdrsCovered } from "@/lib/enrichment/building-jurisdiction";
 import { findLatestRoofPermitYear, resolveRoofYearFromPermit } from "@/lib/enrichment/roof-permits";
+import { lookupFloodZone } from "@/lib/enrichment/flood-zone";
+import { distanceToCoastMiles } from "@/lib/enrichment/coastline-distance";
 
 // Placeholder for parcels with no roof permit on record, outside BDRS
 // coverage (their own building departments aren't reachable through the
@@ -98,11 +100,35 @@ export async function applyCountyEnrichment(propertyId: string): Promise<ApplyCo
     }
   }
 
+  // Flood zone (live FEMA lookup) and distance to coast (local PostGIS calc)
+  // both need the parcel's coordinates, which only Pinellas has today (see
+  // scripts/sync-pinellas-parcel-coordinates.ts) — silently skipped for
+  // anything else (e.g. Pasco) rather than failing the whole enrichment over
+  // two supplementary fields. Same if either source itself errors (FEMA's
+  // service is down, or scripts/sync-us-coastline.ts hasn't been run yet):
+  // log it and move on, don't block enrichment on a nice-to-have.
+  let floodZone: string | null = null;
+  let distToCoastMiles: number | null = null;
+  if (parcel.lat != null && parcel.lon != null) {
+    try {
+      floodZone = (await lookupFloodZone(parcel.lat, parcel.lon)).zone;
+    } catch (err) {
+      console.warn(`Flood zone lookup failed for ${propertyId}: ${(err as Error).message}`);
+    }
+    try {
+      distToCoastMiles = await distanceToCoastMiles(parcel.lat, parcel.lon);
+    } catch (err) {
+      console.warn(`Coastline distance lookup failed for ${propertyId}: ${(err as Error).message}`);
+    }
+  }
+
   const { error: enrichmentError } = await supabase.from("enrichments").insert({
     agency_id: property.agency_id,
     property_id: propertyId,
     provider: parcel.county === "Pasco" ? "pascopa" : "pcpao",
     county_appraiser_payload: parcel,
+    flood_zone: floodZone,
+    dist_to_coast_miles: distToCoastMiles,
   });
 
   if (enrichmentError) {
