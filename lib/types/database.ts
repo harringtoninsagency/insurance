@@ -297,6 +297,8 @@ export interface Database {
           roof_cover: string | null;
           roof_frame: string | null;
           impr_dscr: string | null;
+          lat: number | null;
+          lon: number | null;
           synced_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["county_parcels"]["Row"]> & {
@@ -323,6 +325,19 @@ export interface Database {
           roof_year: number;
         };
         Update: Partial<Database["public"]["Tables"]["county_roof_permits"]["Row"]>;
+        Relationships: [];
+      };
+      florida_coastline: {
+        Row: {
+          id: number;
+          geom: unknown;
+          source: string;
+          synced_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["florida_coastline"]["Row"]> & {
+          geom: unknown;
+        };
+        Update: Partial<Database["public"]["Tables"]["florida_coastline"]["Row"]>;
         Relationships: [];
       };
       contact_consent_events: {
@@ -451,7 +466,16 @@ export interface Database {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      coastline_distance_miles: {
+        Args: { p_lon: number; p_lat: number };
+        Returns: number;
+      };
+      load_florida_coastline: {
+        Args: { p_wkt: string; p_source: string };
+        Returns: undefined;
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };
