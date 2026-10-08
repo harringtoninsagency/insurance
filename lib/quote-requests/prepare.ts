@@ -1,5 +1,6 @@
 import { createServiceSupabase } from "@/lib/supabase/server";
 import { applyCountyEnrichment } from "@/lib/enrichment/apply-county-enrichment";
+import { describeCountyParcelMiss } from "@/lib/enrichment/county-parcels";
 import { splitStreetAddress } from "@/lib/ingest/onehome-email";
 import { todayEt } from "@/lib/dates";
 
@@ -76,7 +77,7 @@ export async function prepareQuoteRequest(requestId: string): Promise<PrepareRes
     ? "Matched to county records — waiting for a carrier quote."
     : enrichment.matched
       ? "Matched to a county record, but it's missing year built or square footage — a producer needs to fill these in before it can be quoted."
-      : "No matching county property record was found, and no year built / square footage was given with the request. A producer needs to add these by hand before it can be quoted.";
+      : `No matching county property record was found, and no year built / square footage was given with the request. ${describeCountyParcelMiss(enrichment.missReason)}`;
 
   await supabase.from("quote_requests").update({ status, status_detail: detail }).eq("id", requestId);
   return { status, propertyId: property.id, detail };

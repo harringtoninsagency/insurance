@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { pullCountyDataAction } from "./actions";
 
-type State = { matched: boolean } | null;
+type State = { matched: boolean; message: string | null } | null;
 
 async function runAction(_prev: State, propertyId: string): Promise<State> {
   return pullCountyDataAction(propertyId);
@@ -25,7 +25,7 @@ export function PullCountyDataButton({ propertyId }: { propertyId: string }) {
       </form>
       {state && (
         <span className="text-sm text-slate-500">
-          {state.matched ? "Matched — property updated." : "No county parcel match found for this address."}
+          {state.matched ? "Matched — property updated." : state.message}
         </span>
       )}
     </div>
