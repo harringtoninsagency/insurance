@@ -14,6 +14,19 @@ export default async function PropertiesPage() {
   const { data: queued } = await supabase.from("quote_requests").select("property_id").in("status", ["new", "processing"]).not("property_id", "is", null);
   const queuedIds = new Set((queued ?? []).map((r) => r.property_id as string));
 
+  // Enrichments keeps one audit row per enrichment run, newest first here —
+  // keep only the first (latest) row seen per property.
+  const { data: enrichmentRows } = await supabase
+    .from("enrichments")
+    .select("property_id, flood_zone, dist_to_coast_miles")
+    .order("fetched_at", { ascending: false });
+  const latestEnrichmentByProperty = new Map<string, { flood_zone: string | null; dist_to_coast_miles: number | null }>();
+  for (const row of enrichmentRows ?? []) {
+    if (!latestEnrichmentByProperty.has(row.property_id)) {
+      latestEnrichmentByProperty.set(row.property_id, { flood_zone: row.flood_zone, dist_to_coast_miles: row.dist_to_coast_miles });
+    }
+  }
+
   return (
     <div>
       <div className="flex items-start justify-between gap-4">
@@ -48,13 +61,17 @@ export default async function PropertiesPage() {
                 <th className="px-4 py-3">Listing agent</th>
                 <th className="px-4 py-3">List price</th>
                 <th className="px-4 py-3">Roof year</th>
+                <th className="px-4 py-3">Flood zone</th>
+                <th className="px-4 py-3">Dist. to coast</th>
                 <th className="px-4 py-3">Date quoted</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">Quote</th>
               </tr>
             </thead>
             <tbody>
-              {properties.map((p) => (
+              {properties.map((p) => {
+                const enrichment = latestEnrichmentByProperty.get(p.id);
+                return (
                 <tr key={p.id} className="border-b border-slate-100 last:border-0">
                   <td className="px-4 py-3">
                     <Link
@@ -73,6 +90,12 @@ export default async function PropertiesPage() {
                   <td className="px-4 py-3 text-slate-600">
                     {p.roof_year ?? "—"}
                   </td>
+                  <td className="px-4 py-3 text-slate-600">
+                    {enrichment?.flood_zone ?? "—"}
+                  </td>
+                  <td className="px-4 py-3 text-slate-600">
+                    {enrichment?.dist_to_coast_miles != null ? `${enrichment.dist_to_coast_miles} mi` : "—"}
+                  </td>
                   <td className="px-4 py-3 text-slate-600">{formatDateOnly(p.date_quoted)}</td>
                   <td className="px-4 py-3">
                     <span className="rounded-full bg-[#8291AC]/15 px-2 py-1 text-xs font-medium text-[#003049]">
@@ -87,7 +110,8 @@ export default async function PropertiesPage() {
                     )}
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
