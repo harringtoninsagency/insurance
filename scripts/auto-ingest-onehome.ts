@@ -12,9 +12,10 @@ import { appendFileSync, existsSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 process.loadEnvFile(resolve(import.meta.dirname, "../.env.local"));
 
-import { fetchRecentMailBodies } from "@/lib/ingest/graph-mail";
-import { parseOneHomeListingsFromText, type ParsedListing } from "@/lib/ingest/onehome-email";
+import { fetchRecentMailBodies, fetchMessageHtmlBody } from "@/lib/ingest/graph-mail";
+import { parseOneHomeListingsFromText, extractListingPhotos, type ParsedListing, type ListingPhoto } from "@/lib/ingest/onehome-email";
 import { applyOneHomeListings } from "@/lib/ingest/apply-onehome-listings";
+import { applyOneHomePhotos } from "@/lib/ingest/apply-onehome-photos";
 import { applyCountyEnrichment } from "@/lib/enrichment/apply-county-enrichment";
 import { createServiceSupabase } from "@/lib/supabase/server";
 import { sendSlackAlert } from "@/lib/alerts/slack";
@@ -44,6 +45,7 @@ async function main() {
   log(`Fetched ${messages.length} message(s) from the mailbox.`);
 
   const allListings: ParsedListing[] = [];
+  const allPhotos: ListingPhoto[] = [];
   let matchingMessages = 0;
   for (const message of messages) {
     const listings = parseOneHomeListingsFromText(message.bodyText);
@@ -51,6 +53,15 @@ async function main() {
     matchingMessages += 1;
     log(`  "${message.subject}" (${message.receivedDateTime}): ${listings.length} listing(s)`);
     allListings.push(...listings);
+
+    // The plain-text body above has no <img> tags; only a matched message's
+    // HTML is worth the extra Graph call to find its listing photos.
+    try {
+      const html = await fetchMessageHtmlBody(message.id);
+      allPhotos.push(...extractListingPhotos(html));
+    } catch (err) {
+      log(`  Couldn't fetch HTML body for photos on "${message.subject}": ${(err as Error).message}`);
+    }
   }
 
   if (allListings.length === 0) {
@@ -61,6 +72,11 @@ async function main() {
   log(`Parsed ${allListings.length} listing(s) across ${matchingMessages} email(s). Upserting...`);
   const result = await applyOneHomeListings(AGENCY_ID, allListings);
   log(`Upsert result: ${result.inserted} inserted, ${result.updated} updated, ${result.skipped} skipped.`);
+
+  if (allPhotos.length > 0) {
+    const photoResult = await applyOneHomePhotos(AGENCY_ID, allPhotos);
+    log(`Photos: found ${allPhotos.length} — ${JSON.stringify(photoResult)}.`);
+  }
 
   // Enrich anything new or updated that isn't already enriched, so it's
   // ready for quoting without a separate manual "Pull county data" click.

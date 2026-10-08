@@ -5,6 +5,7 @@
 // permission (admin-consented) on the target mailbox. See README for setup.
 
 export interface GraphMailMessage {
+  id: string;
   subject: string;
   receivedDateTime: string;
   bodyText: string;
@@ -17,6 +18,7 @@ interface GraphTokenResponse {
 }
 
 interface GraphMessageResource {
+  id?: string;
   subject?: string;
   receivedDateTime?: string;
   body?: { content?: string };
@@ -24,6 +26,11 @@ interface GraphMessageResource {
 
 interface GraphMessagesResponse {
   value?: GraphMessageResource[];
+  error?: { message?: string };
+}
+
+interface GraphMessageDetailResponse {
+  body?: { content?: string };
   error?: { message?: string };
 }
 
@@ -69,7 +76,7 @@ export async function fetchRecentMailBodies(sinceHours: number): Promise<GraphMa
   const since = new Date(Date.now() - sinceHours * 60 * 60 * 1000).toISOString();
   const url = new URL(`https://graph.microsoft.com/v1.0/users/${encodeURIComponent(mailbox)}/mailFolders/inbox/messages`);
   url.searchParams.set("$filter", `receivedDateTime ge ${since}`);
-  url.searchParams.set("$select", "subject,receivedDateTime,body");
+  url.searchParams.set("$select", "id,subject,receivedDateTime,body");
   url.searchParams.set("$top", "50");
 
   const res = await fetch(url, {
@@ -86,8 +93,35 @@ export async function fetchRecentMailBodies(sinceHours: number): Promise<GraphMa
   }
 
   return (json.value ?? []).map((m) => ({
+    id: m.id ?? "",
     subject: m.subject ?? "(no subject)",
     receivedDateTime: m.receivedDateTime ?? "",
     bodyText: m.body?.content ?? "",
   }));
+}
+
+/**
+ * Fetches one message's HTML body by id — the plain-text mode
+ * `fetchRecentMailBodies` uses for listing parsing has no `<img>` tags, so
+ * listing photos (extractListingPhotos, which expects the same HTML OneHome
+ * sends) need this separate call. Only worth calling for messages already
+ * confirmed to contain OneHome listings, not every message in the window.
+ */
+export async function fetchMessageHtmlBody(messageId: string): Promise<string> {
+  const mailbox = process.env.ONEHOME_MAILBOX;
+  if (!mailbox) throw new Error("Missing ONEHOME_MAILBOX in the environment");
+
+  const token = await getAppOnlyToken();
+  const url = new URL(
+    `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(mailbox)}/messages/${encodeURIComponent(messageId)}`
+  );
+  url.searchParams.set("$select", "body");
+
+  // No Prefer header here — Graph's default body format is HTML.
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+  const json = (await res.json()) as GraphMessageDetailResponse;
+  if (!res.ok) {
+    throw new Error(`Graph message detail request failed: ${json.error?.message ?? res.statusText}`);
+  }
+  return json.body?.content ?? "";
 }
