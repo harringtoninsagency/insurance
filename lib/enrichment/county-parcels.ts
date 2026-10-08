@@ -122,7 +122,10 @@ function stripUnitDesignator(street: string): string {
 }
 
 export function normalizeStreetName(street: string): string {
-  let words = stripUnitDesignator(street).trim().toLowerCase().split(/\s+/);
+  // Strip trailing punctuation (e.g. "Rd." or "St,") before splitting into
+  // words — otherwise "rd." never matches the bare "rd" in STREET_SUFFIXES
+  // and the real suffix is left in place, breaking the match below.
+  let words = stripUnitDesignator(street).trim().toLowerCase().replace(/[.,]+$/, "").split(/\s+/);
   if (words.length > 1 && DIRECTIONALS.includes(words[0]!)) {
     words = words.slice(1);
   }
@@ -296,7 +299,12 @@ export async function findCountyParcel(property: PropertyRow): Promise<CountyPar
   if (!data?.length) return null;
 
   const targetStreet = normalizeStreetName(property.street);
-  const matches = data.filter((row) => row.str_name && normalizeStreetName(row.str_name) === targetStreet);
+  // row.str_name is already the county's own bare base name, with no suffix
+  // or directional attached (those live in str_sfx / the site_address text) —
+  // running it back through normalizeStreetName would wrongly strip a second
+  // word that happens to also be a suffix in its own right (e.g. "SUN ISLE"
+  // loses "isle", since "isle" is itself a valid street suffix elsewhere).
+  const matches = data.filter((row) => row.str_name && row.str_name.trim().toLowerCase() === targetStreet);
 
   if (matches.length === 1) return matches[0] ?? null;
 
