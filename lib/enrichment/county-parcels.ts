@@ -271,10 +271,13 @@ function extractParcelDirectional(siteAddress: string | null): string | null {
   return last ? (DIRECTIONAL_ABBREVIATIONS[last] ?? null) : null;
 }
 
-// Why findCountyParcel came back empty — lets the caller tell a producer
-// "this address looks wrong" apart from "this address is probably right but
-// our matching has a gap", without needing a third-party address validator.
+// Why a property came back with no county match — lets the caller tell a
+// producer "this address looks wrong" apart from "this address is probably
+// right but our matching has a gap". usps_address_not_found is set upstream,
+// by applyCountyEnrichment, before findCountyParcel even runs; the other
+// three are set by findCountyParcel itself.
 export type CountyParcelMissReason =
+  | "usps_address_not_found" // USPS has no such deliverable address at all — almost always bad source data (typo'd number, wrong street), not a gap in our county sync
   | "no_candidates_at_house_number" // nothing in county records at this house number, on any street — likely a typo'd number, or outside Pinellas/Pasco coverage
   | "no_street_name_match" // other parcels exist at this house number, but none share this street name — likely a typo'd/misheard street name
   | "ambiguous_match"; // multiple parcels share this house number + street name and couldn't be narrowed down — needs a human to pick
@@ -290,6 +293,8 @@ export interface CountyParcelLookup {
 // (worth retyping) or a gap in our own matching (worth flagging, not retyping).
 export function describeCountyParcelMiss(reason: CountyParcelMissReason | undefined): string {
   switch (reason) {
+    case "usps_address_not_found":
+      return "USPS couldn't find this as a deliverable address — double-check it for a typo before adding year built / square footage by hand.";
     case "no_street_name_match":
       return "Other properties exist at this house number, but none on this street — double-check the street name for a typo.";
     case "ambiguous_match":
