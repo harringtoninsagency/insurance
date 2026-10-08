@@ -1,5 +1,9 @@
 import Link from "next/link";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { todayEt } from "@/lib/dates";
+import type { Database } from "@/lib/types/database";
+
+type QuoteRequestRow = Database["public"]["Tables"]["quote_requests"]["Row"];
 
 const STATUS_LABEL: Record<string, { label: string; className: string }> = {
   new: { label: "New", className: "bg-slate-100 text-slate-600" },
@@ -14,6 +18,14 @@ const KIND_LABEL: Record<string, string> = {
   listing_snapshot: "Listing snapshot",
   both: "Quote summary + listing snapshot",
 };
+
+// "2026-10-07" -> "Tuesday, October 7, 2026". Parsed as a plain date (no time
+// component), so no time zone shift to worry about here.
+function formatDayHeading(dayKey: string): string {
+  const [year, month, day] = dayKey.split("-").map(Number);
+  const date = new Date(year!, month! - 1, day!);
+  return new Intl.DateTimeFormat("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }).format(date);
+}
 
 export default async function QuoteRequestsPage() {
   const supabase = await createServerSupabase();
@@ -30,6 +42,86 @@ export default async function QuoteRequestsPage() {
 
   const pendingCount = (requests ?? []).filter((r) => r.status === "processing").length;
   const needsReviewCount = (requests ?? []).filter((r) => r.status === "needs_review").length;
+
+  // Active = still needs something (an agent run, or a producer filling in
+  // details) — always shown flat, front and center. Completed/failed are
+  // done either way, so they're grouped into collapsible daily batches
+  // instead of growing one long list forever.
+  const activeRequests = (requests ?? []).filter((r) => r.status === "new" || r.status === "processing" || r.status === "needs_review");
+  const completedRequests = (requests ?? []).filter((r) => r.status === "completed" || r.status === "failed");
+
+  const completedByDay = new Map<string, QuoteRequestRow[]>();
+  for (const r of completedRequests) {
+    // processed_at is set the moment a request finishes (lib/quote-requests/fetch-pipeline.ts) —
+    // the day it was actually completed, not the day it was first requested.
+    const dayKey = todayEt(new Date(r.processed_at ?? r.created_at));
+    const bucket = completedByDay.get(dayKey);
+    if (bucket) bucket.push(r);
+    else completedByDay.set(dayKey, [r]);
+  }
+  const completedDays = [...completedByDay.keys()].sort((a, b) => (a < b ? 1 : -1));
+
+  function renderRow(r: QuoteRequestRow) {
+    const status = STATUS_LABEL[r.status] ?? STATUS_LABEL.new!;
+    const property = r.property_id ? propertyById.get(r.property_id) : undefined;
+    const contact = r.contact_id ? contactById.get(r.contact_id) : undefined;
+    return (
+      <tr key={r.id} className="border-b border-slate-100 align-top last:border-0">
+        <td className="px-4 py-3">
+          <div className="font-medium text-[#003049]">{r.requester_name}</div>
+          <div className="text-xs text-slate-500">
+            {contact ? (
+              <>
+                Partner —{" "}
+                <Link href={`/contacts/${contact.id}`} className="hover:underline">
+                  {contact.company_name ?? "directory contact"}
+                </Link>
+              </>
+            ) : r.requester_type === "internal" ? (
+              "Team"
+            ) : (
+              "Public"
+            )}{" "}
+            · {r.requester_email}
+          </div>
+        </td>
+        <td className="px-4 py-3 text-slate-600">
+          {property && r.property_id ? (
+            <Link href={`/properties/${r.property_id}`} className="text-[#003049] hover:underline">
+              {property.address}
+            </Link>
+          ) : (
+            `${r.address_line}, ${r.city}`
+          )}
+          {r.status_detail && <div className="mt-1 text-xs text-slate-400">{r.status_detail}</div>}
+        </td>
+        <td className="px-4 py-3 text-slate-600">{KIND_LABEL[r.request_kind] ?? r.request_kind}</td>
+        <td className="px-4 py-3">
+          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${status.className}`}>{status.label}</span>
+        </td>
+        <td className="px-4 py-3 text-slate-500">{new Date(r.created_at).toLocaleString()}</td>
+      </tr>
+    );
+  }
+
+  function requestsTable(rows: QuoteRequestRow[]) {
+    return (
+      <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-[#003049] text-xs uppercase text-white">
+            <tr>
+              <th className="px-4 py-3">Requester</th>
+              <th className="px-4 py-3">Property</th>
+              <th className="px-4 py-3">Wants</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Requested</th>
+            </tr>
+          </thead>
+          <tbody>{rows.map(renderRow)}</tbody>
+        </table>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -62,63 +154,22 @@ export default async function QuoteRequestsPage() {
       {error && <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">{error.message}</p>}
       {!error && requests?.length === 0 && <p className="text-sm text-slate-500">No requests yet.</p>}
 
-      {!!requests?.length && (
-        <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-[#003049] text-xs uppercase text-white">
-              <tr>
-                <th className="px-4 py-3">Requester</th>
-                <th className="px-4 py-3">Property</th>
-                <th className="px-4 py-3">Wants</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Requested</th>
-              </tr>
-            </thead>
-            <tbody>
-              {requests.map((r) => {
-                const status = STATUS_LABEL[r.status] ?? STATUS_LABEL.new!;
-                const property = r.property_id ? propertyById.get(r.property_id) : undefined;
-                const contact = r.contact_id ? contactById.get(r.contact_id) : undefined;
-                return (
-                  <tr key={r.id} className="border-b border-slate-100 align-top last:border-0">
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-[#003049]">{r.requester_name}</div>
-                      <div className="text-xs text-slate-500">
-                        {contact ? (
-                          <>
-                            Partner —{" "}
-                            <Link href={`/contacts/${contact.id}`} className="hover:underline">
-                              {contact.company_name ?? "directory contact"}
-                            </Link>
-                          </>
-                        ) : r.requester_type === "internal" ? (
-                          "Team"
-                        ) : (
-                          "Public"
-                        )}{" "}
-                        · {r.requester_email}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-slate-600">
-                      {property && r.property_id ? (
-                        <Link href={`/properties/${r.property_id}`} className="text-[#003049] hover:underline">
-                          {property.address}
-                        </Link>
-                      ) : (
-                        `${r.address_line}, ${r.city}`
-                      )}
-                      {r.status_detail && <div className="mt-1 text-xs text-slate-400">{r.status_detail}</div>}
-                    </td>
-                    <td className="px-4 py-3 text-slate-600">{KIND_LABEL[r.request_kind] ?? r.request_kind}</td>
-                    <td className="px-4 py-3">
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${status.className}`}>{status.label}</span>
-                    </td>
-                    <td className="px-4 py-3 text-slate-500">{new Date(r.created_at).toLocaleString()}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+      {activeRequests.length > 0 && <div className="mb-6">{requestsTable(activeRequests)}</div>}
+
+      {completedDays.length > 0 && (
+        <div className="space-y-3">
+          <h2 className="text-sm font-semibold uppercase text-[#003049]">Completed</h2>
+          {completedDays.map((dayKey, i) => {
+            const rows = completedByDay.get(dayKey)!;
+            return (
+              <details key={dayKey} className="rounded-lg border border-slate-200 bg-white" open={i === 0}>
+                <summary className="cursor-pointer select-none px-4 py-3 text-sm font-medium text-[#003049]">
+                  {formatDayHeading(dayKey)} <span className="text-slate-400">({rows.length})</span>
+                </summary>
+                <div className="border-t border-slate-200">{requestsTable(rows)}</div>
+              </details>
+            );
+          })}
         </div>
       )}
     </div>

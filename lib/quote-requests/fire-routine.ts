@@ -25,9 +25,21 @@ export async function fireQuoteRoutine(requestId: string): Promise<{ started: bo
   return result;
 }
 
+// Env var names are case-sensitive, but easy to mistype when setting them by
+// hand in a dashboard — confirmed live: the server had "Quote_Routine_ID" set
+// instead of "QUOTE_ROUTINE_ID", which silently degraded every on-demand fire
+// to the hourly fallback (the request still completed, just up to ~59 minutes
+// later than the UI implies). Exact name first, case-insensitive as a fallback.
+function findEnvVar(name: string): string | undefined {
+  if (process.env[name]) return process.env[name];
+  const lower = name.toLowerCase();
+  const key = Object.keys(process.env).find((k) => k.toLowerCase() === lower);
+  return key ? process.env[key] : undefined;
+}
+
 async function tryFire(requestId: string): Promise<{ started: boolean; reason?: string }> {
-  const routineId = process.env.QUOTE_ROUTINE_ID;
-  const token = process.env.QUOTE_ROUTINE_TOKEN;
+  const routineId = findEnvVar("QUOTE_ROUTINE_ID");
+  const token = findEnvVar("QUOTE_ROUTINE_TOKEN");
   if (!routineId || !token) {
     const missing = [!routineId && "QUOTE_ROUTINE_ID", !token && "QUOTE_ROUTINE_TOKEN"].filter(Boolean).join(" and ");
     // Names only (never values) of any similarly named variables, to spot typos or stray whitespace.
