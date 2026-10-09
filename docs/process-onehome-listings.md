@@ -21,11 +21,13 @@ anyone; a producer reviews and sends each listing snapshot by hand once it's gen
 ## Credentials — read this before step 1
 
 Every script below starts with `import { loadEnvIfPresent } from "@/lib/env"; loadEnvIfPresent();`. This
-routine needs FIVE variables as real process environment variables (already set on the environment before this
-process starts): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`,
-`GMAIL_IMAP_USER`, `GMAIL_IMAP_APP_PASSWORD`.
+routine needs THREE Supabase variables as real process environment variables (already set on the environment
+before this process starts): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+`SUPABASE_SERVICE_ROLE_KEY`. Mail is read through the Gmail REST API (`lib/ingest/gmail-mail.ts`), which needs a
+Gmail OAuth access token in `GMAIL_ACCESS_TOKEN` (or a proxy that injects credentials for
+`gmail.googleapis.com`). IMAP is no longer used — the cloud sandbox's proxy resets IMAP/993 TLS.
 
-**Check first**, before running anything else: `env | grep -iE "supabase|gmail"`. If any of the five aren't
+**Check first**, before running anything else: `env | grep -iE "supabase|gmail_access"`. If any of these aren't
 there, that's an environment configuration problem — stop, send exactly one push notification naming the
 missing variables, and end the run. Do not work around it by writing a `.env.local` file, asking for the values
 in chat, or any other substitute; those values must only ever be set directly in this environment's own
