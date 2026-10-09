@@ -77,7 +77,7 @@ export default async function DashLayout({
               href="/contacts"
               className="block rounded px-3 py-2 font-medium text-[#003049] hover:bg-[#003049]/5"
             >
-              Realtors &amp; brokers
+              Realtors &amp; Brokers
             </Link>
           </li>
           {profile.role === "admin" && (
