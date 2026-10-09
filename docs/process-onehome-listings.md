@@ -31,38 +31,40 @@ missing variables, and end the run. Do not work around it by writing a `.env.loc
 in chat, or any other substitute; those values must only ever be set directly in this environment's own
 settings.
 
-## IMAP outage (Oct 1–9, 2026) and the Gmail-connector fallback
+## Fetching the email: Gmail connector (primary) vs. IMAP (fallback)
 
-The scheduled routine's `GMAIL_IMAP_USER`/`GMAIL_IMAP_APP_PASSWORD` path (`fetchRecentGmailBodies` in
-`lib/ingest/gmail-mail.ts`) silently stopped working around **September 30/October 1, 2026** — the scheduled
-runs kept reporting `SUCCEEDED` every day, but zero new `properties` rows were ever created (confirmed via
-`select date(created_at), count(*) from properties where source='onehome' group by 1 order by 1 desc` — a
-9-day gap with nothing). The app password was regenerated and re-set; as of this writing it's unverified
-whether that actually fixed IMAP, since the backlog was instead cleared through the path below.
+**Background — why this section exists:** the IMAP path (`GMAIL_IMAP_USER`/`GMAIL_IMAP_APP_PASSWORD`,
+`fetchRecentGmailBodies` in `lib/ingest/gmail-mail.ts`) silently stopped working around **September
+30/October 1, 2026** — the scheduled routine kept reporting `SUCCEEDED` every day, but zero new `properties`
+rows were ever created for 9 days straight (confirmed via
+`select date(created_at), count(*) from properties where source='onehome' group by 1 order by 1 desc`). The
+backlog was cleared by hand using the Gmail connector instead (see below), and as of **October 9, 2026** a
+human added the **Gmail connector** to this routine's own connector list in the claude.ai routines UI — so the
+routine now has `mcp__Gmail__*` tools available directly, not just an interactive session.
 
-**If this happens again, don't just re-debug IMAP in isolation — check whether the Gmail connector tools
-(`mcp__Gmail__search_threads`, `mcp__Gmail__get_message`) are available in your session first.** They're bound
-to `harringtoninsagency@gmail.com` (the correct mailbox) and sidestep IMAP entirely:
+**Use the Gmail connector tools as the primary method now** — check first whether `mcp__Gmail__search_threads`
+and `mcp__Gmail__get_message` are in your tool list (they should be, for both the scheduled routine and an
+interactive session with the connector). They're bound to `harringtoninsagency@gmail.com` (the correct
+mailbox) and need no IMAP credentials at all:
 
 ```
-mcp__Gmail__search_threads(query: 'subject:"Pinellas homes for sale" from:STELLAR@stellarmatrix.com newer_than:14d')
+mcp__Gmail__search_threads(query: 'subject:"Pinellas homes for sale" from:STELLAR@stellarmatrix.com newer_than:36h')
 ```
 Each result's `id` is a message id. For each one you need:
 ```
 mcp__Gmail__get_message(messageId: <id>, messageFormat: "FULL_CONTENT")
 ```
 This returns (among other fields) `htmlBody` — save it to a file and run it through the **existing, unchanged**
-`parseOneHomeListingsFromHtml` / `extractListingPhotos` from `lib/ingest/onehome-email.ts`, exactly like the
-IMAP path's HTML already does. Confirmed live: 10/10 listings and 10/10 photos parsed correctly from a
-connector-fetched message, same as IMAP would have produced.
+`parseOneHomeListingsFromHtml` / `extractListingPhotos` from `lib/ingest/onehome-email.ts`, exactly as described
+in step 1 below. Confirmed live, twice: 10/10 listings and 10/10 photos parsed correctly from a connector-fetched
+message, same as IMAP would have produced, and a real 62-property backlog cleared end-to-end this way.
 
-**Caveat — this only works in an interactive session that already has the Gmail connector**, not the
-unattended scheduled routine: its own `mcp_connections` list doesn't include Gmail, and this environment's
-`create_trigger` tool refuses a `connectors` parameter ("not available for this organization"), so an agent
-can't attach one from here. If IMAP breaks again, either fix IMAP for real (new app password, confirm the
-account's 2FA/security settings didn't change), or have a human add the Gmail connector to the scheduled
-routine directly in the claude.ai routines UI — whichever happens first, this fallback at least lets an
-interactive session clear whatever backlog piled up in the meantime.
+**Fall back to IMAP (`fetchRecentGmailBodies`) only if the Gmail connector tools aren't in your tool list** —
+e.g. if the connector is ever removed from this routine, or an interactive session doesn't have it attached.
+IMAP's own env vars (`GMAIL_IMAP_USER`/`GMAIL_IMAP_APP_PASSWORD`) are still listed in Credentials above for this
+reason, but don't assume they still work without checking — confirm by querying the same
+`properties`-created-per-day SQL above after a run, the way the Oct 1-9 outage was actually caught (the routine
+reporting `SUCCEEDED` proves nothing by itself).
 
 ## The scheduled daily routine is email-only — no browser involved
 
@@ -102,6 +104,32 @@ required and why setting it from inside a script doesn't work — same cloud san
 ## Steps
 
 ### 1. Fetch and parse the email
+
+**Primary path — Gmail connector tools, called directly by you (the agent), not from a script:**
+
+1. `mcp__Gmail__search_threads(query: 'subject:"Pinellas homes for sale" from:STELLAR@stellarmatrix.com newer_than:36h')`
+   — widen `newer_than` if catching up a longer gap.
+2. For each thread's message id: `mcp__Gmail__get_message(messageId: <id>, messageFormat: "FULL_CONTENT")`.
+   Its `htmlBody` field is a large string — if the tool result says it exceeded the token limit, it's already
+   been saved to a file for you; otherwise save it yourself (e.g. with Write) before the next step.
+3. Run each saved HTML file through the existing parser in a small script:
+
+```ts
+// scripts/_parse-onehome.mts (scratch — delete when done)
+import { readFileSync } from "node:fs";
+import { parseOneHomeListingsFromHtml, extractListingPhotos } from "@/lib/ingest/onehome-email";
+
+const html = readFileSync("/path/to/saved-message.html", "utf8"); // one per message
+const listings = parseOneHomeListingsFromHtml(html);
+const photos = extractListingPhotos(html);
+console.log(JSON.stringify({ listingCount: listings.length, photoCount: photos.length, listings, photos }, null, 1));
+```
+
+Concatenate `listings`/`photos` across all messages in the lookback window before step 2 — duplicates across
+days (same `mlsId`) are handled safely by the upsert there.
+
+**Fallback path — IMAP, only if the Gmail connector tools aren't in your tool list** (see "Fetching the email"
+above for when to use this instead):
 
 ```ts
 // scripts/_fetch-onehome.mts (scratch — delete when done)
