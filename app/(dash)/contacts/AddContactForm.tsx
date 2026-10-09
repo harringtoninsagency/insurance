@@ -1,9 +1,20 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { addContactAction, type AddContactState } from "./actions";
 
 const inputClass = "w-full rounded border border-slate-300 px-2 py-1.5 text-sm";
+
+const REFERRAL_PARTNER_AGENTS = [
+  "Alexander Mcgee",
+  "Brittany Chesnutt",
+  "Haily Hughs",
+  "Jason Lowery",
+  "Matthew Bratton",
+  "Meredith Heine",
+  "James Harrington",
+  "Tim Harrington Jr.",
+] as const;
 
 function Field({ id, label, ...props }: { id: string; label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
@@ -18,6 +29,7 @@ function Field({ id, label, ...props }: { id: string; label: string } & React.In
 
 export function AddContactForm({ defaultType = "realtor" }: { defaultType?: "realtor" | "mortgage_broker" }) {
   const [state, formAction, isPending] = useActionState<AddContactState, FormData>(addContactAction, null);
+  const [referralPartnerAgent, setReferralPartnerAgent] = useState("");
 
   return (
     <form action={formAction} className="grid grid-cols-3 gap-4 text-sm">
@@ -37,6 +49,33 @@ export function AddContactForm({ defaultType = "realtor" }: { defaultType?: "rea
       <Field id="email" label="Email" type="email" />
       <Field id="license_number" label="License # (optional)" type="text" />
       <Field id="city" label="City (optional)" type="text" />
+      <div className="space-y-1">
+        <label htmlFor="referral_partner_agent" className="text-xs text-slate-500">
+          Referral partner agent
+        </label>
+        <select
+          id="referral_partner_agent"
+          name="referral_partner_agent"
+          className={inputClass}
+          value={referralPartnerAgent}
+          onChange={(e) => setReferralPartnerAgent(e.target.value)}
+        >
+          <option value="">— None selected —</option>
+          {REFERRAL_PARTNER_AGENTS.map((name) => (
+            <option key={name} value={name}>
+              {name}
+            </option>
+          ))}
+          <option value="__other__">Other (type a name)</option>
+        </select>
+        {referralPartnerAgent === "__other__" && (
+          <input
+            name="referral_partner_agent_other"
+            placeholder="Agent's name"
+            className={`${inputClass} mt-1`}
+          />
+        )}
+      </div>
       <div className="space-y-1">
         <label htmlFor="source" className="text-xs text-slate-500">
           Where did you get this?

@@ -35,6 +35,7 @@ export async function addContactAction(_prev: AddContactState, formData: FormDat
       email: str(formData, "email"),
       licenseNumber: str(formData, "license_number"),
       city: str(formData, "city"),
+      referralPartnerAgent: str(formData, "referral_partner_agent") === "__other__" ? str(formData, "referral_partner_agent_other") : str(formData, "referral_partner_agent"),
       source: SOURCES.includes(source) ? source : "manual",
     });
     if (outcome.result === "rejected") return { error: `Not saved: ${outcome.reason}` };

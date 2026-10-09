@@ -42,6 +42,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
     ["Email", contact.email],
     ["License #", contact.license_number],
     ["City", contact.city],
+    ["Referral partner agent", contact.referral_partner_agent],
   ];
 
   return (

@@ -61,13 +61,18 @@ export default async function ContactsPage({
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-xl font-semibold text-[#003049]">Realtor &amp; mortgage broker directory</h1>
-        <div className="mb-2 mt-2 h-[3px] w-16 bg-[#F0FF00]" />
-        <p className="text-sm text-slate-500">
-          Referral partners in Florida. Every contact records where it came from and what they&apos;ve agreed to
-          receive — texting a cell number requires written consent, so &quot;SMS consent&quot; stays blank until it&apos;s documented.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-semibold text-[#003049]">Realtor &amp; mortgage broker directory</h1>
+          <div className="mb-2 mt-2 h-[3px] w-16 bg-[#F0FF00]" />
+          <p className="text-sm text-slate-500">
+            Referral partners in Florida. Every contact records where it came from and what they&apos;ve agreed to
+            receive — texting a cell number requires written consent, so &quot;SMS consent&quot; stays blank until it&apos;s documented.
+          </p>
+        </div>
+        <Link href="/contacts/referral-activity" className="shrink-0 rounded border border-[#003049] px-3 py-1.5 text-sm font-medium text-[#003049]">
+          Referral partner activity
+        </Link>
       </div>
 
       <div className="grid grid-cols-4 gap-4">
@@ -144,6 +149,7 @@ export default async function ContactsPage({
                   <th className="px-4 py-3">Cell</th>
                   <th className="px-4 py-3">Office</th>
                   <th className="px-4 py-3">Email</th>
+                  <th className="px-4 py-3">Referral partner agent</th>
                   <th className="px-4 py-3">Source</th>
                   <th className="px-4 py-3">Consent</th>
                   <th className="px-4 py-3"></th>
@@ -161,6 +167,7 @@ export default async function ContactsPage({
                     <td className="whitespace-nowrap px-4 py-3 text-slate-600">{c.cell_phone ?? "—"}</td>
                     <td className="whitespace-nowrap px-4 py-3 text-slate-600">{c.office_phone ?? "—"}</td>
                     <td className="px-4 py-3 text-slate-600">{c.email ?? "—"}</td>
+                    <td className="px-4 py-3 text-slate-600">{c.referral_partner_agent ?? "—"}</td>
                     <td className="px-4 py-3 text-slate-600">
                       {SOURCE_LABEL[c.source] ?? c.source}
                       {c.source_detail && <div className="text-xs text-slate-400">{c.source_detail}</div>}

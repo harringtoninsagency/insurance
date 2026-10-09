@@ -379,6 +379,7 @@ export interface Database {
           license_number: string | null;
           license_state: string;
           city: string | null;
+          referral_partner_agent: string | null;
           source: ContactSource;
           source_detail: string | null;
           email_consent: "unknown" | "opted_in" | "opted_out";
