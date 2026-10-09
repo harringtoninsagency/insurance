@@ -113,6 +113,7 @@ export interface Database {
           listing_agent_phone: string | null;
           photo_path: string | null;
           date_quoted: string | null;
+          assigned_agent_id: string | null;
           status: PropertyStatus;
           created_at: string;
           updated_at: string;

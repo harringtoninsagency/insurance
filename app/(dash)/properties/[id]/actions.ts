@@ -73,6 +73,20 @@ export async function updateDateQuotedAction(propertyId: string, formData: FormD
   }
 }
 
+export async function updateAssignedAgentAction(propertyId: string, formData: FormData): Promise<{ ok: true } | { ok: false; error: string }> {
+  const agentId = String(formData.get("assigned_agent_id") ?? "").trim();
+  try {
+    const { supabase } = await sessionContext();
+    const { error } = await supabase.from("properties").update({ assigned_agent_id: agentId || null }).eq("id", propertyId);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath(`/properties/${propertyId}`);
+    revalidatePath("/properties");
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Failed to save the assigned agent." };
+  }
+}
+
 export async function queueOutreachAction(propertyId: string, proposalId: string, recipient: string) {
   const supabase = createServiceSupabase();
   const { data: proposal, error } = await supabase
