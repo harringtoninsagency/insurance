@@ -31,6 +31,39 @@ missing variables, and end the run. Do not work around it by writing a `.env.loc
 in chat, or any other substitute; those values must only ever be set directly in this environment's own
 settings.
 
+## IMAP outage (Oct 1–9, 2026) and the Gmail-connector fallback
+
+The scheduled routine's `GMAIL_IMAP_USER`/`GMAIL_IMAP_APP_PASSWORD` path (`fetchRecentGmailBodies` in
+`lib/ingest/gmail-mail.ts`) silently stopped working around **September 30/October 1, 2026** — the scheduled
+runs kept reporting `SUCCEEDED` every day, but zero new `properties` rows were ever created (confirmed via
+`select date(created_at), count(*) from properties where source='onehome' group by 1 order by 1 desc` — a
+9-day gap with nothing). The app password was regenerated and re-set; as of this writing it's unverified
+whether that actually fixed IMAP, since the backlog was instead cleared through the path below.
+
+**If this happens again, don't just re-debug IMAP in isolation — check whether the Gmail connector tools
+(`mcp__Gmail__search_threads`, `mcp__Gmail__get_message`) are available in your session first.** They're bound
+to `harringtoninsagency@gmail.com` (the correct mailbox) and sidestep IMAP entirely:
+
+```
+mcp__Gmail__search_threads(query: 'subject:"Pinellas homes for sale" from:STELLAR@stellarmatrix.com newer_than:14d')
+```
+Each result's `id` is a message id. For each one you need:
+```
+mcp__Gmail__get_message(messageId: <id>, messageFormat: "FULL_CONTENT")
+```
+This returns (among other fields) `htmlBody` — save it to a file and run it through the **existing, unchanged**
+`parseOneHomeListingsFromHtml` / `extractListingPhotos` from `lib/ingest/onehome-email.ts`, exactly like the
+IMAP path's HTML already does. Confirmed live: 10/10 listings and 10/10 photos parsed correctly from a
+connector-fetched message, same as IMAP would have produced.
+
+**Caveat — this only works in an interactive session that already has the Gmail connector**, not the
+unattended scheduled routine: its own `mcp_connections` list doesn't include Gmail, and this environment's
+`create_trigger` tool refuses a `connectors` parameter ("not available for this organization"), so an agent
+can't attach one from here. If IMAP breaks again, either fix IMAP for real (new app password, confirm the
+account's 2FA/security settings didn't change), or have a human add the Gmail connector to the scheduled
+routine directly in the claude.ai routines UI — whichever happens first, this fallback at least lets an
+interactive session clear whatever backlog piled up in the meantime.
+
 ## The scheduled daily routine is email-only — no browser involved
 
 Step 1 below (parsing the email's own ~10-25 "Highlights" listings) needs no browser and runs fine unattended.
