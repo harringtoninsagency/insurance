@@ -5,16 +5,11 @@ import { addContactAction, type AddContactState } from "./actions";
 
 const inputClass = "w-full rounded border border-slate-300 px-2 py-1.5 text-sm";
 
-const REFERRAL_PARTNER_AGENTS = [
-  "Alexander Mcgee",
-  "Brittany Chesnutt",
-  "Haily Hughs",
-  "Jason Lowery",
-  "Matthew Bratton",
-  "Meredith Heine",
-  "James Harrington",
-  "Tim Harrington Jr.",
-] as const;
+interface TeamMember {
+  id: string;
+  full_name: string | null;
+  email: string;
+}
 
 function Field({ id, label, ...props }: { id: string; label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
@@ -27,7 +22,13 @@ function Field({ id, label, ...props }: { id: string; label: string } & React.In
   );
 }
 
-export function AddContactForm({ defaultType = "realtor" }: { defaultType?: "realtor" | "mortgage_broker" }) {
+export function AddContactForm({
+  defaultType = "realtor",
+  teamMembers,
+}: {
+  defaultType?: "realtor" | "mortgage_broker";
+  teamMembers: TeamMember[];
+}) {
   const [state, formAction, isPending] = useActionState<AddContactState, FormData>(addContactAction, null);
   const [referralPartnerAgent, setReferralPartnerAgent] = useState("");
 
@@ -61,9 +62,9 @@ export function AddContactForm({ defaultType = "realtor" }: { defaultType?: "rea
           onChange={(e) => setReferralPartnerAgent(e.target.value)}
         >
           <option value="">— None selected —</option>
-          {REFERRAL_PARTNER_AGENTS.map((name) => (
-            <option key={name} value={name}>
-              {name}
+          {teamMembers.map((m) => (
+            <option key={m.id} value={m.full_name ?? m.email}>
+              {m.full_name ?? m.email}
             </option>
           ))}
           <option value="__other__">Other (type a name)</option>

@@ -44,12 +44,13 @@ export default async function ContactsPage({
     return supabase.from("industry_contacts").select("id", { count: "exact", head: true });
   }
 
-  const [{ data: contacts, error }, realtors, brokers, withEmail, withCell] = await Promise.all([
+  const [{ data: contacts, error }, realtors, brokers, withEmail, withCell, { data: teamMembers }] = await Promise.all([
     query,
     count((b) => b.eq("contact_type", "realtor")),
     count((b) => b.eq("contact_type", "mortgage_broker")),
     count((b) => b.not("email", "is", null)),
     count((b) => b.not("cell_phone", "is", null)),
+    supabase.from("profiles").select("id, full_name, email").eq("active", true).order("full_name"),
   ]);
 
   const stats = [
@@ -86,7 +87,7 @@ export default async function ContactsPage({
 
       <section className="space-y-3 rounded-lg border border-slate-200 bg-white p-5">
         <h2 className="font-medium text-[#003049]">Add a contact</h2>
-        <AddContactForm defaultType={type} />
+        <AddContactForm defaultType={type} teamMembers={teamMembers ?? []} />
       </section>
 
       <section className="space-y-3 rounded-lg border border-slate-200 bg-white p-5">
