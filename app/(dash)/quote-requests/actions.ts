@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { queueNewAddressQuote, queuePropertyQuote, type QueueResult, type Requester } from "@/lib/quote-requests/queue-quote";
 import { fireQuoteRoutine } from "@/lib/quote-requests/fire-routine";
+import { verifyAddress, type VerifyAddressResult } from "@/lib/geocoding/verify-address";
 import type { QuoteRequestKind } from "@/lib/types/database";
 
 const KINDS: QuoteRequestKind[] = ["quote_summary", "listing_snapshot", "both"];
@@ -47,6 +48,12 @@ export async function runQuoteForPropertyAction(propertyId: string, kind: QuoteR
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "Something went wrong." };
   }
+}
+
+/** Verifies a producer-typed address with Google Maps before "Run quote now" is allowed to fire. Requires sign-in like every other action here, but doesn't need the full team-member lookup. */
+export async function verifyQuoteAddressAction(addressLine: string, city: string, state: string, zipcode: string): Promise<VerifyAddressResult> {
+  await teamMember();
+  return verifyAddress(addressLine, city, state, zipcode);
 }
 
 export type NewQuoteState = { queued: { propertyId: string; alreadyQueued: boolean; started: boolean } } | { error: string } | null;

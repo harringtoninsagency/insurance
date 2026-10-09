@@ -1,10 +1,12 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState, useTransition } from "react";
 import Link from "next/link";
-import { runQuoteForAddressAction, type NewQuoteState } from "../actions";
+import { runQuoteForAddressAction, verifyQuoteAddressAction, type NewQuoteState } from "../actions";
+import type { VerifyAddressResult } from "@/lib/geocoding/verify-address";
 
 const inputClass = "w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#003049] focus:outline-none";
+const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
 function Field({ id, label, ...props }: { id: string; label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
@@ -17,8 +19,35 @@ function Field({ id, label, ...props }: { id: string; label: string } & React.In
   );
 }
 
+type Verification = { status: "idle" | "checking" } | ({ status: "verified"; key: string } & { result: Extract<VerifyAddressResult, { ok: true }> }) | { status: "failed"; error: string };
+
 export function NewQuoteForm() {
   const [state, formAction, isPending] = useActionState<NewQuoteState, FormData>(runQuoteForAddressAction, null);
+  const [isVerifying, startVerifying] = useTransition();
+  const [verification, setVerification] = useState<Verification>({ status: "idle" });
+
+  const [addressLine, setAddressLine] = useState("");
+  const [city, setCity] = useState("");
+  const [addrState, setAddrState] = useState("FL");
+  const [zipcode, setZipcode] = useState("");
+  const addressKey = `${addressLine}|${city}|${addrState}|${zipcode}`;
+
+  // Editing any address field after verifying invalidates it — the pin and
+  // "run quote now" gate should always match what's actually in the fields.
+  function updateAddress(setter: (v: string) => void) {
+    return (v: string) => {
+      setter(v);
+      if (verification.status !== "idle" && verification.status !== "checking") setVerification({ status: "idle" });
+    };
+  }
+
+  function verify() {
+    startVerifying(async () => {
+      setVerification({ status: "checking" });
+      const result = await verifyQuoteAddressAction(addressLine, city, addrState, zipcode);
+      setVerification(result.ok ? { status: "verified", key: addressKey, result } : { status: "failed", error: result.error });
+    });
+  }
 
   if (state && "queued" in state) {
     return (
@@ -41,16 +70,26 @@ export function NewQuoteForm() {
     );
   }
 
+  const isVerified = verification.status === "verified" && verification.key === addressKey;
+
   return (
     <form action={formAction} className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
-          <Field id="address_line" label="Street address *" type="text" required placeholder="2465 Indian Trail West" />
+          <Field
+            id="address_line"
+            label="Street address *"
+            type="text"
+            required
+            placeholder="2465 Indian Trail West"
+            value={addressLine}
+            onChange={(e) => updateAddress(setAddressLine)(e.target.value)}
+          />
         </div>
-        <Field id="city" label="City *" type="text" required />
+        <Field id="city" label="City *" type="text" required value={city} onChange={(e) => updateAddress(setCity)(e.target.value)} />
         <div className="grid grid-cols-2 gap-4">
-          <Field id="state" label="State" type="text" defaultValue="FL" />
-          <Field id="zipcode" label="Zip" type="text" />
+          <Field id="state" label="State" type="text" value={addrState} onChange={(e) => updateAddress(setAddrState)(e.target.value)} />
+          <Field id="zipcode" label="Zip" type="text" value={zipcode} onChange={(e) => updateAddress(setZipcode)(e.target.value)} />
         </div>
         <div className="space-y-1 sm:col-span-2">
           <label htmlFor="request_kind" className="text-xs font-medium text-slate-600">
@@ -62,6 +101,36 @@ export function NewQuoteForm() {
             <option value="listing_snapshot">Listing snapshot only</option>
           </select>
         </div>
+      </div>
+
+      <div className="space-y-2 rounded border border-slate-200 p-3">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-xs text-slate-500">Verify this address with Google Maps before running a quote — catches a typo'd street, city or zip.</p>
+          <button
+            type="button"
+            onClick={verify}
+            disabled={isVerifying || !addressLine.trim() || !city.trim()}
+            className="shrink-0 rounded border border-[#003049] px-3 py-1.5 text-xs font-semibold text-[#003049] disabled:opacity-50"
+          >
+            {isVerifying ? "Verifying..." : "Verify address"}
+          </button>
+        </div>
+
+        {verification.status === "failed" && <p className="text-sm text-red-600">{verification.error}</p>}
+
+        {isVerified && (
+          <div className="space-y-2">
+            <p className="text-sm text-green-700">✓ Verified: {verification.result.address.formattedAddress}</p>
+            {GOOGLE_MAPS_API_KEY && (
+              <iframe
+                title="Address location"
+                className="h-48 w-full rounded border border-slate-200"
+                loading="lazy"
+                src={`https://www.google.com/maps/embed/v1/place?key=${GOOGLE_MAPS_API_KEY}&q=${verification.result.address.lat},${verification.result.address.lng}&zoom=17`}
+              />
+            )}
+          </div>
+        )}
       </div>
 
       <details className="rounded border border-slate-200 p-3 text-sm">
@@ -79,9 +148,10 @@ export function NewQuoteForm() {
       </details>
 
       <div className="flex flex-wrap items-center gap-4">
-        <button type="submit" disabled={isPending} className="rounded bg-[#003049] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50">
+        <button type="submit" disabled={isPending || !isVerified} className="rounded bg-[#003049] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50">
           {isPending ? "Queuing..." : "Run quote now"}
         </button>
+        {!isVerified && <span className="text-xs text-slate-500">Verify the address above first.</span>}
         {state && "error" in state && <span className="text-sm text-red-600">{state.error}</span>}
       </div>
     </form>
