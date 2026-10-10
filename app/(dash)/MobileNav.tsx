@@ -24,7 +24,6 @@ export function MobileNav({ navLinks, name, roleLabel }: Props) {
   return (
     <div className="border-b border-slate-200 bg-white md:hidden">
       <div className="flex items-center justify-between px-4 py-3">
-        <Image src={brightwayLogo} alt="Brightway Insurance | The Harrington Agency" className="h-8 w-auto" priority />
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
@@ -36,6 +35,7 @@ export function MobileNav({ navLinks, name, roleLabel }: Props) {
             {open ? <path d="M5 5l10 10M15 5L5 15" strokeLinecap="round" /> : <path d="M3 5h14M3 10h14M3 15h14" strokeLinecap="round" />}
           </svg>
         </button>
+        <Image src={brightwayLogo} alt="Brightway Insurance | The Harrington Agency" className="h-8 w-auto" priority />
       </div>
       <div className="h-[3px] w-full bg-[#F0FF00]" />
       {open && (
