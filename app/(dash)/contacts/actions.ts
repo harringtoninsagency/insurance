@@ -7,6 +7,7 @@ import { upsertContact } from "@/lib/contacts/upsert-contact";
 import { importContactsCsv, type ImportSummary } from "@/lib/contacts/import-csv";
 import { invitePartner, type InviteResult } from "@/lib/partners/invite";
 import { createServiceSupabase } from "@/lib/supabase/server";
+import { cleanText, normalizeEmail, normalizePersonName, normalizePhone } from "@/lib/contacts/normalize";
 import type { ConsentEventType, ConsentMethod, ContactSource, ContactType } from "@/lib/types/database";
 
 // Imports run row-by-row (dedupe lookups per person), so keep one upload
@@ -169,6 +170,50 @@ export async function recordFollowUpAction(contactId: string, payload: FollowUpP
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "Failed to record the follow-up." };
+  }
+}
+
+export interface ContactDetailsPayload {
+  fullName: string;
+  companyName: string;
+  cellPhone: string;
+  officePhone: string;
+  email: string;
+  licenseNumber: string;
+  city: string;
+}
+
+export type ContactDetailsResult = { ok: true } | { ok: false; error: string };
+
+export async function updateContactDetailsAction(contactId: string, payload: ContactDetailsPayload): Promise<ContactDetailsResult> {
+  try {
+    const fullName = normalizePersonName(payload.fullName);
+    if (!fullName) return { ok: false, error: "Name can't be blank." };
+
+    const email = normalizeEmail(payload.email);
+    if (payload.email.trim() && !email) return { ok: false, error: `Invalid email "${payload.email.trim()}"` };
+
+    const { supabase } = await sessionContext();
+    const { error } = await supabase
+      .from("industry_contacts")
+      .update({
+        full_name: fullName,
+        company_name: cleanText(payload.companyName),
+        cell_phone: normalizePhone(payload.cellPhone),
+        office_phone: normalizePhone(payload.officePhone),
+        email,
+        license_number: cleanText(payload.licenseNumber)?.toUpperCase() ?? null,
+        city: cleanText(payload.city),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", contactId);
+    if (error) return { ok: false, error: error.message };
+
+    revalidatePath(`/contacts/${contactId}`);
+    revalidatePath("/contacts");
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Failed to save the contact." };
   }
 }
 
