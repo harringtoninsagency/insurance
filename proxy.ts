@@ -17,6 +17,7 @@ const PUBLIC_PATHS = [
   "/api/webhooks/resend",
   "/request-quote",
   "/partner/login",
+  "/partner/signup",
   "/partner/accept-invite",
   "/set-password",
   "/forgot-password",
