@@ -49,7 +49,7 @@ export default function LoginPage() {
 
         <div>
           <h1 className="text-lg font-semibold text-[#003049]">Agency workspace</h1>
-          <p className="text-sm text-[#8291AC]">Sign in to continue to FetchRival</p>
+          <p className="text-sm text-[#8291AC]">Sign in to continue to Clear To Close Insurance</p>
         </div>
 
         {error && (
