@@ -71,11 +71,15 @@ export function NewRequestForm({ defaultEmail }: { defaultEmail: string }) {
             </div>
           </details>
 
-          <div className="flex items-center gap-3">
-            <button type="submit" disabled={isPending} className="rounded bg-[#003049] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
-              {isPending ? "Sending..." : "Submit request"}
+          <div className="space-y-2">
+            <button
+              type="submit"
+              disabled={isPending}
+              className="w-full rounded-lg bg-[#003049] px-6 py-4 text-xl font-bold text-white shadow-md transition hover:bg-[#012333] disabled:opacity-50 sm:text-2xl"
+            >
+              {isPending ? "Sending..." : "Request Property Insurance Quote Now"}
             </button>
-            {state && "error" in state && <span className="text-sm text-red-600">{state.error}</span>}
+            {state && "error" in state && <p className="text-sm text-red-600">{state.error}</p>}
           </div>
         </form>
       )}

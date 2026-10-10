@@ -4,6 +4,7 @@ import { ingestFetchQuoteResults } from "@/lib/quotes/ingest";
 import { generateIndicationProposal } from "@/lib/proposals/generate-indication";
 import { generateListingSnapshotProposal } from "@/lib/proposals/generate-listing-snapshot";
 import { resolveReferralPartner } from "@/lib/quote-requests/referral-partner";
+import { sendQuoteCompletionEmail } from "@/lib/quote-requests/completion-email";
 import type { Database } from "@/lib/types/database";
 
 type PropertyRow = Database["public"]["Tables"]["properties"]["Row"];
@@ -176,5 +177,8 @@ export async function finalizeQuoteRequest(quoteRequestId: string, standardQuote
 
   const detail = `Completed with ${mergedRates.length} carrier rate(s).`;
   await supabase.from("quote_requests").update({ status: "completed", status_detail: detail, processed_at: new Date().toISOString() }).eq("id", quoteRequestId);
+  // Partner-submitted requests get their results emailed automatically
+  // (never throws, so a failed email can't undo the completed status above).
+  await sendQuoteCompletionEmail(quoteRequestId, proposalIds);
   return { status: "completed", proposalIds, detail };
 }
