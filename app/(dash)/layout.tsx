@@ -104,6 +104,9 @@ export default async function DashLayout({
             <div className="truncate font-medium text-slate-800">{profile.full_name ?? profile.email}</div>
             <div className="text-slate-500">{profile.role === "admin" ? "Admin" : "Agent"}</div>
           </div>
+          <Link href="/account" className="block rounded border border-slate-300 px-3 py-1.5 text-center text-xs font-medium text-slate-600 hover:bg-slate-50">
+            My account
+          </Link>
           <SignOutButton />
         </div>
       </nav>
