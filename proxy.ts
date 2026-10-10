@@ -6,6 +6,9 @@ import { NextResponse, type NextRequest } from "next/server";
 // signed link), the email provider's webhook (verified by signature), the
 // public quote-request landing page, and the partner portal's own login and
 // invite-acceptance pages (a partner has no session yet at either of those).
+// The home page ("/") is also public (it's the portal picker) but is checked
+// by exact match below, not listed here — a prefix match on "/" would make
+// every path public.
 const PUBLIC_PATHS = [
   "/login",
   "/partners",
@@ -49,9 +52,9 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isPublic = PUBLIC_PATHS.some((path) =>
-    request.nextUrl.pathname.startsWith(path)
-  );
+  const isPublic =
+    request.nextUrl.pathname === "/" ||
+    PUBLIC_PATHS.some((path) => request.nextUrl.pathname.startsWith(path));
 
   if (!user && !isPublic) {
     const loginUrl = request.nextUrl.clone();
