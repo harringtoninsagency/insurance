@@ -40,8 +40,8 @@ export default async function DashLayout({
   // current_agency_id()), so show a plain explanation instead of empty pages.
   if (!profile.active) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-4">
-        <div className="max-w-sm space-y-3 text-center">
+      <div className="flex min-h-screen items-center justify-center bg-[#003049] px-4">
+        <div className="max-w-sm space-y-3 rounded-lg bg-white p-8 text-center shadow-lg">
           <h1 className="text-lg font-semibold text-[#003049]">This account has been deactivated</h1>
           <p className="text-sm text-slate-600">Ask an admin at your agency if you think that&apos;s a mistake.</p>
           <SignOutButton />
@@ -53,7 +53,8 @@ export default async function DashLayout({
   const navLinks = profile.role === "admin" ? [...NAV_LINKS, { href: "/team", label: "Team" }] : [...NAV_LINKS];
 
   return (
-    <div className="min-h-screen md:flex">
+    <div className="min-h-screen bg-[#003049] p-2 md:p-4">
+      <div className="mx-auto overflow-hidden rounded-lg bg-white shadow-lg md:flex md:min-h-[calc(100vh-2rem)] md:max-w-[1600px]">
       <MobileNav navLinks={navLinks} name={profile.full_name ?? profile.email} roleLabel={profile.role === "admin" ? "Admin" : "Agent"} />
       <nav className="hidden w-56 shrink-0 border-r border-slate-200 bg-white p-4 md:block">
         <Image src={brightwayLogo} alt="Brightway Insurance | The Harrington Agency" className="h-auto w-full" priority />
@@ -123,6 +124,7 @@ export default async function DashLayout({
         </div>
       </nav>
       <main className="flex-1 p-4 md:p-8">{children}</main>
+      </div>
     </div>
   );
 }
