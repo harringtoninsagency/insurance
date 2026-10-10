@@ -62,7 +62,7 @@ export default async function ContactsPage({
 
   return (
     <div className="space-y-8">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-xl font-semibold text-[#003049]">Realtor &amp; mortgage broker directory</h1>
           <div className="mb-2 mt-2 h-[3px] w-16 bg-[#F0FF00]" />
@@ -76,7 +76,7 @@ export default async function ContactsPage({
         </Link>
       </div>
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         {stats.map((s) => (
           <div key={s.label} className="rounded-lg border border-slate-200 bg-white px-4 py-3">
             <div className="text-2xl font-semibold text-[#003049]">{s.value.toLocaleString()}</div>
@@ -120,13 +120,13 @@ export default async function ContactsPage({
           })}
         </div>
 
-        <form className="flex items-center gap-3 text-sm" method="get">
+        <form className="flex flex-wrap items-center gap-3 text-sm" method="get">
           <input type="hidden" name="type" value={type} />
           <input
             name="q"
             defaultValue={q}
             placeholder={`Search ${type === "realtor" ? "realtors" : "mortgage brokers"} by name, company or email`}
-            className="w-80 rounded border border-slate-300 px-2 py-1.5"
+            className="w-full rounded border border-slate-300 px-2 py-1.5 sm:w-80"
           />
           <button type="submit" className="rounded border border-[#003049] px-3 py-1.5 font-medium text-[#003049]">
             Search

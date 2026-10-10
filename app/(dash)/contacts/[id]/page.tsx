@@ -67,7 +67,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
         <p className="text-sm text-slate-500">{TYPE_LABEL[contact.contact_type]}</p>
       </div>
 
-      <section className="grid grid-cols-3 gap-x-6 gap-y-3 rounded-lg border border-slate-200 bg-white p-5 text-sm">
+      <section className="grid grid-cols-1 gap-x-6 gap-y-3 rounded-lg border border-slate-200 bg-white p-5 text-sm sm:grid-cols-3">
         {details.map(([label, value]) => (
           <div key={label}>
             <div className="text-xs text-slate-500">{label}</div>

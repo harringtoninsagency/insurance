@@ -32,14 +32,14 @@ export function QueueOutreachForm({
   const [state, formAction, isPending] = useActionState<State, FormData>(runAction, null);
 
   return (
-    <form action={formAction} className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-3">
+    <form action={formAction} className="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
       <input
         type="email"
         name="recipient"
         required
         placeholder="Pick from directory or type an email"
         list="directory-contacts"
-        className="w-80 rounded border border-slate-300 px-3 py-1.5 text-sm"
+        className="w-full rounded border border-slate-300 px-3 py-1.5 text-sm sm:w-80"
       />
       <datalist id="directory-contacts">
         {contacts.map((c) => (

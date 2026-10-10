@@ -33,7 +33,7 @@ export function AddContactForm({
   const [referralPartnerAgent, setReferralPartnerAgent] = useState("");
 
   return (
-    <form action={formAction} className="grid grid-cols-3 gap-4 text-sm">
+    <form action={formAction} className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
       <div className="space-y-1">
         <label htmlFor="contact_type" className="text-xs text-slate-500">
           Type
@@ -90,7 +90,7 @@ export function AddContactForm({
           <option value="other">Other</option>
         </select>
       </div>
-      <div className="col-span-3 flex items-center gap-3">
+      <div className="col-span-1 flex items-center gap-3 sm:col-span-2 lg:col-span-3">
         <button
           type="submit"
           disabled={isPending}
