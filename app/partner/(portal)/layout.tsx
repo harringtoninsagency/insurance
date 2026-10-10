@@ -41,21 +41,23 @@ export default async function PartnerPortalLayout({
   const { data: contact } = await supabase.from("industry_contacts").select("full_name").eq("id", account.contact_id).maybeSingle();
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3 px-5 py-4">
-          <Image src={brightwayLogo} alt="Brightway Insurance | The Harrington Agency" className="h-auto w-32 sm:w-48" priority />
-          <div className="flex items-center gap-4 text-sm">
-            <Link href="/partner" className="font-medium text-[#003049] hover:underline">
-              My requests
-            </Link>
-            <span className="hidden text-slate-400 sm:inline">{contact?.full_name ?? "Partner"}</span>
-            <SignOutButton />
+    <div className="min-h-screen bg-[#003049] p-2 md:p-4">
+      <div className="mx-auto max-w-4xl overflow-hidden rounded-lg bg-white shadow-lg">
+        <header className="border-b border-slate-200 bg-white">
+          <div className="mx-auto flex flex-wrap items-center justify-between gap-3 px-5 py-4">
+            <Image src={brightwayLogo} alt="Brightway Insurance | The Harrington Agency" className="h-auto w-32 sm:w-48" priority />
+            <div className="flex items-center gap-4 text-sm">
+              <Link href="/partner" className="font-medium text-[#003049] hover:underline">
+                My requests
+              </Link>
+              <span className="hidden text-slate-400 sm:inline">{contact?.full_name ?? "Partner"}</span>
+              <SignOutButton />
+            </div>
           </div>
-        </div>
-        <div className="h-[3px] w-full bg-[#F0FF00]" />
-      </header>
-      <main className="mx-auto max-w-4xl px-5 py-8">{children}</main>
+          <div className="h-[3px] w-full bg-[#F0FF00]" />
+        </header>
+        <main className="px-5 py-8">{children}</main>
+      </div>
     </div>
   );
 }
