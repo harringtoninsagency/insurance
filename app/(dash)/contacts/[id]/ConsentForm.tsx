@@ -72,7 +72,7 @@ export function ConsentForm({ contactId, cellPhone }: { contactId: string; cellP
         ))}
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="space-y-1">
           <label htmlFor="method" className="text-xs text-slate-500">
             How did you get it?

@@ -22,7 +22,7 @@ export function EditListingAgentForm({ propertyId, name, email, phone }: Props) 
   const [state, formAction, isPending] = useActionState<State, FormData>(runAction, null);
 
   return (
-    <form action={formAction} className="grid grid-cols-3 gap-4 text-sm">
+    <form action={formAction} className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-3">
       <div className="space-y-1">
         <label htmlFor="listing_agent_name" className="text-xs text-slate-500">
           Name
@@ -59,7 +59,7 @@ export function EditListingAgentForm({ propertyId, name, email, phone }: Props) 
           className="w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
         />
       </div>
-      <div className="col-span-3 flex items-center gap-3">
+      <div className="col-span-1 flex items-center gap-3 sm:col-span-3">
         <button
           type="submit"
           disabled={isPending}

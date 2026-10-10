@@ -15,7 +15,7 @@ export function ImportContactsForm({ defaultType = "realtor" }: { defaultType?: 
         (name or first/last, company, cell, phone, email, license, city). Up to 1,000 rows and 2MB per upload; people
         already in the directory are matched and only have blanks filled in.
       </p>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="space-y-1">
           <label htmlFor="import_contact_type" className="text-xs text-slate-500">
             Default type

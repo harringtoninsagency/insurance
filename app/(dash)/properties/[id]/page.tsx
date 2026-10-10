@@ -172,7 +172,7 @@ export default async function PropertyDetailPage({
           <PullCountyDataButton propertyId={property.id} />
         </div>
         {enrichment ? (
-          <dl className="grid grid-cols-3 gap-4 text-sm">
+          <dl className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-3">
             <div>
               <dt className="text-slate-500">Flood zone</dt>
               <dd>{enrichment.flood_zone ?? "—"}</dd>
@@ -221,7 +221,7 @@ export default async function PropertyDetailPage({
           Quotes
         </h2>
         {quotes?.length ? (
-          <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+          <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
             <table className="w-full text-left text-sm">
               <thead className="bg-[#003049] text-xs uppercase text-white">
                 <tr>

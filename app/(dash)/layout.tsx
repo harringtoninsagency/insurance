@@ -4,6 +4,15 @@ import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
 import brightwayLogo from "@/assets/branding/brightway-harrington-horizontal-deep-blue.png";
 import { SignOutButton } from "./SignOutButton";
+import { MobileNav } from "./MobileNav";
+
+const NAV_LINKS = [
+  { href: "/properties", label: "Properties" },
+  { href: "/properties/onehome", label: "OneHome queue" },
+  { href: "/quote-requests", label: "Quote requests" },
+  { href: "/review", label: "Outreach review" },
+  { href: "/contacts", label: "Realtors & Brokers" },
+] as const;
 
 export default async function DashLayout({
   children,
@@ -41,9 +50,12 @@ export default async function DashLayout({
     );
   }
 
+  const navLinks = profile.role === "admin" ? [...NAV_LINKS, { href: "/team", label: "Team" }] : [...NAV_LINKS];
+
   return (
-    <div className="flex min-h-screen">
-      <nav className="w-56 shrink-0 border-r border-slate-200 bg-white p-4">
+    <div className="min-h-screen md:flex">
+      <MobileNav navLinks={navLinks} name={profile.full_name ?? profile.email} roleLabel={profile.role === "admin" ? "Admin" : "Agent"} />
+      <nav className="hidden w-56 shrink-0 border-r border-slate-200 bg-white p-4 md:block">
         <Image src={brightwayLogo} alt="Brightway Insurance | The Harrington Agency" className="h-auto w-full" priority />
         <div className="mb-2 mt-3 h-[3px] w-full bg-[#F0FF00]" />
         <div className="mb-4 text-xs text-[#8291AC]">Clear To Close Insurance</div>
@@ -110,7 +122,7 @@ export default async function DashLayout({
           <SignOutButton />
         </div>
       </nav>
-      <main className="flex-1 p-8">{children}</main>
+      <main className="flex-1 p-4 md:p-8">{children}</main>
     </div>
   );
 }
