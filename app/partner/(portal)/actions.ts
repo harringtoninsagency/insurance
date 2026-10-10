@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createServerSupabase, createServiceSupabase } from "@/lib/supabase/server";
 import { submitQuoteRequest, type SubmitQuoteRequestInput } from "@/lib/quote-requests/submit";
 import { prepareQuoteRequest } from "@/lib/quote-requests/prepare";
+import { fireQuoteRoutine } from "@/lib/quote-requests/fire-routine";
 
 export type PartnerRequestValues = Record<string, string>;
 export type PartnerRequestState = { done: { status: string } } | { error: string; values: PartnerRequestValues } | null;
@@ -59,6 +60,13 @@ export async function submitPartnerQuoteRequestAction(_prev: PartnerRequestState
   }
 
   const prep = await prepareQuoteRequest(result.id);
+  // Matches the internal "Run quote now" flow (app/(dash)/quote-requests/actions.ts):
+  // nudge the quoting routine to run within seconds instead of waiting for its
+  // hourly schedule. Never throws, and a failed fire still leaves the request
+  // queued for the hourly run — see lib/quote-requests/fire-routine.ts.
+  if (prep.status === "processing") {
+    await fireQuoteRoutine(result.id);
+  }
   revalidatePath("/partner");
   return { done: { status: prep.status } };
 }

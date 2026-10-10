@@ -1,6 +1,7 @@
 export interface OutboundEmail {
   from: string;
   to: string;
+  cc?: string | string[];
   subject: string;
   html: string;
   text: string;
@@ -29,6 +30,7 @@ export function resendProvider(apiKey: string): EmailProvider {
         body: JSON.stringify({
           from: email.from,
           to: [email.to],
+          ...(email.cc ? { cc: Array.isArray(email.cc) ? email.cc : [email.cc] } : {}),
           subject: email.subject,
           html: email.html,
           text: email.text,
