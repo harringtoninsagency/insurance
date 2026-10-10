@@ -113,6 +113,7 @@ export interface Database {
           listing_agent_phone: string | null;
           photo_path: string | null;
           date_quoted: string | null;
+          assigned_agent_id: string | null;
           status: PropertyStatus;
           created_at: string;
           updated_at: string;
@@ -379,6 +380,7 @@ export interface Database {
           license_number: string | null;
           license_state: string;
           city: string | null;
+          referral_partner_agent: string | null;
           source: ContactSource;
           source_detail: string | null;
           email_consent: "unknown" | "opted_in" | "opted_out";
@@ -400,6 +402,24 @@ export interface Database {
           full_name: string;
         };
         Update: Partial<Database["public"]["Tables"]["industry_contacts"]["Row"]>;
+        Relationships: [];
+      };
+      contact_follow_ups: {
+        Row: {
+          id: string;
+          agency_id: string;
+          contact_id: string;
+          note: string;
+          next_follow_up_on: string | null;
+          recorded_by: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["contact_follow_ups"]["Row"]> & {
+          agency_id: string;
+          contact_id: string;
+          note: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["contact_follow_ups"]["Row"]>;
         Relationships: [];
       };
       partner_accounts: {

@@ -2,13 +2,16 @@ import Link from "next/link";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { formatDateOnly } from "@/lib/dates";
 import { RunQuoteButton } from "../quote-requests/RunQuoteButton";
+import { AssignedAgentSelect } from "./AssignedAgentSelect";
 
 export default async function PropertiesPage() {
   const supabase = await createServerSupabase();
   const { data: properties, error } = await supabase
     .from("properties")
-    .select("id, address, status, list_price, listing_agent_name, roof_year, date_quoted, created_at")
+    .select("id, address, status, list_price, listing_agent_name, roof_year, date_quoted, assigned_agent_id, created_at")
     .order("created_at", { ascending: false });
+
+  const { data: teamMembers } = await supabase.from("profiles").select("id, full_name, email").eq("active", true).order("full_name");
 
   // Properties with a quote already queued show "Queued" instead of a button.
   const { data: queued } = await supabase.from("quote_requests").select("property_id").in("status", ["new", "processing"]).not("property_id", "is", null);
@@ -57,6 +60,7 @@ export default async function PropertiesPage() {
           <table className="w-full text-left text-sm">
             <thead className="bg-[#003049] text-xs uppercase text-white">
               <tr>
+                <th className="px-4 py-3">Assigned Agent</th>
                 <th className="px-4 py-3">Address</th>
                 <th className="px-4 py-3">Listing agent</th>
                 <th className="px-4 py-3">List price</th>
@@ -73,6 +77,9 @@ export default async function PropertiesPage() {
                 const enrichment = latestEnrichmentByProperty.get(p.id);
                 return (
                 <tr key={p.id} className="border-b border-slate-100 last:border-0">
+                  <td className="px-4 py-3">
+                    <AssignedAgentSelect propertyId={p.id} assignedAgentId={p.assigned_agent_id} teamMembers={teamMembers ?? []} />
+                  </td>
                   <td className="px-4 py-3">
                     <Link
                       href={`/properties/${p.id}`}

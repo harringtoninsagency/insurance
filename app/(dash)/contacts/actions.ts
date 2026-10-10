@@ -35,6 +35,7 @@ export async function addContactAction(_prev: AddContactState, formData: FormDat
       email: str(formData, "email"),
       licenseNumber: str(formData, "license_number"),
       city: str(formData, "city"),
+      referralPartnerAgent: str(formData, "referral_partner_agent") === "__other__" ? str(formData, "referral_partner_agent_other") : str(formData, "referral_partner_agent"),
       source: SOURCES.includes(source) ? source : "manual",
     });
     if (outcome.result === "rejected") return { error: `Not saved: ${outcome.reason}` };
@@ -125,6 +126,49 @@ export async function recordConsentAction(contactId: string, payload: RecordCons
     return result;
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "Failed to record consent" };
+  }
+}
+
+export async function updateReferralPartnerAgentAction(contactId: string, formData: FormData): Promise<{ ok: true } | { ok: false; error: string }> {
+  const agent = str(formData, "referral_partner_agent");
+  try {
+    const { supabase } = await sessionContext();
+    const { error } = await supabase.from("industry_contacts").update({ referral_partner_agent: agent || null }).eq("id", contactId);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath(`/contacts/${contactId}`);
+    revalidatePath("/contacts");
+    revalidatePath("/contacts/referral-activity");
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Failed to save the referral partner agent." };
+  }
+}
+
+export interface FollowUpPayload {
+  note: string;
+  nextFollowUpOn: string;
+}
+
+export type FollowUpResult = { ok: true } | { ok: false; error: string };
+
+export async function recordFollowUpAction(contactId: string, payload: FollowUpPayload): Promise<FollowUpResult> {
+  try {
+    if (!payload.note.trim()) return { ok: false, error: "Add a note about the follow-up." };
+
+    const { supabase, agencyId, userEmail } = await sessionContext();
+    const { error } = await supabase.from("contact_follow_ups").insert({
+      agency_id: agencyId,
+      contact_id: contactId,
+      note: payload.note.trim(),
+      next_follow_up_on: payload.nextFollowUpOn.trim() || null,
+      recorded_by: userEmail,
+    });
+    if (error) return { ok: false, error: error.message };
+
+    revalidatePath(`/contacts/${contactId}`);
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Failed to record the follow-up." };
   }
 }
 

@@ -14,6 +14,8 @@ export interface ContactInput {
   email?: string | null;
   licenseNumber?: string | null;
   city?: string | null;
+  /** Which in-house agent this referral relationship belongs to — a preset name or a custom one typed in. */
+  referralPartnerAgent?: string | null;
   source: ContactSource;
   sourceDetail?: string | null;
   /**
@@ -34,7 +36,7 @@ export type UpsertOutcome =
 // ilike treats % and _ as wildcards; underscores are common in emails.
 export const escapeLike = (v: string) => v.replace(/[\\%_]/g, (c) => `\\${c}`);
 
-const FILLABLE = ["company_name", "cell_phone", "office_phone", "email", "license_number", "city"] as const;
+const FILLABLE = ["company_name", "cell_phone", "office_phone", "email", "license_number", "city", "referral_partner_agent"] as const;
 
 /**
  * Adds a contact, or enriches the existing one. A person is matched by email,
@@ -57,6 +59,7 @@ export async function upsertContact(supabase: Client, agencyId: string, input: C
     email,
     license_number: cleanText(input.licenseNumber)?.toUpperCase() ?? null,
     city: cleanText(input.city),
+    referral_partner_agent: cleanText(input.referralPartnerAgent),
   };
 
   let existing: ContactRow | null = null;

@@ -58,6 +58,14 @@ export default async function DashLayout({
           </li>
           <li>
             <Link
+              href="/properties/onehome"
+              className="block rounded px-3 py-2 font-medium text-[#003049] hover:bg-[#003049]/5"
+            >
+              OneHome queue
+            </Link>
+          </li>
+          <li>
+            <Link
               href="/quote-requests"
               className="block rounded px-3 py-2 font-medium text-[#003049] hover:bg-[#003049]/5"
             >

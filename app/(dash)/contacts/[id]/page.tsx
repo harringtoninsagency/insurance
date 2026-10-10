@@ -4,6 +4,8 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { EVENT_LABEL, METHOD_LABEL } from "@/lib/contacts/consent";
 import { ConsentForm } from "./ConsentForm";
 import { InvitePartnerButton } from "./InvitePartnerButton";
+import { ReferralPartnerAgentSelect } from "./ReferralPartnerAgentSelect";
+import { FollowUpForm } from "./FollowUpForm";
 
 const TYPE_LABEL = { realtor: "Realtor", mortgage_broker: "Mortgage broker" } as const;
 
@@ -28,12 +30,22 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
 
   const { data: partnerAccount } = await supabase.from("partner_accounts").select("status, invited_at, activated_at").eq("contact_id", id).maybeSingle();
 
+  const { data: teamMembers } = await supabase.from("profiles").select("id, full_name, email").eq("active", true).order("full_name");
+
   const { data: events } = await supabase
     .from("contact_consent_events")
     .select("*")
     .eq("contact_id", id)
     .order("occurred_at", { ascending: false })
     .order("created_at", { ascending: false });
+
+  const { data: followUps } = await supabase
+    .from("contact_follow_ups")
+    .select("*")
+    .eq("contact_id", id)
+    .order("created_at", { ascending: false });
+
+  const nextFollowUpOn = followUps?.find((f) => f.next_follow_up_on)?.next_follow_up_on ?? null;
 
   const details: Array<[string, string | null]> = [
     ["Company", contact.company_name],
@@ -62,6 +74,14 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
             <div className="text-slate-800">{value ?? "—"}</div>
           </div>
         ))}
+        <div>
+          <div className="text-xs text-slate-500">Referral partner agent</div>
+          <ReferralPartnerAgentSelect
+            contactId={contact.id}
+            referralPartnerAgent={contact.referral_partner_agent}
+            teamMembers={teamMembers ?? []}
+          />
+        </div>
       </section>
 
       <section className="space-y-3 rounded-lg border border-slate-200 bg-white p-5">
@@ -100,6 +120,40 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
           can&apos;t be edited or deleted later.
         </p>
         <ConsentForm contactId={contact.id} cellPhone={contact.cell_phone} />
+      </section>
+
+      <section className="space-y-3 rounded-lg border border-slate-200 bg-white p-5">
+        <div className="flex items-center justify-between">
+          <h2 className="font-medium text-[#003049]">Follow-up information</h2>
+          {nextFollowUpOn && (
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+              Next follow-up: {fmt(nextFollowUpOn)}
+            </span>
+          )}
+        </div>
+        <p className="text-xs text-slate-500">
+          Log calls, emails or check-ins with this partner. Each entry is added to the history below and can&apos;t be
+          edited or deleted later.
+        </p>
+        <FollowUpForm contactId={contact.id} />
+        {!followUps?.length ? (
+          <p className="text-sm text-slate-500">Nothing logged yet.</p>
+        ) : (
+          <ul className="space-y-2">
+            {followUps.map((f) => (
+              <li key={f.id} className="rounded-lg border border-slate-200 px-4 py-3 text-sm">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <span className="text-xs text-slate-500">{new Date(f.created_at).toLocaleDateString()}</span>
+                  {f.next_follow_up_on && (
+                    <span className="text-xs font-medium text-amber-800">Next: {fmt(f.next_follow_up_on)}</span>
+                  )}
+                </div>
+                <p className="mt-1 text-slate-700">{f.note}</p>
+                {f.recorded_by && <div className="mt-1 text-xs text-slate-500">recorded by {f.recorded_by}</div>}
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <section className="space-y-3">

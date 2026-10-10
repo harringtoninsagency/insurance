@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 import { createBrowserSupabase } from "@/lib/supabase/client";
 import brightwayLogo from "@/assets/branding/brightway-harrington-horizontal-deep-blue.png";
@@ -83,7 +84,10 @@ export default function PartnerLoginPage() {
         </button>
 
         <p className="text-center text-xs text-[#8291AC]">
-          Not invited yet? Ask your Brightway Insurance contact for an invitation.
+          New here?{" "}
+          <Link href="/partner/signup" className="font-medium text-[#003049] underline">
+            Create an account
+          </Link>
         </p>
       </form>
     </div>
