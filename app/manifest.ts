@@ -7,8 +7,8 @@ import type { MetadataRoute } from "next";
 // PWA-install layer discussed for "mobile version."
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "FetchRival — Brightway Insurance",
-    short_name: "FetchRival",
+    name: "Clear To Close Insurance — Brightway Insurance",
+    short_name: "Clear To Close",
     description: "Florida homeowners insurance listing-to-proposal app",
     start_url: "/",
     display: "standalone",

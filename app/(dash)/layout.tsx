@@ -46,7 +46,7 @@ export default async function DashLayout({
       <nav className="w-56 shrink-0 border-r border-slate-200 bg-white p-4">
         <Image src={brightwayLogo} alt="Brightway Insurance | The Harrington Agency" className="h-auto w-full" priority />
         <div className="mb-2 mt-3 h-[3px] w-full bg-[#F0FF00]" />
-        <div className="mb-4 text-xs text-[#8291AC]">FetchRival</div>
+        <div className="mb-4 text-xs text-[#8291AC]">Clear To Close Insurance</div>
         <ul className="space-y-1 text-sm">
           <li>
             <Link
