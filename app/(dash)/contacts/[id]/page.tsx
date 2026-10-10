@@ -6,6 +6,7 @@ import { ConsentForm } from "./ConsentForm";
 import { InvitePartnerButton } from "./InvitePartnerButton";
 import { ReferralPartnerAgentSelect } from "./ReferralPartnerAgentSelect";
 import { FollowUpForm } from "./FollowUpForm";
+import { EditContactDetailsForm } from "./EditContactDetailsForm";
 
 const TYPE_LABEL = { realtor: "Realtor", mortgage_broker: "Mortgage broker" } as const;
 
@@ -47,15 +48,6 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
 
   const nextFollowUpOn = followUps?.find((f) => f.next_follow_up_on)?.next_follow_up_on ?? null;
 
-  const details: Array<[string, string | null]> = [
-    ["Company", contact.company_name],
-    ["Cell", contact.cell_phone],
-    ["Office", contact.office_phone],
-    ["Email", contact.email],
-    ["License #", contact.license_number],
-    ["City", contact.city],
-  ];
-
   return (
     <div className="max-w-3xl space-y-8">
       <div>
@@ -68,12 +60,18 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
       </div>
 
       <section className="grid grid-cols-1 gap-x-6 gap-y-3 rounded-lg border border-slate-200 bg-white p-5 text-sm sm:grid-cols-3">
-        {details.map(([label, value]) => (
-          <div key={label}>
-            <div className="text-xs text-slate-500">{label}</div>
-            <div className="text-slate-800">{value ?? "—"}</div>
-          </div>
-        ))}
+        <EditContactDetailsForm
+          contact={{
+            id: contact.id,
+            fullName: contact.full_name,
+            companyName: contact.company_name,
+            cellPhone: contact.cell_phone,
+            officePhone: contact.office_phone,
+            email: contact.email,
+            licenseNumber: contact.license_number,
+            city: contact.city,
+          }}
+        />
         <div>
           <div className="text-xs text-slate-500">Referral partner agent</div>
           <ReferralPartnerAgentSelect
