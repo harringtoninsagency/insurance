@@ -3,6 +3,7 @@
 import { createServiceSupabase } from "@/lib/supabase/server";
 import { submitQuoteRequest, type SubmitQuoteRequestInput } from "@/lib/quote-requests/submit";
 import { prepareQuoteRequest } from "@/lib/quote-requests/prepare";
+import { fireQuoteRoutine } from "@/lib/quote-requests/fire-routine";
 
 export type RequestQuoteValues = Record<string, string>;
 export type RequestQuoteState = { done: { status: string } } | { error: string; values: RequestQuoteValues } | null;
@@ -61,5 +62,12 @@ export async function submitPublicQuoteRequestAction(_prev: RequestQuoteState, f
   // immediately; only the actual carrier quote after this has to wait for a
   // producer or the scheduled processor.
   const prep = await prepareQuoteRequest(result.id);
+  // Same nudge the partner portal and internal "Run quote now" flow use:
+  // wake the quoting routine within seconds instead of waiting for its
+  // hourly schedule. Never throws, and a failed fire still leaves the
+  // request queued for the hourly run — see lib/quote-requests/fire-routine.ts.
+  if (prep.status === "processing") {
+    await fireQuoteRoutine(result.id);
+  }
   return { done: { status: prep.status } };
 }
