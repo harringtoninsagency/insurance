@@ -4,7 +4,7 @@ import { ingestFetchQuoteResults } from "@/lib/quotes/ingest";
 import { generateIndicationProposal } from "@/lib/proposals/generate-indication";
 import { generateListingSnapshotProposal } from "@/lib/proposals/generate-listing-snapshot";
 import { resolveReferralPartner } from "@/lib/quote-requests/referral-partner";
-import { sendQuoteCompletionEmail } from "@/lib/quote-requests/completion-email";
+import { buildQuoteCompletionEmail, type QuoteCompletionEmail } from "@/lib/quote-requests/completion-email";
 import type { Database } from "@/lib/types/database";
 
 type PropertyRow = Database["public"]["Tables"]["properties"]["Row"];
@@ -128,6 +128,13 @@ export interface FinalizeResult {
   status: "completed" | "failed";
   proposalIds: string[];
   detail: string;
+  /**
+   * Set only on a completed, partner-submitted request with a PDF to send.
+   * finalizeQuoteRequest cannot send this itself (see
+   * buildQuoteCompletionEmail's comment) — the caller must send it via the
+   * Resend MCP send-email tool, using these fields as given.
+   */
+  pendingEmail?: QuoteCompletionEmail | null;
 }
 
 /**
@@ -177,8 +184,8 @@ export async function finalizeQuoteRequest(quoteRequestId: string, standardQuote
 
   const detail = `Completed with ${mergedRates.length} carrier rate(s).`;
   await supabase.from("quote_requests").update({ status: "completed", status_detail: detail, processed_at: new Date().toISOString() }).eq("id", quoteRequestId);
-  // Partner-submitted requests get their results emailed automatically
-  // (never throws, so a failed email can't undo the completed status above).
-  await sendQuoteCompletionEmail(quoteRequestId, proposalIds);
-  return { status: "completed", proposalIds, detail };
+  // Partner-submitted requests get their results emailed — the caller sends
+  // this via the Resend MCP tool (see pendingEmail's doc comment for why).
+  const pendingEmail = await buildQuoteCompletionEmail(quoteRequestId, proposalIds);
+  return { status: "completed", proposalIds, detail, pendingEmail };
 }

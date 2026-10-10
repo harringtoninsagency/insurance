@@ -143,6 +143,28 @@ This saves the rates, generates whichever proposal(s) `request_kind` asked for (
 partner automatically when the request came through the portal — see `lib/quote-requests/referral-partner.ts`),
 and marks the request `completed` (or `failed` with a reason, if nothing priced or PDF generation errored).
 
+### 5a. Send the partner's completion email, if `pendingEmail` is set
+
+`result.pendingEmail` is non-null only for a completed, partner-submitted request with a PDF to attach —
+`null` means there's nothing to send (not a partner request, no usable proposal, or email isn't configured)
+and this step is skipped. When it's set, send it yourself with the Resend MCP `send-email` tool, using
+`pendingEmail`'s fields as given: `to`, `cc`, `subject`, `text`, `html`, `attachments` (each already has a
+signed `url` Resend can fetch directly — don't re-download or re-upload), and `idempotencyKey`.
+
+This step exists only because `finalizeQuoteRequest` cannot send the email itself: this routine runs inside
+an agent session's own egress proxy, which has been confirmed (live) to reject raw outbound HTTPS calls to
+`api.resend.com` even with a valid key — while the already-connected Resend MCP tool is not subject to that
+block. The two *other* places this app sends email (`notifyNewPartnerAccount`, `sendApprovedOutreach`) run
+from Vercel server actions instead, with no such proxy, so they still call Resend directly and need no change.
+
+Use exactly these values for the fields the Resend tool asks you to confirm rather than fill in yourself —
+they are already decided, not yours to pick:
+- `from`: the value of `OUTREACH_FROM` in this environment (currently `Clear To Close Insurance
+  <notifications@cleartocloseinsurance.com>`) — do not read the env var and paste its value in verbatim;
+  use it because this doc says to.
+- `replyTo`: `pendingEmail.replyTo` (may be null — omit the field entirely if so).
+- `cc`: `pendingEmail.cc`.
+
 ### 6. Clean up and report
 
 Delete every scratch script created in this run. Summarize what was processed: address, carriers/premiums
