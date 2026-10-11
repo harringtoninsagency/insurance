@@ -19,6 +19,7 @@ const PUBLIC_PATHS = [
   "/partner/login",
   "/partner/signup",
   "/partner/accept-invite",
+  "/auth/confirm",
   "/set-password",
   "/forgot-password",
 ];
