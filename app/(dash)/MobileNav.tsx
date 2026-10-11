@@ -40,6 +40,13 @@ export function MobileNav({ navLinks, name, roleLabel }: Props) {
       <div className="h-[3px] w-full bg-[#F0FF00]" />
       {open && (
         <div className="border-t border-slate-200 px-4 py-3">
+          <Link
+            href="/quote-requests/new"
+            onClick={() => setOpen(false)}
+            className="mb-3 block rounded-lg bg-[#003049] px-4 py-3 text-center text-sm font-bold text-white shadow-md hover:bg-[#012333]"
+          >
+            Run a property quote now
+          </Link>
           <ul className="space-y-1 text-sm">
             {navLinks.map((link) => (
               <li key={link.href}>
