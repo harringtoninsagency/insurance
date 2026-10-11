@@ -3,7 +3,6 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { RecoveryRedirect } from "./RecoveryRedirect";
-import brightwayLogo from "@/assets/branding/brightway-harrington-horizontal-deep-blue.png";
 import brightwayMarkYellow from "@/assets/branding/brightway-mark-bright-yellow.png";
 
 // The entry point for anyone not already signed in: pick a portal instead of
@@ -34,7 +33,7 @@ export default async function Home() {
       />
       <header className="relative flex justify-end p-6">
         <Link href="/" aria-label="Brightway Insurance | The Harrington Agency home">
-          <Image src={brightwayLogo} alt="Brightway Insurance | The Harrington Agency" className="h-auto w-40" priority />
+          <Image src={brightwayMarkYellow} alt="Brightway Insurance | The Harrington Agency" className="h-10 w-10" priority />
         </Link>
       </header>
 
