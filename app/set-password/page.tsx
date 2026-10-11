@@ -37,12 +37,20 @@ export default function SetPasswordPage() {
     }
     setLoading(true);
     const { error: updateError } = await supabase.auth.updateUser({ password });
-    setLoading(false);
     if (updateError) {
+      setLoading(false);
       setError(updateError.message);
       return;
     }
-    router.push("/properties");
+    // A team member has a profiles row; a partner doesn't -- same check used
+    // in app/page.tsx and app/(dash)/layout.tsx to route each to their own
+    // portal instead of always landing a partner in the internal dashboard.
+    const { data: userData } = await supabase.auth.getUser();
+    const { data: profile } = userData.user
+      ? await supabase.from("profiles").select("id").eq("id", userData.user.id).maybeSingle()
+      : { data: null };
+    setLoading(false);
+    router.push(profile ? "/properties" : "/partner");
     router.refresh();
   }
 
