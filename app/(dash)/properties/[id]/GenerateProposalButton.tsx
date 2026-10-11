@@ -23,7 +23,7 @@ export function GenerateProposalButton({ propertyId }: { propertyId: string }) {
         <button
           type="submit"
           disabled={isPending}
-          className="rounded bg-[#003049] px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-[#012333] disabled:opacity-50"
+          className="rounded-full bg-[#F0FF00] px-3 py-1.5 text-sm font-bold text-[#003049] transition-colors hover:brightness-95 disabled:opacity-50"
         >
           {isPending ? "Generating..." : "Generate proposal"}
         </button>

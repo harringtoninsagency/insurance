@@ -52,7 +52,7 @@ export function RunQuoteButton({ propertyId, compact = false, label = "Run quote
           className={
             compact
               ? "rounded border border-[#003049] px-2.5 py-1 text-xs font-medium text-[#003049] hover:bg-[#003049]/5 disabled:opacity-50"
-              : "rounded bg-[#003049] px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-50"
+              : "rounded-full bg-[#F0FF00] px-3 py-1.5 text-sm font-bold text-[#003049] transition-colors hover:brightness-95 disabled:opacity-50"
           }
         >
           {isPending ? "Queuing..." : label}

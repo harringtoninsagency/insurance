@@ -148,7 +148,7 @@ export function NewQuoteForm() {
       </details>
 
       <div className="flex flex-wrap items-center gap-4">
-        <button type="submit" disabled={isPending || !isVerified} className="rounded bg-[#003049] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50">
+        <button type="submit" disabled={isPending || !isVerified} className="rounded-full bg-[#F0FF00] px-5 py-2.5 text-sm font-bold text-[#003049] transition-colors hover:brightness-95 disabled:opacity-50">
           {isPending ? "Queuing..." : "Run quote now"}
         </button>
         {!isVerified && <span className="text-xs text-slate-500">Verify the address above first.</span>}

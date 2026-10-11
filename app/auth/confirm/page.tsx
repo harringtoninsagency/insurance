@@ -83,7 +83,7 @@ export default function ConfirmPage() {
               type="button"
               onClick={handleConfirm}
               disabled={loading}
-              className="w-full rounded bg-[#003049] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+              className="w-full rounded-full bg-[#F0FF00] px-4 py-2.5 text-sm font-bold text-[#003049] transition-colors hover:brightness-95 disabled:opacity-50"
             >
               {loading ? "Confirming..." : "Continue"}
             </button>

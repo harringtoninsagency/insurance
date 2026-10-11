@@ -102,7 +102,7 @@ export default function AcceptInvitePage() {
                 className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-[#003049] focus:outline-none"
               />
             </div>
-            <button type="submit" disabled={loading} className="w-full rounded bg-[#003049] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">
+            <button type="submit" disabled={loading} className="w-full rounded-full bg-[#F0FF00] px-4 py-2.5 text-sm font-bold text-[#003049] transition-colors hover:brightness-95 disabled:opacity-50">
               {loading ? "Setting up..." : "Activate my account"}
             </button>
           </form>

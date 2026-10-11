@@ -130,7 +130,7 @@ export default async function QuoteRequestsPage() {
           <h1 className="text-xl font-semibold text-[#003049]">Quote requests</h1>
           <div className="mb-2 mt-2 h-[3px] w-16 bg-[#F0FF00]" />
         </div>
-        <Link href="/quote-requests/new" className="shrink-0 rounded bg-[#003049] px-4 py-2 text-sm font-semibold text-white">
+        <Link href="/quote-requests/new" className="shrink-0 rounded-full bg-[#F0FF00] px-4 py-2 text-sm font-bold text-[#003049] transition-colors hover:brightness-95">
           Run a quote now
         </Link>
       </div>
