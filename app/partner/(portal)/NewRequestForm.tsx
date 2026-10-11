@@ -75,7 +75,7 @@ export function NewRequestForm({ defaultEmail }: { defaultEmail: string }) {
             <button
               type="submit"
               disabled={isPending}
-              className="w-full rounded-lg bg-[#003049] px-6 py-4 text-xl font-bold text-white shadow-md transition hover:bg-[#012333] disabled:opacity-50 sm:text-2xl"
+              className="w-full rounded-full bg-[#F0FF00] px-6 py-4 text-xl font-bold text-[#003049] shadow-md transition hover:brightness-95 disabled:opacity-50 sm:text-2xl"
             >
               {isPending ? "Sending..." : "Request Property Insurance Quote Now"}
             </button>

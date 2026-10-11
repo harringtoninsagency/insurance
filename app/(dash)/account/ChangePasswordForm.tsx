@@ -106,7 +106,7 @@ export function ChangePasswordForm({ email }: { email: string }) {
       <button
         type="submit"
         disabled={loading}
-        className="rounded bg-[#003049] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+        className="rounded-full bg-[#F0FF00] px-4 py-2 text-sm font-bold text-[#003049] transition-colors hover:brightness-95 disabled:opacity-50"
       >
         {loading ? "Saving..." : "Change password"}
       </button>

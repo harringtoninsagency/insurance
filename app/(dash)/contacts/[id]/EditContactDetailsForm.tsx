@@ -119,7 +119,7 @@ export function EditContactDetailsForm({ contact }: { contact: ContactDetails })
         <button
           type="submit"
           disabled={isPending}
-          className="rounded bg-[#003049] px-4 py-1.5 text-sm font-semibold text-white disabled:opacity-50"
+          className="rounded-full bg-[#F0FF00] px-4 py-1.5 text-sm font-bold text-[#003049] transition-colors hover:brightness-95 disabled:opacity-50"
         >
           {isPending ? "Saving..." : "Save and update record"}
         </button>

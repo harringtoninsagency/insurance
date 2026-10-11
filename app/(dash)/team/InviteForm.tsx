@@ -29,7 +29,7 @@ export function InviteForm() {
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-3">
-        <button type="submit" disabled={isPending} className="rounded bg-[#003049] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
+        <button type="submit" disabled={isPending} className="rounded-full bg-[#F0FF00] px-4 py-2 text-sm font-bold text-[#003049] transition-colors hover:brightness-95 disabled:opacity-50">
           {isPending ? "Sending..." : "Send invite"}
         </button>
         {state && "invited" in state && <span className="text-sm text-green-700">Invite emailed to {state.invited}.</span>}

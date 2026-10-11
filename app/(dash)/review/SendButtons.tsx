@@ -27,7 +27,7 @@ export function SendOneButton({ outreachId, disabled }: { outreachId: string; di
         type="button"
         disabled={disabled || isPending}
         onClick={() => run(() => sendOutreachAction(outreachId))}
-        className="rounded bg-[#003049] px-3 py-1.5 text-white transition-colors hover:bg-[#012333] disabled:opacity-40"
+        className="rounded-full bg-[#F0FF00] px-3 py-1.5 font-bold text-[#003049] transition-colors hover:brightness-95 disabled:opacity-40"
       >
         {isPending ? "Sending..." : "Send"}
       </button>
@@ -46,7 +46,7 @@ export function SendAllButton({ count, disabled }: { count: number; disabled: bo
         onClick={() => {
           if (window.confirm(`Send ${Math.min(count, 25)} approved email${count === 1 ? "" : "s"} now?`)) run(sendAllApprovedAction);
         }}
-        className="rounded bg-[#003049] px-3 py-1.5 text-sm text-white transition-colors hover:bg-[#012333] disabled:opacity-40"
+        className="rounded-full bg-[#F0FF00] px-3 py-1.5 text-sm font-bold text-[#003049] transition-colors hover:brightness-95 disabled:opacity-40"
       >
         {isPending ? "Sending..." : `Send all approved (${Math.min(count, 25)})`}
       </button>

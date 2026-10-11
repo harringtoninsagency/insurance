@@ -43,7 +43,7 @@ export function MobileNav({ navLinks, name, roleLabel }: Props) {
           <Link
             href="/quote-requests/new"
             onClick={() => setOpen(false)}
-            className="mb-3 block rounded-lg bg-[#003049] px-4 py-3 text-center text-sm font-bold text-white shadow-md hover:bg-[#012333]"
+            className="mb-3 block rounded-full bg-[#F0FF00] px-4 py-3 text-center text-sm font-bold text-[#003049] shadow-md transition-colors hover:brightness-95"
           >
             Run a property quote now
           </Link>

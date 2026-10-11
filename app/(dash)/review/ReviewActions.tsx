@@ -36,7 +36,7 @@ export function ReviewActions({ outreachId }: { outreachId: string }) {
           <button
             type="submit"
             disabled={isPending}
-            className="rounded bg-[#003049] px-3 py-1.5 text-white transition-colors hover:bg-[#012333] disabled:opacity-40"
+            className="rounded-full bg-[#F0FF00] px-3 py-1.5 font-bold text-[#003049] transition-colors hover:brightness-95 disabled:opacity-40"
           >
             Approve
           </button>
