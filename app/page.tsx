@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { RecoveryRedirect } from "./RecoveryRedirect";
 import brightwayMarkYellow from "@/assets/branding/brightway-mark-bright-yellow.png";
+import brightwayMarkDeepBlue from "@/assets/branding/brightway-mark-deep-blue.png";
 
 // The entry point for anyone not already signed in: pick a portal instead of
 // guessing which one they need. An already-authenticated visitor skips this
@@ -32,8 +33,12 @@ export default async function Home() {
         priority
       />
       <header className="relative flex justify-end p-6">
-        <Link href="/" aria-label="Brightway Insurance | The Harrington Agency home">
-          <Image src={brightwayMarkYellow} alt="Brightway Insurance | The Harrington Agency" className="h-10 w-10" priority />
+        <Link
+          href="/"
+          aria-label="Brightway Insurance | The Harrington Agency home"
+          className="flex items-center justify-center rounded-full bg-[#F0FF00] p-2 transition-colors hover:brightness-95"
+        >
+          <Image src={brightwayMarkDeepBlue} alt="Brightway Insurance | The Harrington Agency" className="h-7 w-7" priority />
         </Link>
       </header>
 
