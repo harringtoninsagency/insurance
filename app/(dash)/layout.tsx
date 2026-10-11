@@ -124,10 +124,12 @@ export default async function DashLayout({
           <SignOutButton />
         </div>
       </nav>
-      <main className="flex-1 overflow-y-auto p-4 md:p-8">{children}</main>
-      <aside className="hidden w-96 shrink-0 overflow-y-auto border-l border-slate-200 bg-white p-6 md:flex md:items-center md:justify-center">
-        <Image src={brightwayLogo} alt="Brightway Insurance | The Harrington Agency" className="h-auto w-full" priority />
-      </aside>
+      <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <div className="hidden shrink-0 items-center justify-center border-b border-slate-200 bg-white p-4 md:flex md:p-6">
+          <Image src={brightwayLogo} alt="Brightway Insurance | The Harrington Agency" className="h-28 w-auto md:h-36" priority />
+        </div>
+        <div className="flex-1 overflow-y-auto p-4 md:p-8">{children}</div>
+      </main>
       </div>
     </div>
   );
