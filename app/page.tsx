@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { RecoveryRedirect } from "./RecoveryRedirect";
 import brightwayLogo from "@/assets/branding/brightway-harrington-horizontal-deep-blue.png";
+import brightwayMarkYellow from "@/assets/branding/brightway-mark-bright-yellow.png";
 
 // The entry point for anyone not already signed in: pick a portal instead of
 // guessing which one they need. An already-authenticated visitor skips this
@@ -22,15 +23,22 @@ export default async function Home() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#003049]">
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-[#003049]">
       <RecoveryRedirect />
-      <header className="flex justify-end p-6">
+      <Image
+        src={brightwayMarkYellow}
+        alt=""
+        aria-hidden
+        className="pointer-events-none absolute -bottom-24 -left-24 h-[28rem] w-[28rem] select-none opacity-90 md:h-[36rem] md:w-[36rem]"
+        priority
+      />
+      <header className="relative flex justify-end p-6">
         <Link href="/" aria-label="Brightway Insurance | The Harrington Agency home">
           <Image src={brightwayLogo} alt="Brightway Insurance | The Harrington Agency" className="h-auto w-40" priority />
         </Link>
       </header>
 
-      <main className="flex flex-1 flex-col items-center justify-center gap-10 px-4 pb-16">
+      <main className="relative flex flex-1 flex-col items-center justify-center gap-10 px-4 pb-16">
         <div className="text-center">
           <h1 className="text-2xl font-semibold text-white sm:text-3xl">Brightway Insurance | The Harrington Agency</h1>
           <div className="mx-auto mt-3 h-[3px] w-16 bg-[#F0FF00]" />
@@ -46,7 +54,7 @@ export default async function Home() {
             <p className="mt-2 text-sm text-slate-500">
               For Realtors and mortgage brokers — submit and track quote requests.
             </p>
-            <span className="mt-5 rounded bg-[#003049] px-5 py-2 text-sm font-semibold text-white transition-colors group-hover:bg-[#012333]">
+            <span className="mt-5 rounded-full bg-[#F0FF00] px-5 py-2 text-sm font-bold text-[#003049] transition-colors group-hover:brightness-95">
               Sign in
             </span>
           </Link>
@@ -57,7 +65,7 @@ export default async function Home() {
           >
             <h2 className="text-lg font-semibold text-[#003049]">Team Member Portal</h2>
             <p className="mt-2 text-sm text-slate-500">For Brightway Insurance agents and staff.</p>
-            <span className="mt-5 rounded bg-[#003049] px-5 py-2 text-sm font-semibold text-white transition-colors group-hover:bg-[#012333]">
+            <span className="mt-5 rounded-full bg-[#F0FF00] px-5 py-2 text-sm font-bold text-[#003049] transition-colors group-hover:brightness-95">
               Sign in
             </span>
           </Link>
