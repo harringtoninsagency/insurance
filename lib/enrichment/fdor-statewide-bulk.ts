@@ -37,16 +37,25 @@ export interface FdorParcelAttributes {
 
 const OUT_FIELDS = "CO_NO,PARCEL_ID,DOR_UC,ACT_YR_BLT,TOT_LVG_AR,PHY_ADDR1,PHY_ADDR2,PHY_CITY,PHY_ZIPCD,OWN_NAME";
 
-async function fetchWithRetry(params: URLSearchParams, attempt = 1): Promise<Response> {
+// The service fails intermittently under sustained load — not just as a
+// non-200 HTTP response, but as a 200 OK carrying `{"error": {...}}` in the
+// JSON body (confirmed: the exact same query shape succeeds most of the
+// time and fails with "Invalid query parameters" at varying offsets, which
+// rules out a real parameter bug). A plain `!res.ok` check misses this
+// entirely, so the error check has to happen after parsing the body, inside
+// the retry loop, not left to the caller.
+async function fetchJsonWithRetry<T>(params: URLSearchParams, attempt = 1): Promise<T> {
   try {
     const res = await fetch(`${QUERY_URL}?${params}`, { signal: AbortSignal.timeout(60_000) });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return res;
+    const json = (await res.json()) as T & { error?: unknown };
+    if (json.error) throw new Error(`FDOR query error: ${JSON.stringify(json.error)}`);
+    return json;
   } catch (err) {
-    if (attempt >= 4) throw err;
-    const delayMs = 2000 * attempt;
+    if (attempt >= 6) throw err;
+    const delayMs = 1500 * attempt;
     await new Promise((r) => setTimeout(r, delayMs));
-    return fetchWithRetry(params, attempt + 1);
+    return fetchJsonWithRetry(params, attempt + 1);
   }
 }
 
@@ -57,9 +66,7 @@ export async function countFdorParcels(countyNo: number, dorUseCode: string): Pr
     returnCountOnly: "true",
     f: "json",
   });
-  const res = await fetchWithRetry(params);
-  const json = (await res.json()) as { count?: number; error?: unknown };
-  if (json.error) throw new Error(`FDOR count query failed: ${JSON.stringify(json.error)}`);
+  const json = await fetchJsonWithRetry<{ count?: number }>(params);
   return json.count ?? 0;
 }
 
@@ -75,9 +82,7 @@ export async function* fetchFdorParcels(countyNo: number, dorUseCode: string): A
       resultRecordCount: String(PAGE_SIZE),
       f: "json",
     });
-    const res = await fetchWithRetry(params);
-    const json = (await res.json()) as { features?: { attributes: FdorParcelAttributes }[]; error?: unknown };
-    if (json.error) throw new Error(`FDOR page query failed at offset ${offset}: ${JSON.stringify(json.error)}`);
+    const json = await fetchJsonWithRetry<{ features?: { attributes: FdorParcelAttributes }[] }>(params);
     const rows = (json.features ?? []).map((f) => f.attributes);
     if (rows.length === 0) return;
     yield rows;
