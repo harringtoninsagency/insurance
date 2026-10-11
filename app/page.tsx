@@ -41,7 +41,6 @@ export default async function Home() {
         <div className="text-center">
           <h1 className="text-5xl font-semibold text-[#F0FF00] sm:text-6xl">Brightway Insurance | The Harrington Agency</h1>
           <div className="mx-auto mt-3 h-[3px] w-16 bg-[#F0FF00]" />
-          <p className="mt-3 text-sm text-[#8291AC]">Choose how you&apos;d like to sign in.</p>
         </div>
 
         <div className="grid w-full max-w-2xl gap-6 sm:grid-cols-2">
