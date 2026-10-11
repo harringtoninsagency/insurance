@@ -5,6 +5,7 @@ import { createServerSupabase, createServiceSupabase } from "@/lib/supabase/serv
 import { submitQuoteRequest, type SubmitQuoteRequestInput } from "@/lib/quote-requests/submit";
 import { prepareQuoteRequest } from "@/lib/quote-requests/prepare";
 import { fireQuoteRoutine } from "@/lib/quote-requests/fire-routine";
+import { notifyReferralPartnerSubmission } from "@/lib/quote-requests/submission-notify";
 
 export type PartnerRequestValues = Record<string, string>;
 export type PartnerRequestState = { done: { status: string } } | { error: string; values: PartnerRequestValues } | null;
@@ -58,6 +59,15 @@ export async function submitPartnerQuoteRequestAction(_prev: PartnerRequestState
     const values = Object.fromEntries(FIELDS.map((f) => [f, str(formData, f)]));
     return { error: result.error, values };
   }
+
+  await notifyReferralPartnerSubmission({
+    partnerName: input.requesterName,
+    partnerEmail: contact?.email || input.requesterEmail,
+    addressLine: input.addressLine,
+    city: input.city,
+    state: input.state || "FL",
+    requestKind: input.requestKind,
+  });
 
   const prep = await prepareQuoteRequest(result.id);
   // Matches the internal "Run quote now" flow (app/(dash)/quote-requests/actions.ts):

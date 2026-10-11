@@ -14,7 +14,7 @@ const ATTACHMENT_URL_TTL_SECONDS = 3600;
 
 export interface QuoteCompletionEmail {
   to: string;
-  cc: string;
+  cc: string[];
   replyTo: string | null;
   subject: string;
   text: string;
@@ -50,10 +50,18 @@ export async function buildQuoteCompletionEmail(quoteRequestId: string, proposal
     const supabase = createServiceSupabase();
     const { data: request } = await supabase
       .from("quote_requests")
-      .select("requester_type, requester_email, requester_name, property_id")
+      .select("requester_type, requester_email, requester_name, property_id, contact_id")
       .eq("id", quoteRequestId)
       .single();
-    if (!request || request.requester_type !== "partner" || !request.requester_email || !request.property_id) return null;
+    if (!request || request.requester_type !== "partner" || !request.contact_id || !request.property_id) return null;
+
+    // The account's actual email of record — the same address the partner
+    // signed up or was invited with (lib/partners/invite.ts, lib/partners/self-signup.ts)
+    // — rather than whatever the partner typed into the form's editable
+    // "Send results to" field, so results always reach the designated account
+    // regardless of what that field says.
+    const { data: contact } = await supabase.from("industry_contacts").select("email").eq("id", request.contact_id).single();
+    if (!contact?.email) return null;
 
     const cfg = loadEmailConfig();
     if (!cfg.ok) {
@@ -82,9 +90,16 @@ export async function buildQuoteCompletionEmail(quoteRequestId: string, proposal
     if (!attachments.length) return null;
 
     const name = request.requester_name ?? "there";
+    // If the partner asked for results at a different inbox than their
+    // account's email of record, honor that too — as an added recipient,
+    // never a replacement for the guaranteed one above.
+    const cc = [PARTNER_CC];
+    if (request.requester_email && request.requester_email.toLowerCase() !== contact.email.toLowerCase()) {
+      cc.push(request.requester_email);
+    }
     return {
-      to: request.requester_email,
-      cc: PARTNER_CC,
+      to: contact.email,
+      cc,
       replyTo: cfg.config.replyTo,
       subject: `Your quote request is ready — ${property.address}`,
       text: `Hi ${name},\n\nYour request for ${property.address} is complete. The insurance summary / listing snapshot is attached.\n\n— Brightway Insurance | The Harrington Agency`,
