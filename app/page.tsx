@@ -25,14 +25,14 @@ export default async function Home() {
     <div className="flex min-h-screen flex-col bg-[#003049]">
       <RecoveryRedirect />
       <header className="flex justify-end p-6">
-        <Link href="/" aria-label="Clear To Close Insurance home">
+        <Link href="/" aria-label="Brightway Insurance | The Harrington Agency home">
           <Image src={brightwayLogo} alt="Brightway Insurance | The Harrington Agency" className="h-auto w-40" priority />
         </Link>
       </header>
 
       <main className="flex flex-1 flex-col items-center justify-center gap-10 px-4 pb-16">
         <div className="text-center">
-          <h1 className="text-2xl font-semibold text-white sm:text-3xl">Clear To Close Insurance</h1>
+          <h1 className="text-2xl font-semibold text-white sm:text-3xl">Brightway Insurance | The Harrington Agency</h1>
           <div className="mx-auto mt-3 h-[3px] w-16 bg-[#F0FF00]" />
           <p className="mt-3 text-sm text-[#8291AC]">Choose how you&apos;d like to sign in.</p>
         </div>

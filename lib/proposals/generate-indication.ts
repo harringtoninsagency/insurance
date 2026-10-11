@@ -183,7 +183,15 @@ export async function generateIndicationProposal(
 
   const panelPadding = 12;
   const panelHeight = snapshot.length * 14 + panelPadding * 2 - 4;
-  page.drawRectangle({ x: MARGIN, y: y - panelHeight, width: PAGE_WIDTH - 2 * MARGIN, height: panelHeight, color: CREAM });
+  page.drawRectangle({
+    x: MARGIN,
+    y: y - panelHeight,
+    width: PAGE_WIDTH - 2 * MARGIN,
+    height: panelHeight,
+    color: CREAM,
+    borderColor: PERIWINKLE_GREY,
+    borderWidth: 0.75,
+  });
   let snapshotY = y - panelPadding - 8;
   for (const line of snapshot) {
     page.drawText(line, { x: MARGIN + panelPadding, y: snapshotY, size: 10, font, color: BLACK });
@@ -225,7 +233,15 @@ export async function generateIndicationProposal(
   const formLabel = (form: string | null) => (form === "DP3" ? "DP3 (rental property)" : (form ?? "-"));
 
   function drawTableHeader() {
-    page.drawRectangle({ x: MARGIN, y: y - rowHeight, width: tableWidth, height: rowHeight, color: DEEP_BLUE });
+    page.drawRectangle({
+      x: MARGIN,
+      y: y - rowHeight,
+      width: tableWidth,
+      height: rowHeight,
+      color: DEEP_BLUE,
+      borderColor: PERIWINKLE_GREY,
+      borderWidth: 0.75,
+    });
     page.drawText("Carrier", { x: colCarrier, y: y - 15, size: 10, font: boldFont, color: WHITE });
     page.drawText("Form", { x: colForm, y: y - 15, size: 10, font: boldFont, color: WHITE });
     page.drawText("Annual Premium", { x: colPremium, y: y - 15, size: 10, font: boldFont, color: WHITE });
@@ -278,6 +294,7 @@ export async function generateIndicationProposal(
       // yellow sparingly to highlight the most important line.
       page.drawRectangle({ x: MARGIN, y: rowTop - rowHeight, width: 3, height: rowHeight, color: BRIGHT_YELLOW });
     }
+    page.drawRectangle({ x: MARGIN, y: rowTop - rowHeight, width: tableWidth, height: rowHeight, borderColor: PERIWINKLE_GREY, borderWidth: 0.5 });
     const textY = rowTop - 15;
     const carrierFont = isBest ? boldFont : font;
 

@@ -28,7 +28,7 @@ const AMBER = rgb(0xd9 / 255, 0x8c / 255, 0x0d / 255);
 const BLACK = rgb(0, 0, 0);
 const WHITE = rgb(1, 1, 1);
 
-const CONTACT_EMAIL = "harringtonagency@brightway.com";
+const CONTACT_EMAIL = "HarringtonAgency@brightway.com";
 const CONTACT_PHONE = "727-789-2200";
 
 const BRANDING_DIR = join(process.cwd(), "assets", "branding");
@@ -137,15 +137,15 @@ export async function generateListingSnapshotProposal(
   const logoWidth = Math.min(180 * 3, CONTENT_WIDTH);
   const logoHeight = logoWidth * (headerLogo.height / headerLogo.width);
   page.drawImage(headerLogo, { x: MARGIN, y: y - logoHeight, width: logoWidth, height: logoHeight });
-  y -= logoHeight + 6;
-  page.drawText("727-789-2200  ·  harringtonagency@brightway.com", {
-    x: MARGIN,
-    y,
-    size: 10,
-    font: boldFont,
-    color: DEEP_BLUE,
-  });
-  y -= 12;
+  y -= logoHeight + 10;
+  // Agency contact info, sized to read as a letterhead rather than fine
+  // print — split across two lines since one line at this size would run
+  // wider than the page.
+  const headerContactSize = 22;
+  page.drawText(CONTACT_PHONE, { x: MARGIN, y, size: headerContactSize, font: boldFont, color: DEEP_BLUE });
+  y -= headerContactSize + 4;
+  page.drawText(CONTACT_EMAIL, { x: MARGIN, y, size: headerContactSize, font: boldFont, color: DEEP_BLUE });
+  y -= headerContactSize + 6;
   page.drawRectangle({ x: MARGIN, y: y - 3, width: CONTENT_WIDTH, height: 3, color: BRIGHT_YELLOW });
   y -= 16;
 
@@ -210,7 +210,15 @@ export async function generateListingSnapshotProposal(
     }
     const offsetX = (photoWidth - drawWidth) / 2;
     const offsetY = (rowHeight - drawHeight) / 2;
-    page.drawRectangle({ x: MARGIN, y: rowTop - rowHeight, width: photoWidth, height: rowHeight, color: WHITE });
+    page.drawRectangle({
+      x: MARGIN,
+      y: rowTop - rowHeight,
+      width: photoWidth,
+      height: rowHeight,
+      color: WHITE,
+      borderColor: PERIWINKLE_GREY,
+      borderWidth: 0.75,
+    });
     page.drawImage(photoImage, {
       x: MARGIN + offsetX,
       y: rowTop - rowHeight + offsetY,
@@ -249,7 +257,15 @@ export async function generateListingSnapshotProposal(
   const cheapestHo3 = (quotes as QuoteRow[] | null)?.find((q) => q.form_type === "HO3");
   const bestQuote = cheapestHo3 ?? quotes?.[0];
   const indicationX = MARGIN + photoWidth + boxGap;
-  page.drawRectangle({ x: indicationX, y: rowTop - rowHeight, width: indicationWidth, height: rowHeight, color: DEEP_BLUE });
+  page.drawRectangle({
+    x: indicationX,
+    y: rowTop - rowHeight,
+    width: indicationWidth,
+    height: rowHeight,
+    color: DEEP_BLUE,
+    borderColor: PERIWINKLE_GREY,
+    borderWidth: 0.75,
+  });
   let boxY = rowTop - 18;
   const boxPad = 14;
   page.drawText(
@@ -311,7 +327,7 @@ export async function generateListingSnapshotProposal(
   const glanceHeight = 32;
   glanceItems.forEach((item, i) => {
     const x = MARGIN + i * (glanceWidth + glanceGap);
-    page.drawRectangle({ x, y: y - glanceHeight, width: glanceWidth, height: glanceHeight, color: LIGHT_GREY });
+    page.drawRectangle({ x, y: y - glanceHeight, width: glanceWidth, height: glanceHeight, color: LIGHT_GREY, borderColor: PERIWINKLE_GREY, borderWidth: 0.75 });
     page.drawText(item.label, { x: x + 10, y: y - 13, size: 7, font: boldFont, color: PERIWINKLE_GREY });
     page.drawText(item.value, { x: x + 10, y: y - 25, size: 9.5, font: boldFont, color: DEEP_BLUE });
   });
@@ -328,6 +344,16 @@ export async function generateListingSnapshotProposal(
   const readinessColWidth = (CONTENT_WIDTH - colGap) / 2;
   const readinessRowHeight = 16;
   const rowsPerCol = Math.ceil(readinessItems.length / 2);
+  const readinessBoxTop = y + 8;
+  const readinessBoxBottom = y - rowsPerCol * readinessRowHeight + 2;
+  page.drawRectangle({
+    x: MARGIN,
+    y: readinessBoxBottom,
+    width: CONTENT_WIDTH,
+    height: readinessBoxTop - readinessBoxBottom,
+    borderColor: PERIWINKLE_GREY,
+    borderWidth: 0.75,
+  });
   readinessItems.forEach((item, i) => {
     const col = Math.floor(i / rowsPerCol);
     const row = i % rowsPerCol;
@@ -370,7 +396,15 @@ export async function generateListingSnapshotProposal(
   // degrades by skipping rows rather than overlapping the footer.
   const FOOTER_RESERVE = 125;
 
-  page.drawRectangle({ x: MARGIN, y: y - tableRowHeight, width: CONTENT_WIDTH, height: tableRowHeight, color: DEEP_BLUE });
+  page.drawRectangle({
+    x: MARGIN,
+    y: y - tableRowHeight,
+    width: CONTENT_WIDTH,
+    height: tableRowHeight,
+    color: DEEP_BLUE,
+    borderColor: PERIWINKLE_GREY,
+    borderWidth: 0.75,
+  });
   page.drawText("CARRIER", { x: colCarrier, y: y - 13.5, size: 9, font: boldFont, color: WHITE });
   page.drawText("FORM", { x: colForm, y: y - 13.5, size: 9, font: boldFont, color: WHITE });
   page.drawText("ANNUAL", { x: colPremium, y: y - 13.5, size: 9, font: boldFont, color: WHITE });
@@ -383,6 +417,7 @@ export async function generateListingSnapshotProposal(
       page.drawRectangle({ x: MARGIN, y: rowTop2 - tableRowHeight, width: CONTENT_WIDTH, height: tableRowHeight, color: CREAM });
       page.drawRectangle({ x: MARGIN, y: rowTop2 - tableRowHeight, width: 3, height: tableRowHeight, color: BRIGHT_YELLOW });
     }
+    page.drawRectangle({ x: MARGIN, y: rowTop2 - tableRowHeight, width: CONTENT_WIDTH, height: tableRowHeight, borderColor: PERIWINKLE_GREY, borderWidth: 0.5 });
     const textY = rowTop2 - 13.5;
     const carrierFont = i === 0 ? boldFont : font;
 
@@ -402,9 +437,6 @@ export async function generateListingSnapshotProposal(
     page.drawText(quote.form_type ?? "-", { x: colForm, y: textY, size: 9.5, font: carrierFont, color: BLACK });
     page.drawText(formatCurrency(Number(quote.premium)), { x: colPremium, y: textY, size: 9.5, font: carrierFont, color: DEEP_BLUE });
     y -= tableRowHeight;
-    if (i > 0) {
-      page.drawRectangle({ x: MARGIN, y, width: CONTENT_WIDTH, height: 0.5, color: rgb(0.9, 0.9, 0.9) });
-    }
   });
 
   y -= 4;

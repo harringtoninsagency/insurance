@@ -3,7 +3,7 @@ import "./globals.css";
 import { RegisterServiceWorker } from "./RegisterServiceWorker";
 
 export const metadata: Metadata = {
-  title: "Clear To Close Insurance",
+  title: "Brightway Insurance | The Harrington Agency",
   description: "Internal FL homeowners listing-to-proposal engine",
   icons: {
     icon: [{ url: "/icon-192.png", sizes: "192x192", type: "image/png" }],
