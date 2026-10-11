@@ -3,6 +3,7 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
 import brightwayLogo from "@/assets/branding/brightway-harrington-horizontal-deep-blue.png";
+import brightwayMark from "@/assets/branding/brightway-mark-deep-blue.png";
 import { SignOutButton } from "./SignOutButton";
 import { MobileNav } from "./MobileNav";
 
@@ -54,10 +55,10 @@ export default async function DashLayout({
 
   return (
     <div className="min-h-screen bg-[#003049] p-2 md:p-4">
-      <div className="mx-auto overflow-hidden rounded-lg bg-white shadow-lg md:flex md:min-h-[calc(100vh-2rem)] md:max-w-[1600px]">
+      <div className="mx-auto overflow-hidden rounded-lg bg-white shadow-lg md:flex md:h-[calc(100vh-2rem)] md:max-w-[1600px]">
       <MobileNav navLinks={navLinks} name={profile.full_name ?? profile.email} roleLabel={profile.role === "admin" ? "Admin" : "Agent"} />
-      <nav className="hidden w-56 shrink-0 border-r border-slate-200 bg-white p-4 md:block">
-        <Image src={brightwayLogo} alt="Brightway Insurance | The Harrington Agency" className="h-auto w-full" priority />
+      <nav className="hidden w-56 shrink-0 overflow-y-auto border-r border-slate-200 bg-white p-4 md:block">
+        <Image src={brightwayMark} alt="Brightway Insurance | The Harrington Agency" className="h-12 w-12" priority />
         <div className="mb-2 mt-3 h-[3px] w-full bg-[#F0FF00]" />
         <div className="mb-4 text-xs text-[#8291AC]">Brightway Insurance | The Harrington Agency</div>
         <ul className="space-y-1 text-sm">
@@ -123,7 +124,10 @@ export default async function DashLayout({
           <SignOutButton />
         </div>
       </nav>
-      <main className="flex-1 p-4 md:p-8">{children}</main>
+      <main className="flex-1 overflow-y-auto p-4 md:p-8">{children}</main>
+      <aside className="hidden w-96 shrink-0 overflow-y-auto border-l border-slate-200 bg-white p-6 md:flex md:items-center md:justify-center">
+        <Image src={brightwayLogo} alt="Brightway Insurance | The Harrington Agency" className="h-auto w-full" priority />
+      </aside>
       </div>
     </div>
   );
