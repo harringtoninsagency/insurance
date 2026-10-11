@@ -15,6 +15,14 @@ const KIND_LABEL: Record<string, string> = {
   both: "Quote summary + listing snapshot",
 };
 
+// fire-routine.ts writes the raw failure reason (e.g. "routine API returned
+// 401") into status_detail so the team can diagnose it from the internal
+// quote-requests list — that detail isn't meant for a partner's eyes.
+function partnerFacingDetail(detail: string | null): string | null {
+  if (detail?.startsWith("Queued by a team member")) return "We're finishing this up now — results are on the way.";
+  return detail;
+}
+
 export default async function PartnerPortalPage() {
   const supabase = await createServerSupabase();
   const {
@@ -80,7 +88,9 @@ export default async function PartnerPortalPage() {
               <p className="mt-1 text-slate-600">
                 {KIND_LABEL[r.request_kind] ?? r.request_kind} · requested {new Date(r.created_at).toLocaleDateString()}
               </p>
-              {r.status_detail && <p className="mt-1 text-xs text-slate-500">{r.status_detail}</p>}
+              {partnerFacingDetail(r.status_detail) && (
+                <p className="mt-1 text-xs text-slate-500">{partnerFacingDetail(r.status_detail)}</p>
+              )}
               {!!requestProposals.length && (
                 <div className="mt-2 flex flex-wrap gap-3">
                   {requestProposals.map((p) => (
