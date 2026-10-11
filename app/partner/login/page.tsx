@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { createBrowserSupabase } from "@/lib/supabase/client";
 import brightwayLogo from "@/assets/branding/brightway-harrington-horizontal-deep-blue.png";
+import brightwayMarkYellow from "@/assets/branding/brightway-mark-bright-yellow.png";
 
 export default function PartnerLoginPage() {
   const router = useRouter();
@@ -33,8 +34,15 @@ export default function PartnerLoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#003049] px-4">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-5 rounded-2xl bg-white p-8 shadow-xl">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#003049] px-4">
+      <Image
+        src={brightwayMarkYellow}
+        alt=""
+        aria-hidden
+        className="pointer-events-none absolute -bottom-24 -left-24 h-[28rem] w-[28rem] select-none opacity-90 md:h-[36rem] md:w-[36rem]"
+        priority
+      />
+      <form onSubmit={handleSubmit} className="relative w-full max-w-sm space-y-5 rounded-2xl bg-white p-8 shadow-xl">
         <div>
           <Image src={brightwayLogo} alt="Brightway Insurance | The Harrington Agency" className="h-auto w-52" priority />
           <div className="mt-4 h-[3px] w-full bg-[#F0FF00]" />
@@ -83,7 +91,7 @@ export default function PartnerLoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded bg-[#003049] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+          className="w-full rounded-full bg-[#F0FF00] px-4 py-2.5 text-sm font-bold text-[#003049] transition-colors hover:brightness-95 disabled:opacity-50"
         >
           {loading ? "Signing in..." : "Sign in"}
         </button>
