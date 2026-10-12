@@ -13,7 +13,7 @@
 // (`FL-<county>-<parcel id>` vs `PASCO-`/`HERNANDO-`), so nothing collides
 // or overwrites the richer single-family rows already there.
 //
-// Usage: npx tsx scripts/sync-fdor-statewide-parcels.ts
+// Usage: npx tsx scripts/sync-fdor-statewide-parcels.ts [--start-county=N]
 //
 // Source: https://services9.arcgis.com/Gh9awoU677aKree0/arcgis/rest/services/Florida_Statewide_Cadastral/FeatureServer/0
 // — the Florida Geographic Information Office's public "Florida Statewide
@@ -50,7 +50,20 @@ const RESIDENTIAL_DOR_CODES: { code: string; label: string }[] = [
 
 const PINELLAS_CO_NO = 62;
 const ALL_COUNTY_NUMBERS = Array.from({ length: 67 }, (_, i) => i + 11); // 11..77, confirmed via returnDistinctValues against the live service
-const COUNTY_NUMBERS = ALL_COUNTY_NUMBERS.filter((n) => n !== PINELLAS_CO_NO);
+
+// Optional resume point: npx tsx scripts/sync-fdor-statewide-parcels.ts --start-county=39
+// This run is slow enough (network retries under load; observed several
+// counties per hour, not per minute) that it has repeatedly outlived a
+// single session and needed restarting — without this, every restart redid
+// every earlier county from scratch even though the upserts already landed
+// (idempotent, but wasted real time re-fetching and re-upserting the same
+// rows). Pick the start county from the highest CO_NO already present in
+// county_parcels (select distinct on strap's FL-<n>- prefix) rather than
+// trusting a log tail, which can lag or be missing if a prior run died
+// before flushing.
+const startCountyArg = process.argv.find((a) => a.startsWith("--start-county="));
+const startCounty = startCountyArg ? Number.parseInt(startCountyArg.split("=")[1]!, 10) : ALL_COUNTY_NUMBERS[0]!;
+const COUNTY_NUMBERS = ALL_COUNTY_NUMBERS.filter((n) => n !== PINELLAS_CO_NO && n >= startCounty);
 
 // Only the handful confirmed by directly querying the service for a
 // landmark county-seat/distinctive city (e.g. CO_NO=39 -> "TAMPA" ==
