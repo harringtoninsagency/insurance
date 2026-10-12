@@ -16,19 +16,31 @@
 // (aca-prod.accela.com/HCFL), which this script routes each property to by
 // city.
 //
-// UNVERIFIED: the search-form field IDs and results-grid structure below are
-// carried over verbatim from scripts/backfill-roof-years.ts's Pinellas
-// selectors, on the assumption that Accela Citizen Access's Building-module
-// search page is the same compiled product across agencies (same
-// __VIEWSTATE/__EVENTTARGET ASP.NET postback machinery was confirmed present
-// on HCFL's page) — differing only in theme/CSS, not control IDs. I was not
-// able to get either live page to fully render in the sandbox this was
-// written in (a handful of subresource requests failed with
-// net::ERR_TOO_MANY_RETRIES on every attempt, across unrelated domains, with
-// the proxy's own diagnostics showing no policy block — looked like a
-// sandbox-specific connectivity issue, not a dead end with the sites
-// themselves). Run this once with a single property ID first (see usage
-// below) and confirm the selectors against a screenshot before a full run.
+// The field IDs (txtGSNumber_ChildControl0, txtGSStreetName, txtGSStartDate)
+// and the btnNewSearch control carried over from scripts/backfill-roof-
+// years.ts's Pinellas selectors are confirmed live against Tampa's real
+// instance: filled correctly, submitted without error. What's NOT yet
+// confirmed is a true-positive result — the one real address tested
+// (picked because it was the only Hillsborough property on file at the
+// time, before any Hillsborough county_parcels rows existed to match
+// others against) came back with no results grid, which is the same
+// "no permit on file" state the Pinellas script already treats as valid —
+// but with no second address known to actually carry a permit, a silent
+// failure can't be fully ruled out yet. Worth checking the results of the
+// first real run against a handful of addresses rather than assuming every
+// zero-result is a true negative.
+//
+// Also confirmed live: Tampa's Start Date field comes pre-filled (unlike
+// Pinellas's blank one) — a plain click+type inserted into the existing
+// text rather than replacing it, so the fill below selects-all first.
+//
+// This sandbox also has real, intermittent connectivity flakiness hitting
+// these portals (a handful of subresource requests failing with
+// net::ERR_TOO_MANY_RETRIES on a given attempt, succeeding outright on an
+// immediate retry, across unrelated domains, with the proxy's own
+// diagnostics showing no policy block) — expect occasional hangs/retries
+// when running this interactively here; not expected to be a production
+// concern wherever this actually executes.
 //
 // Usage: npx tsx scripts/backfill-hillsborough-roof-years.ts [property-id]
 
@@ -123,6 +135,11 @@ async function main() {
       await page.fill("#ctl00_PlaceHolderMain_generalSearchForm_txtGSStreetName", streetName);
       const startDate = page.locator("#ctl00_PlaceHolderMain_generalSearchForm_txtGSStartDate");
       await startDate.click();
+      // Tampa's instance pre-fills this field (unlike Pinellas's blank one),
+      // so a plain click+type inserts into the existing text rather than
+      // replacing it — confirmed live ("10/11/201/01/19..." resulted without
+      // this). Select-all first so this works on both agencies.
+      await startDate.press("Control+A");
       await startDate.pressSequentially(EARLIEST_START_DATE, { delay: 30 });
       await page.keyboard.press("Tab");
 
