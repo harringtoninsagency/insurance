@@ -57,6 +57,17 @@ export default async function PartnerPortalLayout({
           <div className="h-[3px] w-full bg-[#F0FF00]" />
         </header>
         <main className="px-5 py-8">{children}</main>
+        <footer className="border-t border-slate-200 px-5 py-4 text-center text-xs text-slate-500">
+          Questions? Contact us at{" "}
+          <a href="mailto:harringtonagency@brightway.com" className="font-medium text-[#003049] hover:underline">
+            harringtonagency@brightway.com
+          </a>{" "}
+          or{" "}
+          <a href="tel:+17277892200" className="font-medium text-[#003049] hover:underline">
+            727-789-2200
+          </a>
+          .
+        </footer>
       </div>
     </div>
   );
