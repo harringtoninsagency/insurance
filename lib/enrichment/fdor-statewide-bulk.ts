@@ -44,6 +44,13 @@ const OUT_FIELDS = "CO_NO,PARCEL_ID,DOR_UC,ACT_YR_BLT,TOT_LVG_AR,PHY_ADDR1,PHY_A
 // rules out a real parameter bug). A plain `!res.ok` check misses this
 // entirely, so the error check has to happen after parsing the body, inside
 // the retry loop, not left to the caller.
+//
+// Bumped from 6 attempts / 1500ms*attempt to 10 / 2500ms*attempt after
+// observing the failure rate climb over several hours of real runs —
+// whole counties started failing on every DOR code in a single pass
+// (previously just one or two), and large counties' Single Family code
+// (the most pages, so the most chances for one page to hit this) was
+// failing on effectively every attempt. Longer backoff, more attempts.
 async function fetchJsonWithRetry<T>(params: URLSearchParams, attempt = 1): Promise<T> {
   try {
     const res = await fetch(`${QUERY_URL}?${params}`, { signal: AbortSignal.timeout(60_000) });
@@ -52,8 +59,8 @@ async function fetchJsonWithRetry<T>(params: URLSearchParams, attempt = 1): Prom
     if (json.error) throw new Error(`FDOR query error: ${JSON.stringify(json.error)}`);
     return json;
   } catch (err) {
-    if (attempt >= 6) throw err;
-    const delayMs = 1500 * attempt;
+    if (attempt >= 10) throw err;
+    const delayMs = 2500 * attempt;
     await new Promise((r) => setTimeout(r, delayMs));
     return fetchJsonWithRetry(params, attempt + 1);
   }
