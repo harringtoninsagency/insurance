@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { todayEt, formatDateOnly } from "@/lib/dates";
 import { RunQuoteButton } from "../../quote-requests/RunQuoteButton";
+import { AssignedAgentSelect } from "../AssignedAgentSelect";
 
 interface PropertyRow {
   id: string;
@@ -9,6 +10,7 @@ interface PropertyRow {
   status: string;
   list_price: number | null;
   listing_agent_name: string | null;
+  assigned_agent_id: string | null;
   date_quoted: string | null;
   photo_path: string | null;
   created_at: string;
@@ -26,11 +28,13 @@ export default async function OneHomeQueuePage() {
   const supabase = await createServerSupabase();
   const { data: propertiesData, error } = await supabase
     .from("properties")
-    .select("id, address, status, list_price, listing_agent_name, date_quoted, photo_path, created_at")
+    .select("id, address, status, list_price, listing_agent_name, assigned_agent_id, date_quoted, photo_path, created_at")
     .eq("source", "onehome")
     .order("created_at", { ascending: false })
     .limit(500);
   const properties = propertiesData as PropertyRow[] | null;
+
+  const { data: teamMembers } = await supabase.from("profiles").select("id, full_name, email").eq("active", true).order("full_name");
 
   const queued = properties?.length
     ? await supabase.from("quote_requests").select("property_id").in("status", ["new", "processing"]).not("property_id", "is", null)
@@ -78,13 +82,21 @@ export default async function OneHomeQueuePage() {
             {" · Quoted "}
             {formatDateOnly(p.date_quoted)}
           </div>
-          <div className="mt-1 flex items-center gap-2">
+          <div className="mt-1 flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-[#8291AC]/15 px-2 py-0.5 text-xs font-medium text-[#003049]">{p.status}</span>
             {queuedIds.has(p.id) ? (
               <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">Queued</span>
             ) : (
               <RunQuoteButton propertyId={p.id} compact label="Run quote" />
             )}
+          </div>
+          <div className="mt-2 max-w-[16rem]">
+            <AssignedAgentSelect
+              key={`${p.id}:${p.assigned_agent_id ?? ""}`}
+              propertyId={p.id}
+              assignedAgentId={p.assigned_agent_id}
+              teamMembers={teamMembers ?? []}
+            />
           </div>
         </div>
       </div>

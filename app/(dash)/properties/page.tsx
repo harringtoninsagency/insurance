@@ -78,7 +78,12 @@ export default async function PropertiesPage() {
                 return (
                 <tr key={p.id} className="border-b border-slate-100 last:border-0">
                   <td className="px-4 py-3">
-                    <AssignedAgentSelect propertyId={p.id} assignedAgentId={p.assigned_agent_id} teamMembers={teamMembers ?? []} />
+                    <AssignedAgentSelect
+                      key={`${p.id}:${p.assigned_agent_id ?? ""}`}
+                      propertyId={p.id}
+                      assignedAgentId={p.assigned_agent_id}
+                      teamMembers={teamMembers ?? []}
+                    />
                   </td>
                   <td className="px-4 py-3">
                     <Link

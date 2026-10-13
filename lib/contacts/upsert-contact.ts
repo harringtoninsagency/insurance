@@ -82,8 +82,32 @@ export async function upsertContact(supabase: Client, agencyId: string, input: C
       })
       .select("id")
       .single();
-    if (error || !data) return { result: "rejected", reason: error?.message ?? "insert failed" };
-    return { result: "inserted", id: data.id };
+    if (!error && data) return { result: "inserted", id: data.id };
+
+    // findExisting's email lookup should always catch a pre-existing row
+    // before we ever get here, but if it somehow doesn't (a row inserted by
+    // a concurrent request between the lookup and this insert, or some other
+    // edge case the lookup's matching doesn't cover) this unique-violation
+    // (23505 on industry_contacts_email_uniq) is recoverable: re-fetch by
+    // the exact email and merge into it, the same as if findExisting had
+    // found it the first time, rather than blocking the caller (e.g. a
+    // partner self-signup) on a raw DB error for a contact that does exist.
+    if (error?.code === "23505" && candidate.email) {
+      const { data: raceWinner } = await supabase
+        .from("industry_contacts")
+        .select("*")
+        .eq("agency_id", agencyId)
+        .ilike("email", escapeLike(candidate.email))
+        .limit(1)
+        .maybeSingle();
+      if (raceWinner) {
+        existing = raceWinner;
+      } else {
+        return { result: "rejected", reason: error.message };
+      }
+    } else {
+      return { result: "rejected", reason: error?.message ?? "insert failed" };
+    }
   }
 
   const patch: Partial<ContactRow> = {};
