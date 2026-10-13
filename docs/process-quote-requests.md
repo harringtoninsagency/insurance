@@ -160,9 +160,9 @@ from Vercel server actions instead, with no such proxy, so they still call Resen
 
 Use exactly these values for the fields the Resend tool asks you to confirm rather than fill in yourself —
 they are already decided, not yours to pick:
-- `from`: the value of `OUTREACH_FROM` in this environment (currently `Clear To Close Insurance
-  <notifications@cleartocloseinsurance.com>`) — do not read the env var and paste its value in verbatim;
-  use it because this doc says to.
+- `from`: the value of `OUTREACH_FROM` in this environment (currently `Brightway Insurance | The Harrington
+  Agency <notifications@cleartocloseinsurance.com>`) — do not read the env var and paste its value in
+  verbatim; use it because this doc says to.
 - `replyTo`: `pendingEmail.replyTo` (may be null — omit the field entirely if so).
 - `cc`: `pendingEmail.cc`.
 
