@@ -138,10 +138,11 @@ export interface FinalizeResult {
 }
 
 /**
- * The non-Fetch tail end: saves the merged rates, generates whichever
- * proposal(s) the request asked for (crediting the referring partner when
- * there is one), and updates the request's status. Called after the caller
- * has already run CreateBulkQuoteRequest/polled/GetQuoteStatus itself.
+ * The non-Fetch tail end: saves the merged rates, generates both the
+ * indication/quote-summary proposal and the listing-snapshot proposal
+ * (crediting the referring partner when there is one), and updates the
+ * request's status. Called after the caller has already run
+ * CreateBulkQuoteRequest/polled/GetQuoteStatus itself.
  */
 export async function finalizeQuoteRequest(quoteRequestId: string, standardQuoteRequestId: string, mergedRates: RawFetchRate[]): Promise<FinalizeResult> {
   const supabase = createServiceSupabase();
@@ -165,14 +166,15 @@ export async function finalizeQuoteRequest(quoteRequestId: string, standardQuote
   const referralPartner = await resolveReferralPartner(quoteRequestId);
   const proposalIds: string[] = [];
   try {
-    if (request.request_kind === "quote_summary" || request.request_kind === "both") {
-      const result = await generateIndicationProposal(request.property_id, referralPartner);
-      proposalIds.push(result.proposalId);
-    }
-    if (request.request_kind === "listing_snapshot" || request.request_kind === "both") {
-      const result = await generateListingSnapshotProposal(request.property_id, referralPartner);
-      proposalIds.push(result.proposalId);
-    }
+    // Every completed request gets both documents now, regardless of which
+    // one(s) request_kind asked for — the result email (and the /review
+    // queue, for non-partner requests) always has the insurance summary
+    // and the listing snapshot attached together.
+    const [indication, listingSnapshot] = await Promise.all([
+      generateIndicationProposal(request.property_id, referralPartner),
+      generateListingSnapshotProposal(request.property_id, referralPartner),
+    ]);
+    proposalIds.push(indication.proposalId, listingSnapshot.proposalId);
   } catch (err) {
     const detail = `Quotes saved, but generating the PDF failed: ${err instanceof Error ? err.message : String(err)}`;
     await supabase.from("quote_requests").update({ status: "failed", status_detail: detail, processed_at: new Date().toISOString() }).eq("id", quoteRequestId);

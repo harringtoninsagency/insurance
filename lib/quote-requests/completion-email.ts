@@ -102,8 +102,8 @@ export async function buildQuoteCompletionEmail(quoteRequestId: string, proposal
       cc,
       replyTo: cfg.config.replyTo,
       subject: `Your quote request is ready — ${property.address}`,
-      text: `Hi ${name},\n\nYour request for ${property.address} is complete. The insurance summary / listing snapshot is attached.\n\n— Brightway Insurance | The Harrington Agency`,
-      html: `<p>Hi ${escapeHtml(name)},</p><p>Your request for <strong>${escapeHtml(property.address)}</strong> is complete. The insurance summary / listing snapshot is attached.</p><p>— Brightway Insurance | The Harrington Agency</p>`,
+      text: `Hi ${name},\n\nYour request for ${property.address} is complete. The insurance summary and listing snapshot are attached.\n\n— Brightway Insurance | The Harrington Agency`,
+      html: `<p>Hi ${escapeHtml(name)},</p><p>Your request for <strong>${escapeHtml(property.address)}</strong> is complete. The insurance summary and listing snapshot are attached.</p><p>— Brightway Insurance | The Harrington Agency</p>`,
       attachments,
       idempotencyKey: `quote-completion-${quoteRequestId}`,
     };
