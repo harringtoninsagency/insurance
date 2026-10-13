@@ -96,12 +96,12 @@ export default function PartnerLoginPage() {
           {loading ? "Signing in..." : "Sign in"}
         </button>
 
-        <p className="text-center text-xs text-[#8291AC]">
-          New here?{" "}
-          <Link href="/partner/signup" className="font-medium text-[#003049] underline">
-            Create an account
-          </Link>
-        </p>
+        <Link
+          href="/partner/signup"
+          className="block w-full rounded-full border border-[#003049] px-4 py-2.5 text-center text-sm font-bold text-[#003049] transition-colors hover:bg-[#003049]/5"
+        >
+          Sign up for new account
+        </Link>
       </form>
     </div>
   );
