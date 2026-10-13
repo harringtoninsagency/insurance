@@ -396,10 +396,13 @@ export async function generateListingSnapshotProposal(
     carrierLogos.set(carrier, await pdfDoc.embedPng(readFileSync(logoPath)));
   }
 
-  // Reserve space below the table for the two condensed lines, the "have an
-  // interested buyer" callout, and the footer, so a longer carrier list
-  // degrades by skipping rows rather than overlapping the footer.
-  const FOOTER_RESERVE = 125;
+  // Reserve space below the table for the condensed lines (now up to
+  // MAX_CONDENSED_ROWS wrapped rows + a "+N more" line per label, not just
+  // one line each), the "have an interested buyer" callout, and the footer
+  // (which is pinned to a fixed position near the bottom of the page, not
+  // flowing with the content above it) — so a longer carrier list degrades
+  // by skipping table rows rather than the callout overlapping the footer.
+  const FOOTER_RESERVE = 170;
 
   page.drawRectangle({
     x: MARGIN,
@@ -445,11 +448,48 @@ export async function generateListingSnapshotProposal(
   });
 
   y -= 4;
+  const condensedSize = 8;
+  const condensedColor = rgb(0.4, 0.45, 0.5);
+  const condensedSeparator = "  |  ";
+  const MAX_CONDENSED_ROWS = 2;
+
+  /**
+   * Wraps the carrier/premium segments to fit the page width instead of
+   * drawing one unbroken line that ran off the right edge — previously
+   * cutting a carrier name or premium off mid-word for a long list. Capped
+   * at MAX_CONDENSED_ROWS real rows of carriers, with any remainder
+   * summarized on its own short "+N more" line, so a very long list can't
+   * keep growing and push the callout box into the fixed-position footer.
+   */
   function drawCondensedLine(label: string, condensedQuotes: QuoteRow[]) {
     if (!condensedQuotes.length) return;
-    const parts = condensedQuotes.map((q) => `${q.carrier} ${formatCurrency(Number(q.premium))}`).join("  |  ");
-    page.drawText(`${label}: ${parts}`, { x: MARGIN, y, size: 8, font, color: rgb(0.4, 0.45, 0.5) });
-    y -= 11;
+    const segments = condensedQuotes.map((q) => `${q.carrier} ${formatCurrency(Number(q.premium))}`);
+
+    const rows: string[][] = [[]];
+    for (const segment of segments) {
+      const row = rows[rows.length - 1]!;
+      const candidateText = [...row, segment].join(condensedSeparator);
+      const prefixedText = rows.length === 1 ? `${label}: ${candidateText}` : candidateText;
+      if (row.length > 0 && font.widthOfTextAtSize(prefixedText, condensedSize) > CONTENT_WIDTH) {
+        rows.push([segment]);
+      } else {
+        row.push(segment);
+      }
+    }
+
+    const shownRows = rows.slice(0, MAX_CONDENSED_ROWS);
+    const shownCount = shownRows.reduce((n, row) => n + row.length, 0);
+    const hiddenCount = segments.length - shownCount;
+
+    shownRows.forEach((row, i) => {
+      const text = i === 0 ? `${label}: ${row.join(condensedSeparator)}` : row.join(condensedSeparator);
+      page.drawText(text, { x: MARGIN, y, size: condensedSize, font, color: condensedColor });
+      y -= 11;
+    });
+    if (hiddenCount > 0) {
+      page.drawText(`+${hiddenCount} more`, { x: MARGIN, y, size: condensedSize, font: italicFont, color: condensedColor });
+      y -= 11;
+    }
   }
   drawCondensedLine("Additional HO3 indications", additionalHo3);
   drawCondensedLine("DP3 indications", topDp3);
