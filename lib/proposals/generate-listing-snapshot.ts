@@ -133,21 +133,23 @@ export async function generateListingSnapshotProposal(
   let y = PAGE_HEIGHT - MARGIN;
 
   // --- Header: logo (3x native size, per brand emphasis for this
-  // buyer-facing document) + contact line + yellow accent rule ---
+  // buyer-facing document) + contact line + yellow accent rule — same
+  // contact-line format/size and yellow-rule-to-title spacing as
+  // generate-indication.ts, so the two documents read as a matched set.
   const logoWidth = Math.min(180 * 3, CONTENT_WIDTH);
   const logoHeight = logoWidth * (headerLogo.height / headerLogo.width);
   page.drawImage(headerLogo, { x: MARGIN, y: y - logoHeight, width: logoWidth, height: logoHeight });
   y -= logoHeight + 10;
-  // Agency contact info, sized to read as a letterhead rather than fine
-  // print — split across two lines since one line at this size would run
-  // wider than the page.
-  const headerContactSize = 22;
-  page.drawText(CONTACT_PHONE, { x: MARGIN, y, size: headerContactSize, font: boldFont, color: DEEP_BLUE });
-  y -= headerContactSize + 4;
-  page.drawText(CONTACT_EMAIL, { x: MARGIN, y, size: headerContactSize, font: boldFont, color: DEEP_BLUE });
-  y -= headerContactSize + 6;
+  page.drawText(`${CONTACT_PHONE}  ·  harringtonagency@brightway.com`, {
+    x: MARGIN,
+    y,
+    size: 11,
+    font: boldFont,
+    color: DEEP_BLUE,
+  });
+  y -= 18;
   page.drawRectangle({ x: MARGIN, y: y - 3, width: CONTENT_WIDTH, height: 3, color: BRIGHT_YELLOW });
-  y -= 16;
+  y -= 22;
 
   page.drawText("NEW LISTING INSURANCE SNAPSHOT", { x: MARGIN, y, size: 17, font: boldFont, color: DEEP_BLUE });
   y -= 16;
@@ -365,7 +367,10 @@ export async function generateListingSnapshotProposal(
     const statusX = x + 130;
     page.drawText(item.status, { x: statusX, y: itemY - 7, size: 9, font: boldFont, color: DEEP_BLUE });
   });
-  y -= rowsPerCol * readinessRowHeight + 4;
+  // +4 left the readiness box's bottom border close enough to the next
+  // section header that its bold caps poked above the border line; +14
+  // gives it clear room to breathe.
+  y -= rowsPerCol * readinessRowHeight + 14;
 
   // --- Preliminary carrier indications table ---
   drawSectionHeader("PRELIMINARY CARRIER INDICATIONS");
