@@ -45,7 +45,6 @@ export default async function Home() {
       <main className="relative flex flex-1 flex-col items-center justify-center gap-10 px-4 pb-16">
         <div className="text-center">
           <h1 className="text-5xl font-semibold text-[#F0FF00] sm:text-6xl">Brightway Insurance | The Harrington Agency</h1>
-          <div className="mx-auto mt-3 h-[3px] w-16 bg-[#F0FF00]" />
         </div>
 
         <div className="grid w-full max-w-2xl gap-6 sm:grid-cols-2">
