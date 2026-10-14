@@ -193,12 +193,31 @@ function dedupeByStrap(rows: ParcelRecord[]): ParcelRecord[] {
   return Array.from(byStrap.values());
 }
 
+// Same watchdog pattern as fetchJsonWithRetry in lib/enrichment/fdor-statewide-bulk.ts
+// (see its comment for why): this call goes through the same sandboxed
+// proxy as the FDOR fetches, so it's exposed to the same risk of silently
+// never settling. Races it against an independent timer rather than
+// trusting the Supabase client call to reject on its own.
+async function upsertOneChunk(supabase: ReturnType<typeof createServiceSupabase>, chunk: ParcelRecord[], attempt = 1): Promise<void> {
+  try {
+    const result = await Promise.race([
+      supabase.from("county_parcels").upsert(chunk, { onConflict: "strap" }),
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error("watchdog: upsert did not settle within 60s")), 60_000)),
+    ]);
+    if (result.error) throw new Error(`Upsert failed: ${result.error.message}`);
+  } catch (err) {
+    if (attempt >= 5) throw err;
+    const delayMs = 2000 * attempt;
+    await new Promise((r) => setTimeout(r, delayMs));
+    return upsertOneChunk(supabase, chunk, attempt + 1);
+  }
+}
+
 async function upsertChunked(supabase: ReturnType<typeof createServiceSupabase>, rows: ParcelRecord[]): Promise<void> {
   const CHUNK_SIZE = 1000;
   for (let i = 0; i < rows.length; i += CHUNK_SIZE) {
     const chunk = dedupeByStrap(rows.slice(i, i + CHUNK_SIZE));
-    const { error } = await supabase.from("county_parcels").upsert(chunk, { onConflict: "strap" });
-    if (error) throw new Error(`Upsert failed: ${error.message}`);
+    await upsertOneChunk(supabase, chunk);
   }
 }
 
