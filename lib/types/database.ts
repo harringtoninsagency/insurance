@@ -469,6 +469,7 @@ export interface Database {
           requested_by: string | null;
           claimed_at: string | null;
           routine_fired_at: string | null;
+          routine_fire_failed_at: string | null;
           created_at: string;
           processed_at: string | null;
         };
