@@ -18,8 +18,9 @@ function Field({ id, label, ...props }: { id: string; label: string } & React.In
 }
 
 const STATUS_COPY: Record<string, string> = {
-  processing: "We've matched it to county property records and we're getting carrier pricing now.",
-  needs_review: "We couldn't fully match this address automatically — a producer will finish it up by hand.",
+  processing:
+    "We've matched it to county property records and we're getting carrier pricing now — most quotes are ready within a few minutes (occasionally up to an hour).",
+  needs_review: "We couldn't fully match this address automatically — a producer will review it by hand and follow up directly.",
 };
 
 export function RequestQuoteForm() {
