@@ -51,11 +51,30 @@ const OUT_FIELDS = "CO_NO,PARCEL_ID,DOR_UC,ACT_YR_BLT,TOT_LVG_AR,PHY_ADDR1,PHY_A
 // (previously just one or two), and large counties' Single Family code
 // (the most pages, so the most chances for one page to hit this) was
 // failing on effectively every attempt. Longer backoff, more attempts.
+//
+// Separately: a long-running sync has been observed to go fully silent for
+// hours at a time (no further progress, no logged failure either) on
+// exactly this call, in a run where an ad-hoc curl to the identical URL
+// from the same host succeeded in under a second — i.e. not the documented
+// "service is genuinely struggling" case above, but the fetch() call itself
+// never settling (resolving or rejecting) despite `AbortSignal.timeout`,
+// which a proxy-agent transport isn't guaranteed to honor if it doesn't
+// propagate the abort down to the underlying socket. A `Promise.race`
+// against an independent timer doesn't depend on fetch() cooperating: it
+// guarantees this function itself gives up and retries even if the losing
+// fetch promise never resolves (that stray promise is simply abandoned,
+// not cancelled — acceptable for a one-off migration script where the
+// alternative is the entire run silently wedging for its full time budget).
 async function fetchJsonWithRetry<T>(params: URLSearchParams, attempt = 1): Promise<T> {
   try {
-    const res = await fetch(`${QUERY_URL}?${params}`, { signal: AbortSignal.timeout(60_000) });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json = (await res.json()) as T & { error?: unknown };
+    const json = await Promise.race([
+      (async () => {
+        const res = await fetch(`${QUERY_URL}?${params}`, { signal: AbortSignal.timeout(60_000) });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return (await res.json()) as T & { error?: unknown };
+      })(),
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error("watchdog: fetch did not settle within 70s")), 70_000)),
+    ]);
     if (json.error) throw new Error(`FDOR query error: ${JSON.stringify(json.error)}`);
     return json;
   } catch (err) {
