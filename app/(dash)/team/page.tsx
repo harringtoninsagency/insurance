@@ -14,7 +14,7 @@ export default async function TeamPage() {
   if (!user) redirect("/login");
 
   const { data: me } = await session.from("profiles").select("agency_id, role, active").eq("id", user.id).maybeSingle();
-  if (!me || !me.active || me.role !== "admin") redirect("/properties");
+  if (!me || !me.active || me.role !== "admin") redirect("/home");
 
   const team = await listTeam(createServiceSupabase(), me.agency_id);
 
