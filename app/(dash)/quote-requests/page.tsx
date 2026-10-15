@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { todayEt } from "@/lib/dates";
+import { todayEt, formatDayHeading } from "@/lib/dates";
 import type { Database } from "@/lib/types/database";
 
 type QuoteRequestRow = Database["public"]["Tables"]["quote_requests"]["Row"];
@@ -18,14 +18,6 @@ const KIND_LABEL: Record<string, string> = {
   listing_snapshot: "Listing snapshot",
   both: "Quote summary + listing snapshot",
 };
-
-// "2026-10-07" -> "Tuesday, October 7, 2026". Parsed as a plain date (no time
-// component), so no time zone shift to worry about here.
-function formatDayHeading(dayKey: string): string {
-  const [year, month, day] = dayKey.split("-").map(Number);
-  const date = new Date(year!, month! - 1, day!);
-  return new Intl.DateTimeFormat("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }).format(date);
-}
 
 export default async function QuoteRequestsPage() {
   const supabase = await createServerSupabase();
