@@ -38,7 +38,7 @@ export default function LoginPage() {
         return;
       }
 
-      router.push("/properties");
+      router.push("/home");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong signing in — please try again.");

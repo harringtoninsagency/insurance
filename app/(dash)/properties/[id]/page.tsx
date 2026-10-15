@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { BackLink } from "@/app/BackLink";
 import { PullCountyDataButton } from "./PullCountyDataButton";
 import { GenerateProposalButton } from "./GenerateProposalButton";
 import { GenerateListingSnapshotButton } from "./GenerateListingSnapshotButton";
@@ -90,7 +91,11 @@ export default async function PropertyDetailPage({
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-xl font-semibold text-[#003049]">{property.address}</h1>
+        {/* OneHome-sourced listings are reached from the onehome queue, not
+            the main properties list — point back at whichever one this
+            property actually belongs to. */}
+        <BackLink href={property.source === "onehome" ? "/properties/onehome" : "/properties"} label="Properties" />
+        <h1 className="mt-2 text-xl font-semibold text-[#003049]">{property.address}</h1>
         <div className="mb-2 mt-2 h-[3px] w-16 bg-[#F0FF00]" />
         <p className="text-sm text-slate-500">
           {property.year_built ? `Built ${property.year_built}` : "Year built unknown"}

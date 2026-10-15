@@ -5,6 +5,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { queueNewAddressQuote, queuePropertyQuote, type QueueResult, type Requester } from "@/lib/quote-requests/queue-quote";
 import { fireQuoteRoutine } from "@/lib/quote-requests/fire-routine";
 import { verifyAddress, type VerifyAddressResult } from "@/lib/geocoding/verify-address";
+import { sessionContext } from "@/lib/contacts/session";
 import type { QuoteRequestKind } from "@/lib/types/database";
 
 const KINDS: QuoteRequestKind[] = ["quote_summary", "listing_snapshot", "both"];
@@ -54,6 +55,20 @@ export async function runQuoteForPropertyAction(propertyId: string, kind: QuoteR
 export async function verifyQuoteAddressAction(addressLine: string, city: string, state: string, zipcode: string): Promise<VerifyAddressResult> {
   await teamMember();
   return verifyAddress(addressLine, city, state, zipcode);
+}
+
+export async function updateQuoteRequestAssignedAgentAction(requestId: string, formData: FormData): Promise<{ ok: true } | { ok: false; error: string }> {
+  const agentId = String(formData.get("assigned_agent_id") ?? "").trim();
+  try {
+    const { supabase } = await sessionContext();
+    const { error } = await supabase.from("quote_requests").update({ assigned_agent_id: agentId || null }).eq("id", requestId);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/quote-requests");
+    revalidatePath("/home");
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Failed to save the assigned agent." };
+  }
 }
 
 export type NewQuoteState = { queued: { propertyId: string; alreadyQueued: boolean; started: boolean } } | { error: string } | null;

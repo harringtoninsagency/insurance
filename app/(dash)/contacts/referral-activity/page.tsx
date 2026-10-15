@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { BackLink } from "@/app/BackLink";
 
 interface PartnerRow {
   id: string;
@@ -60,9 +61,7 @@ export default async function ReferralActivityPage() {
 
   return (
     <div>
-      <Link href="/contacts" className="text-xs text-slate-500 hover:underline">
-        ← Realtors &amp; Brokers
-      </Link>
+      <BackLink href="/contacts" label="Realtors & Brokers" />
       <h1 className="mt-2 text-xl font-semibold text-[#003049]">Referral partner activity</h1>
       <div className="mb-2 mt-2 h-[3px] w-16 bg-[#F0FF00]" />
       <p className="mb-6 text-sm text-slate-500">

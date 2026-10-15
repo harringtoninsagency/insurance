@@ -19,7 +19,7 @@ export default async function Home() {
 
   if (user) {
     const { data: profile } = await supabase.from("profiles").select("id").eq("id", user.id).maybeSingle();
-    redirect(profile ? "/properties" : "/partner");
+    redirect(profile ? "/home" : "/partner");
   }
 
   return (

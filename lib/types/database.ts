@@ -467,6 +467,7 @@ export interface Database {
           status_detail: string | null;
           property_id: string | null;
           requested_by: string | null;
+          assigned_agent_id: string | null;
           claimed_at: string | null;
           routine_fired_at: string | null;
           routine_fire_failed_at: string | null;

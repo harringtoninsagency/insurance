@@ -50,7 +50,7 @@ export default function SetPasswordPage() {
       ? await supabase.from("profiles").select("id").eq("id", userData.user.id).maybeSingle()
       : { data: null };
     setLoading(false);
-    router.push(profile ? "/properties" : "/partner");
+    router.push(profile ? "/home" : "/partner");
     router.refresh();
   }
 

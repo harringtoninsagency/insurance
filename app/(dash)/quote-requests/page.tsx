@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { todayEt, formatDayHeading } from "@/lib/dates";
 import type { Database } from "@/lib/types/database";
+import { QuoteRequestAssignedAgentSelect } from "./QuoteRequestAssignedAgentSelect";
 
 type QuoteRequestRow = Database["public"]["Tables"]["quote_requests"]["Row"];
 
@@ -19,9 +20,25 @@ const KIND_LABEL: Record<string, string> = {
   both: "Quote summary + listing snapshot",
 };
 
-export default async function QuoteRequestsPage() {
+export default async function QuoteRequestsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ agent?: string }>;
+}) {
+  // Linked from the Home page's per-agent assignment summary: a specific
+  // profiles.id to filter to, or "unassigned" for assigned_agent_id is null.
+  const { agent: agentFilter } = await searchParams;
+
   const supabase = await createServerSupabase();
-  const { data: requests, error } = await supabase.from("quote_requests").select("*").order("created_at", { ascending: false }).limit(200);
+  const [{ data: allRequests, error }, { data: teamMembers }] = await Promise.all([
+    supabase.from("quote_requests").select("*").order("created_at", { ascending: false }).limit(200),
+    supabase.from("profiles").select("id, full_name, email").eq("active", true).order("full_name"),
+  ]);
+  const requests = agentFilter
+    ? (allRequests ?? []).filter((r) => (agentFilter === "unassigned" ? !r.assigned_agent_id : r.assigned_agent_id === agentFilter))
+    : allRequests;
+  const agentFilterName =
+    agentFilter === "unassigned" ? "Unassigned" : (teamMembers ?? []).find((m) => m.id === agentFilter)?.full_name;
 
   const propertyIds = [...new Set((requests ?? []).map((r) => r.property_id).filter((id): id is string => !!id))];
   const contactIds = [...new Set((requests ?? []).map((r) => r.contact_id).filter((id): id is string => !!id))];
@@ -91,6 +108,9 @@ export default async function QuoteRequestsPage() {
         <td className="px-4 py-3">
           <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${status.className}`}>{status.label}</span>
         </td>
+        <td className="min-w-[10rem] px-4 py-3">
+          <QuoteRequestAssignedAgentSelect requestId={r.id} assignedAgentId={r.assigned_agent_id} teamMembers={teamMembers ?? []} />
+        </td>
         <td className="px-4 py-3 text-slate-500">{new Date(r.created_at).toLocaleString()}</td>
       </tr>
     );
@@ -106,6 +126,7 @@ export default async function QuoteRequestsPage() {
               <th className="px-4 py-3">Property</th>
               <th className="px-4 py-3">Wants</th>
               <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Assigned to</th>
               <th className="px-4 py-3">Requested</th>
             </tr>
           </thead>
@@ -126,6 +147,14 @@ export default async function QuoteRequestsPage() {
           Run a quote now
         </Link>
       </div>
+      {agentFilter && (
+        <p className="mb-2 text-sm text-slate-600">
+          Showing only requests assigned to <span className="font-medium text-[#003049]">{agentFilterName ?? "that agent"}</span> —{" "}
+          <Link href="/quote-requests" className="text-[#003049] hover:underline">
+            show all
+          </Link>
+        </p>
+      )}
       <p className="mb-6 text-sm text-slate-500">
         Requests from the public quote-request page, the partner portal, and your team (Run a quote now). Property matching happens
         automatically; the carrier quote and PDFs still need an agent session (ask Claude to process the queue, or

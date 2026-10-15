@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { BackLink } from "@/app/BackLink";
 import { EVENT_LABEL, METHOD_LABEL } from "@/lib/contacts/consent";
 import { ConsentForm } from "./ConsentForm";
 import { InvitePartnerButton } from "./InvitePartnerButton";
@@ -51,9 +51,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
   return (
     <div className="max-w-3xl space-y-8">
       <div>
-        <Link href="/contacts" className="text-xs text-slate-500 hover:underline">
-          ← Realtors &amp; brokers
-        </Link>
+        <BackLink href="/contacts" label="Realtors & brokers" />
         <h1 className="mt-2 text-xl font-semibold text-[#003049]">{contact.full_name}</h1>
         <div className="mb-2 mt-2 h-[3px] w-16 bg-[#F0FF00]" />
         <p className="text-sm text-slate-500">{TYPE_LABEL[contact.contact_type]}</p>

@@ -8,6 +8,7 @@ import { SignOutButton } from "./SignOutButton";
 import { MobileNav } from "./MobileNav";
 
 const NAV_LINKS = [
+  { href: "/home", label: "Home" },
   { href: "/properties", label: "Properties" },
   { href: "/properties/onehome", label: "OneHome queue" },
   { href: "/quote-requests", label: "Quote requests" },
@@ -63,6 +64,14 @@ export default async function DashLayout({
         <div className="mb-2 mt-3 h-[3px] w-full bg-[#F0FF00]" />
         <div className="mb-4 text-xs text-[#8291AC]">Brightway Insurance | The Harrington Agency</div>
         <ul className="space-y-1 text-sm">
+          <li>
+            <Link
+              href="/home"
+              className="block rounded px-3 py-2 font-medium text-[#003049] hover:bg-[#003049]/5"
+            >
+              Home
+            </Link>
+          </li>
           <li>
             <Link
               href="/properties"
