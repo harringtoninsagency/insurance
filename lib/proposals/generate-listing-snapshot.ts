@@ -447,7 +447,10 @@ export async function generateListingSnapshotProposal(
     y -= tableRowHeight;
   });
 
-  y -= 4;
+  // 4 left less vertical room than the condensed text's own ascender
+  // height, so its first line visually overlapped the table's bottom
+  // border instead of sitting below it — 12 clears it.
+  y -= 12;
   const condensedSize = 8;
   const condensedColor = rgb(0.4, 0.45, 0.5);
   const condensedSeparator = "  |  ";
