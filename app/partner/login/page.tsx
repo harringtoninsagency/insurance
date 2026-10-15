@@ -21,16 +21,27 @@ export default function PartnerLoginPage() {
     setError(null);
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
+    // signInWithPassword normally resolves with { error } for an expected
+    // auth failure (wrong password, etc.), but a network/CORS failure or a
+    // rate-limit response can reject the promise instead — without this
+    // try/catch, that left loading stuck true forever (button frozen on
+    // "Signing in..." with no error shown, since setLoading(false) below was
+    // never reached). See the matching note in app/login/page.tsx.
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
 
-    if (error) {
-      setError(error.message);
-      return;
+      if (error) {
+        setError(error.message);
+        return;
+      }
+
+      router.push("/partner");
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong signing in — please try again.");
+    } finally {
+      setLoading(false);
     }
-
-    router.push("/partner");
-    router.refresh();
   }
 
   return (

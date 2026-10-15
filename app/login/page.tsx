@@ -21,20 +21,30 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    // signInWithPassword normally resolves with { error } for an expected
+    // auth failure (wrong password, etc.), but a network/CORS failure or a
+    // rate-limit response can reject the promise instead — without this
+    // try/catch, that left loading stuck true forever (button frozen on
+    // "Signing in..." with no error shown, since setLoading(false) below was
+    // never reached).
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    setLoading(false);
+      if (error) {
+        setError(/banned/i.test(error.message) ? "This account has been deactivated. Ask an admin at your agency." : error.message);
+        return;
+      }
 
-    if (error) {
-      setError(/banned/i.test(error.message) ? "This account has been deactivated. Ask an admin at your agency." : error.message);
-      return;
+      router.push("/properties");
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong signing in — please try again.");
+    } finally {
+      setLoading(false);
     }
-
-    router.push("/properties");
-    router.refresh();
   }
 
   return (
