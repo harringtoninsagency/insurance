@@ -29,8 +29,16 @@ export default async function PartnerPortalPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // RLS (quote_requests: partner reads own) already limits this to the
-  // signed-in partner's own submissions — no extra filter needed here.
+  // An admin has no partner_accounts row (see ./layout.tsx), so
+  // current_partner_contact_id() never matches for them — what actually
+  // returns every agency's requests below is the "quote_requests: agency
+  // scoped" RLS policy instead, the same one the internal dashboard uses.
+  const { data: profile } = await supabase.from("profiles").select("role, active").eq("id", user?.id ?? "").maybeSingle();
+  const isAdminView = profile?.role === "admin" && profile.active;
+
+  // RLS (quote_requests: partner reads own, or quote_requests: agency
+  // scoped for an admin) already limits this to the right rows — no extra
+  // filter needed here.
   const { data: requests, error } = await supabase
     .from("quote_requests")
     .select("*")
@@ -62,15 +70,23 @@ export default async function PartnerPortalPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-[#003049]">My quote requests</h1>
+        <h1 className="text-xl font-semibold text-[#003049]">{isAdminView ? "All partner quote requests" : "My quote requests"}</h1>
         <div className="mb-2 mt-2 h-[3px] w-16 bg-[#F0FF00]" />
-        <p className="text-sm text-slate-500">
-          Submit a property below and we&apos;ll get back to you with results — usually within an hour, sometimes
-          sooner.
-        </p>
+        {isAdminView ? (
+          <p className="text-sm text-slate-500">Every partner&apos;s submissions, across the whole agency.</p>
+        ) : (
+          <p className="text-sm text-slate-500">
+            Submit a property below and we&apos;ll get back to you with results — usually within an hour, sometimes
+            sooner.
+          </p>
+        )}
       </div>
 
-      <NewRequestForm defaultEmail={user?.email ?? ""} />
+      {/* Submission ties to the signer's own partner_accounts row (see
+          submitPartnerQuoteRequestAction), which an admin doesn't have —
+          admin view is read-only here; use the internal quote-requests page
+          to submit on a partner's behalf instead. */}
+      {!isAdminView && <NewRequestForm defaultEmail={user?.email ?? ""} />}
 
       <section className="space-y-2">
         {error && <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">{error.message}</p>}
@@ -86,6 +102,8 @@ export default async function PartnerPortalPage() {
                 <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${status.className}`}>{status.label}</span>
               </div>
               <p className="mt-1 text-slate-600">
+                {isAdminView && <span className="font-medium">{r.requester_name}</span>}
+                {isAdminView && " · "}
                 {KIND_LABEL[r.request_kind] ?? r.request_kind} · requested {new Date(r.created_at).toLocaleDateString()}
               </p>
               {partnerFacingDetail(r.status_detail) && (
