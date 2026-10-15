@@ -1,15 +1,43 @@
 import Link from "next/link";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { formatDateOnly } from "@/lib/dates";
+import { todayEt, formatDateOnly } from "@/lib/dates";
 import { RunQuoteButton } from "../quote-requests/RunQuoteButton";
 import { AssignedAgentSelect } from "./AssignedAgentSelect";
 
+interface TeamMember {
+  id: string;
+  full_name: string | null;
+  email: string;
+}
+
+interface PropertyRow {
+  id: string;
+  address: string;
+  status: string;
+  list_price: number | null;
+  listing_agent_name: string | null;
+  roof_year: number | null;
+  date_quoted: string | null;
+  assigned_agent_id: string | null;
+  created_at: string;
+}
+
+// "2026-10-07" -> "Tuesday, October 7, 2026". Parsed as a plain date (no time
+// component), so no time zone shift to worry about here. Same pattern as
+// app/(dash)/properties/onehome/page.tsx's day grouping.
+function formatDayHeading(dayKey: string): string {
+  const [year, month, day] = dayKey.split("-").map(Number);
+  const date = new Date(year!, month! - 1, day!);
+  return new Intl.DateTimeFormat("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }).format(date);
+}
+
 export default async function PropertiesPage() {
   const supabase = await createServerSupabase();
-  const { data: properties, error } = await supabase
+  const { data: propertiesData, error } = await supabase
     .from("properties")
     .select("id, address, status, list_price, listing_agent_name, roof_year, date_quoted, assigned_agent_id, created_at")
     .order("created_at", { ascending: false });
+  const properties = propertiesData as PropertyRow[] | null;
 
   const { data: teamMembers } = await supabase.from("profiles").select("id, full_name, email").eq("active", true).order("full_name");
 
@@ -30,6 +58,78 @@ export default async function PropertiesPage() {
     }
   }
 
+  const byDay = new Map<string, PropertyRow[]>();
+  for (const p of properties ?? []) {
+    const dayKey = todayEt(new Date(p.created_at));
+    const bucket = byDay.get(dayKey);
+    if (bucket) bucket.push(p);
+    else byDay.set(dayKey, [p]);
+  }
+  const days = [...byDay.keys()].sort((a, b) => (a < b ? 1 : -1));
+
+  function renderTable(rows: PropertyRow[], teamMembers: TeamMember[]) {
+    return (
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-[#003049] text-xs uppercase text-white">
+            <tr>
+              <th className="px-4 py-3">Assigned Agent</th>
+              <th className="px-4 py-3">Address</th>
+              <th className="px-4 py-3">Listing agent</th>
+              <th className="px-4 py-3">List price</th>
+              <th className="px-4 py-3">Roof year</th>
+              <th className="px-4 py-3">Flood zone</th>
+              <th className="px-4 py-3">Dist. to coast</th>
+              <th className="px-4 py-3">Date quoted</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Quote</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((p) => {
+              const enrichment = latestEnrichmentByProperty.get(p.id);
+              return (
+                <tr key={p.id} className="border-b border-slate-100 last:border-0">
+                  <td className="px-4 py-3">
+                    <AssignedAgentSelect
+                      key={`${p.id}:${p.assigned_agent_id ?? ""}`}
+                      propertyId={p.id}
+                      assignedAgentId={p.assigned_agent_id}
+                      teamMembers={teamMembers}
+                    />
+                  </td>
+                  <td className="px-4 py-3">
+                    <Link href={`/properties/${p.id}`} className="font-medium text-[#003049] hover:underline">
+                      {p.address}
+                    </Link>
+                  </td>
+                  <td className="px-4 py-3 text-slate-600">{p.listing_agent_name ?? "—"}</td>
+                  <td className="px-4 py-3 text-slate-600">{p.list_price ? `$${Number(p.list_price).toLocaleString()}` : "—"}</td>
+                  <td className="px-4 py-3 text-slate-600">{p.roof_year ?? "—"}</td>
+                  <td className="px-4 py-3 text-slate-600">{enrichment?.flood_zone ?? "—"}</td>
+                  <td className="px-4 py-3 text-slate-600">
+                    {enrichment?.dist_to_coast_miles != null ? `${enrichment.dist_to_coast_miles} mi` : "—"}
+                  </td>
+                  <td className="px-4 py-3 text-slate-600">{formatDateOnly(p.date_quoted)}</td>
+                  <td className="px-4 py-3">
+                    <span className="rounded-full bg-[#8291AC]/15 px-2 py-1 text-xs font-medium text-[#003049]">{p.status}</span>
+                  </td>
+                  <td className="px-4 py-3">
+                    {queuedIds.has(p.id) ? (
+                      <span className="rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">Queued</span>
+                    ) : (
+                      <RunQuoteButton propertyId={p.id} compact label="Run quote" />
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -48,79 +148,26 @@ export default async function PropertiesPage() {
         </p>
       )}
 
-      {!error && properties?.length === 0 && (
+      {!error && days.length === 0 && (
         <p className="text-sm text-slate-500">
           No properties yet. Listing ingest lands in Phase 3 — for now, rows
           can be added directly in Supabase Studio to test this screen.
         </p>
       )}
 
-      {!!properties?.length && (
-        <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-[#003049] text-xs uppercase text-white">
-              <tr>
-                <th className="px-4 py-3">Assigned Agent</th>
-                <th className="px-4 py-3">Address</th>
-                <th className="px-4 py-3">Listing agent</th>
-                <th className="px-4 py-3">List price</th>
-                <th className="px-4 py-3">Roof year</th>
-                <th className="px-4 py-3">Flood zone</th>
-                <th className="px-4 py-3">Dist. to coast</th>
-                <th className="px-4 py-3">Date quoted</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Quote</th>
-              </tr>
-            </thead>
-            <tbody>
-              {properties.map((p) => {
-                const enrichment = latestEnrichmentByProperty.get(p.id);
-                return (
-                <tr key={p.id} className="border-b border-slate-100 last:border-0">
-                  <td className="px-4 py-3">
-                    <AssignedAgentSelect propertyId={p.id} assignedAgentId={p.assigned_agent_id} teamMembers={teamMembers ?? []} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <Link
-                      href={`/properties/${p.id}`}
-                      className="font-medium text-[#003049] hover:underline"
-                    >
-                      {p.address}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-slate-600">
-                    {p.listing_agent_name ?? "—"}
-                  </td>
-                  <td className="px-4 py-3 text-slate-600">
-                    {p.list_price ? `$${Number(p.list_price).toLocaleString()}` : "—"}
-                  </td>
-                  <td className="px-4 py-3 text-slate-600">
-                    {p.roof_year ?? "—"}
-                  </td>
-                  <td className="px-4 py-3 text-slate-600">
-                    {enrichment?.flood_zone ?? "—"}
-                  </td>
-                  <td className="px-4 py-3 text-slate-600">
-                    {enrichment?.dist_to_coast_miles != null ? `${enrichment.dist_to_coast_miles} mi` : "—"}
-                  </td>
-                  <td className="px-4 py-3 text-slate-600">{formatDateOnly(p.date_quoted)}</td>
-                  <td className="px-4 py-3">
-                    <span className="rounded-full bg-[#8291AC]/15 px-2 py-1 text-xs font-medium text-[#003049]">
-                      {p.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    {queuedIds.has(p.id) ? (
-                      <span className="rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">Queued</span>
-                    ) : (
-                      <RunQuoteButton propertyId={p.id} compact label="Run quote" />
-                    )}
-                  </td>
-                </tr>
-                );
-              })}
-            </tbody>
-          </table>
+      {days.length > 0 && (
+        <div className="space-y-3">
+          {days.map((dayKey, i) => {
+            const rows = byDay.get(dayKey)!;
+            return (
+              <details key={dayKey} className="overflow-hidden rounded-lg border border-slate-200 bg-white" open={i === 0}>
+                <summary className="cursor-pointer select-none px-4 py-3 text-sm font-medium text-[#003049]">
+                  {formatDayHeading(dayKey)} <span className="text-slate-400">({rows.length})</span>
+                </summary>
+                <div className="border-t border-slate-200">{renderTable(rows, teamMembers ?? [])}</div>
+              </details>
+            );
+          })}
         </div>
       )}
     </div>

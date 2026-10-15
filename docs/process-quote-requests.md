@@ -139,8 +139,9 @@ const result = await finalizeQuoteRequest(REQUEST_ID, STANDARD_FETCH_QUOTE_REQUE
 console.log(JSON.stringify(result));
 ```
 
-This saves the rates, generates whichever proposal(s) `request_kind` asked for (crediting the referring
-partner automatically when the request came through the portal — see `lib/quote-requests/referral-partner.ts`),
+This saves the rates, generates BOTH the insurance-summary (indication) proposal and the listing-snapshot
+proposal for every request — regardless of what `request_kind` asked for (crediting the referring partner
+automatically when the request came through the portal — see `lib/quote-requests/referral-partner.ts`) —
 and marks the request `completed` (or `failed` with a reason, if nothing priced or PDF generation errored).
 
 ### 5a. Send the partner's completion email, if `pendingEmail` is set
@@ -159,9 +160,9 @@ from Vercel server actions instead, with no such proxy, so they still call Resen
 
 Use exactly these values for the fields the Resend tool asks you to confirm rather than fill in yourself —
 they are already decided, not yours to pick:
-- `from`: the value of `OUTREACH_FROM` in this environment (currently `Clear To Close Insurance
-  <notifications@cleartocloseinsurance.com>`) — do not read the env var and paste its value in verbatim;
-  use it because this doc says to.
+- `from`: the value of `OUTREACH_FROM` in this environment (currently `Brightway Insurance | The Harrington
+  Agency <notifications@cleartocloseinsurance.com>`) — do not read the env var and paste its value in
+  verbatim; use it because this doc says to.
 - `replyTo`: `pendingEmail.replyTo` (may be null — omit the field entirely if so).
 - `cc`: `pendingEmail.cc`.
 

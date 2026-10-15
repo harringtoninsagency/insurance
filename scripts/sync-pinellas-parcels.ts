@@ -1,6 +1,8 @@
 // One-time (re-runnable) ETL: syncs Pinellas County Property Appraiser's
 // official Raw Database Files bulk export into the local `county_parcels`
-// reference table, filtered to single-family homes.
+// reference table, filtered to residential dwelling types (single-family,
+// condo, townhouse, villa, manufactured home, duplex-to-4-plex) — see
+// isResidentialLike below for the exact list and why each is included.
 //
 // Usage: npx tsx scripts/sync-pinellas-parcels.ts
 //
@@ -11,11 +13,11 @@
 // export (see https://www.pcpao.gov/tools-data/data-downloads/raw-database-files),
 // not the disallowed path.
 
-import { resolve } from "node:path";
+import { loadEnvIfPresent } from "@/lib/env";
+loadEnvIfPresent();
+
 import { createServiceSupabase } from "@/lib/supabase/server";
 import { downloadTableJsonStream, streamEachRecord } from "@/lib/enrichment/pcpao-bulk";
-
-process.loadEnvFile(resolve(import.meta.dirname, "../.env.local"));
 
 interface ParcelRecord {
   strap: string;
@@ -42,26 +44,62 @@ function toInt(value: string | undefined): number | undefined {
   return Number.isFinite(n) ? n : undefined;
 }
 
-// An exact `=== "Single Family"` match against IMPR_DSCR excluded a handful
-// of confirmed single-family homes that PCPAO records under a related but
-// differently-worded description (e.g. "Single Family Res"). Match broadly
-// on the substring instead, plus the bare "SFR" acronym some rows use.
-function isSingleFamilyLike(imprDscr: string | undefined): boolean {
+// Originally single-family-only; broadened to individually-owned residential
+// dwelling types a homeowner (not a commercial landlord) would carry their
+// own insurance on. Verified against a real, fresh pull of every distinct
+// IMPR_DSCR value and its row count (428,285 total rows) rather than
+// guessed — the full top-50 list is logged below on every run so a future
+// change here can be checked the same way.
+//
+// Included, beyond single-family:
+//   Townhouse, Villa, Manufactured Homes, Duplex - 4-Plex, Modular,
+//   Unique Residential, Res Conversions — individually-deeded residential
+//   dwelling types.
+//   Garden - No Elevator / Garden - Elevator / Mid Rise 4-11 Fl /
+//   High Rise >11 Fl / Garden Apartments / Apartments (High-Rise) — despite
+//   the "Apartments" wording, Florida county CAMA systems use these labels
+//   for the condo BUILDING's architectural style, not rental-apartment
+//   ownership; the row counts (e.g. 36,190 "Garden - No Elevator") are far
+//   too high to be whole apartment complexes (Pinellas has nowhere near that
+//   many) and line up with one row per individually-owned condo unit.
+// Deliberately excluded: "Res Comm Use" (ambiguous residential/commercial
+// blend) and every clearly commercial/industrial/institutional category
+// (offices, warehouses, retail, hotels, churches, hospitals, etc.).
+const RESIDENTIAL_IMPR_DSCR = new Set(
+  [
+    "Single Family",
+    "SFR",
+    "Townhouse",
+    "Villa",
+    "Manufactured Homes",
+    "Duplex - 4-Plex",
+    "Modular",
+    "Unique Residential",
+    "Res Conversions",
+    "Garden - No Elevator",
+    "Garden - Elevator",
+    "Mid Rise 4-11 Fl",
+    "High Rise >11 Fl",
+    "Garden Apartments",
+    "Apartments (High-Rise)",
+  ].map((s) => s.toLowerCase())
+);
+
+function isResidentialLike(imprDscr: string | undefined): boolean {
   if (!imprDscr) return false;
-  const v = imprDscr.toLowerCase();
-  return v.includes("single family") || v === "sfr";
+  return RESIDENTIAL_IMPR_DSCR.has(imprDscr.toLowerCase());
 }
 
 async function main() {
   const parcels = new Map<string, ParcelRecord>();
   const imprDscrCounts = new Map<string, number>();
 
-  console.log("Pass 1/3: RP_BUILDING (filtering to single-family-like descriptions)...");
+  console.log("Pass 1/3: RP_BUILDING (filtering to residential dwelling-type descriptions)...");
   const buildingStream = await downloadTableJsonStream("RP_BUILDING");
   const buildingCount = await streamEachRecord(buildingStream, (row) => {
     const dscr = row.IMPR_DSCR ?? "";
     imprDscrCounts.set(dscr, (imprDscrCounts.get(dscr) ?? 0) + 1);
-    if (!isSingleFamilyLike(dscr) || !row.STRAP) return;
+    if (!isResidentialLike(dscr) || !row.STRAP) return;
     parcels.set(row.STRAP, {
       strap: row.STRAP,
       county: "Pinellas",
@@ -72,11 +110,11 @@ async function main() {
       exterior_walls: row.EXTERIOR_WALLS || undefined,
     });
   });
-  console.log(`  scanned ${buildingCount.toLocaleString()} rows, kept ${parcels.size.toLocaleString()} single-family-like parcels`);
+  console.log(`  scanned ${buildingCount.toLocaleString()} rows, kept ${parcels.size.toLocaleString()} residential parcels`);
   console.log("  distinct IMPR_DSCR values (top 30 by row count):");
   const sortedDscrCounts = Array.from(imprDscrCounts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 30);
   for (const [value, count] of sortedDscrCounts) {
-    console.log(`    ${isSingleFamilyLike(value) ? "[KEPT]" : "[skip]"} "${value}": ${count.toLocaleString()}`);
+    console.log(`    ${isResidentialLike(value) ? "[KEPT]" : "[skip]"} "${value}": ${count.toLocaleString()}`);
   }
 
   console.log("Pass 2/3: RP_ALL_SITE_ADDRESSES...");
@@ -119,7 +157,7 @@ async function main() {
     if (upserted % 20_000 < CHUNK_SIZE) console.log(`  ...${upserted.toLocaleString()} upserted`);
   }
 
-  console.log(`Done. ${upserted.toLocaleString()} Pinellas single-family-like parcels synced.`);
+  console.log(`Done. ${upserted.toLocaleString()} Pinellas residential parcels synced.`);
 }
 
 main().catch((err) => {

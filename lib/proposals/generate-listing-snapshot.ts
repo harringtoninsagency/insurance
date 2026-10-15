@@ -133,21 +133,23 @@ export async function generateListingSnapshotProposal(
   let y = PAGE_HEIGHT - MARGIN;
 
   // --- Header: logo (3x native size, per brand emphasis for this
-  // buyer-facing document) + contact line + yellow accent rule ---
+  // buyer-facing document) + contact line + yellow accent rule — same
+  // contact-line format/size and yellow-rule-to-title spacing as
+  // generate-indication.ts, so the two documents read as a matched set.
   const logoWidth = Math.min(180 * 3, CONTENT_WIDTH);
   const logoHeight = logoWidth * (headerLogo.height / headerLogo.width);
   page.drawImage(headerLogo, { x: MARGIN, y: y - logoHeight, width: logoWidth, height: logoHeight });
   y -= logoHeight + 10;
-  // Agency contact info, sized to read as a letterhead rather than fine
-  // print — split across two lines since one line at this size would run
-  // wider than the page.
-  const headerContactSize = 22;
-  page.drawText(CONTACT_PHONE, { x: MARGIN, y, size: headerContactSize, font: boldFont, color: DEEP_BLUE });
-  y -= headerContactSize + 4;
-  page.drawText(CONTACT_EMAIL, { x: MARGIN, y, size: headerContactSize, font: boldFont, color: DEEP_BLUE });
-  y -= headerContactSize + 6;
+  page.drawText(`${CONTACT_PHONE}  ·  harringtonagency@brightway.com`, {
+    x: MARGIN,
+    y,
+    size: 11,
+    font: boldFont,
+    color: DEEP_BLUE,
+  });
+  y -= 18;
   page.drawRectangle({ x: MARGIN, y: y - 3, width: CONTENT_WIDTH, height: 3, color: BRIGHT_YELLOW });
-  y -= 16;
+  y -= 22;
 
   page.drawText("NEW LISTING INSURANCE SNAPSHOT", { x: MARGIN, y, size: 17, font: boldFont, color: DEEP_BLUE });
   y -= 16;
@@ -365,7 +367,10 @@ export async function generateListingSnapshotProposal(
     const statusX = x + 130;
     page.drawText(item.status, { x: statusX, y: itemY - 7, size: 9, font: boldFont, color: DEEP_BLUE });
   });
-  y -= rowsPerCol * readinessRowHeight + 4;
+  // +4 left the readiness box's bottom border close enough to the next
+  // section header that its bold caps poked above the border line; +14
+  // gives it clear room to breathe.
+  y -= rowsPerCol * readinessRowHeight + 14;
 
   // --- Preliminary carrier indications table ---
   drawSectionHeader("PRELIMINARY CARRIER INDICATIONS");
@@ -391,10 +396,13 @@ export async function generateListingSnapshotProposal(
     carrierLogos.set(carrier, await pdfDoc.embedPng(readFileSync(logoPath)));
   }
 
-  // Reserve space below the table for the two condensed lines, the "have an
-  // interested buyer" callout, and the footer, so a longer carrier list
-  // degrades by skipping rows rather than overlapping the footer.
-  const FOOTER_RESERVE = 125;
+  // Reserve space below the table for the condensed lines (now up to
+  // MAX_CONDENSED_ROWS wrapped rows + a "+N more" line per label, not just
+  // one line each), the "have an interested buyer" callout, and the footer
+  // (which is pinned to a fixed position near the bottom of the page, not
+  // flowing with the content above it) — so a longer carrier list degrades
+  // by skipping table rows rather than the callout overlapping the footer.
+  const FOOTER_RESERVE = 170;
 
   page.drawRectangle({
     x: MARGIN,
@@ -439,12 +447,52 @@ export async function generateListingSnapshotProposal(
     y -= tableRowHeight;
   });
 
-  y -= 4;
+  // 4 left less vertical room than the condensed text's own ascender
+  // height, so its first line visually overlapped the table's bottom
+  // border instead of sitting below it — 12 clears it.
+  y -= 12;
+  const condensedSize = 8;
+  const condensedColor = rgb(0.4, 0.45, 0.5);
+  const condensedSeparator = "  |  ";
+  const MAX_CONDENSED_ROWS = 2;
+
+  /**
+   * Wraps the carrier/premium segments to fit the page width instead of
+   * drawing one unbroken line that ran off the right edge — previously
+   * cutting a carrier name or premium off mid-word for a long list. Capped
+   * at MAX_CONDENSED_ROWS real rows of carriers, with any remainder
+   * summarized on its own short "+N more" line, so a very long list can't
+   * keep growing and push the callout box into the fixed-position footer.
+   */
   function drawCondensedLine(label: string, condensedQuotes: QuoteRow[]) {
     if (!condensedQuotes.length) return;
-    const parts = condensedQuotes.map((q) => `${q.carrier} ${formatCurrency(Number(q.premium))}`).join("  |  ");
-    page.drawText(`${label}: ${parts}`, { x: MARGIN, y, size: 8, font, color: rgb(0.4, 0.45, 0.5) });
-    y -= 11;
+    const segments = condensedQuotes.map((q) => `${q.carrier} ${formatCurrency(Number(q.premium))}`);
+
+    const rows: string[][] = [[]];
+    for (const segment of segments) {
+      const row = rows[rows.length - 1]!;
+      const candidateText = [...row, segment].join(condensedSeparator);
+      const prefixedText = rows.length === 1 ? `${label}: ${candidateText}` : candidateText;
+      if (row.length > 0 && font.widthOfTextAtSize(prefixedText, condensedSize) > CONTENT_WIDTH) {
+        rows.push([segment]);
+      } else {
+        row.push(segment);
+      }
+    }
+
+    const shownRows = rows.slice(0, MAX_CONDENSED_ROWS);
+    const shownCount = shownRows.reduce((n, row) => n + row.length, 0);
+    const hiddenCount = segments.length - shownCount;
+
+    shownRows.forEach((row, i) => {
+      const text = i === 0 ? `${label}: ${row.join(condensedSeparator)}` : row.join(condensedSeparator);
+      page.drawText(text, { x: MARGIN, y, size: condensedSize, font, color: condensedColor });
+      y -= 11;
+    });
+    if (hiddenCount > 0) {
+      page.drawText(`+${hiddenCount} more`, { x: MARGIN, y, size: condensedSize, font: italicFont, color: condensedColor });
+      y -= 11;
+    }
   }
   drawCondensedLine("Additional HO3 indications", additionalHo3);
   drawCondensedLine("DP3 indications", topDp3);

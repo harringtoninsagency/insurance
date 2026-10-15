@@ -1,6 +1,7 @@
 import { createServiceSupabase } from "@/lib/supabase/server";
 import { loadEmailConfig } from "@/lib/email/config";
 import { escapeHtml } from "@/lib/email/escape-html";
+import { CONTACT_EMAIL, CONTACT_PHONE } from "@/lib/contacts/consent-text";
 
 // Every outbound email to a referral partner gets the agency CC'd, by
 // explicit instruction — separate from OUTREACH_FROM (the agency's own
@@ -97,13 +98,32 @@ export async function buildQuoteCompletionEmail(quoteRequestId: string, proposal
     if (request.requester_email && request.requester_email.toLowerCase() !== contact.email.toLowerCase()) {
       cc.push(request.requester_email);
     }
+    const text = [
+      `Hi ${name},`,
+      "",
+      "Thank you for reaching out to Brightway Insurance | The Harrington Agency!",
+      "",
+      `Your request for ${property.address} is complete. The insurance summary and listing snapshot are attached.`,
+      "",
+      "Brightway Insurance | The Harrington Agency",
+      `${CONTACT_EMAIL} | ${CONTACT_PHONE}`,
+    ].join("\n");
+
+    const html = [
+      `<p>Hi ${escapeHtml(name)},</p>`,
+      `<p>Thank you for reaching out to Brightway Insurance | The Harrington Agency!</p>`,
+      `<p>Your request for <strong>${escapeHtml(property.address)}</strong> is complete. The insurance summary and listing snapshot are attached.</p>`,
+      `<p style="margin:0 0 4px;font-weight:bold;color:#003049;">Brightway Insurance | The Harrington Agency</p>`,
+      `<p style="margin:0;">${escapeHtml(CONTACT_EMAIL)} | ${escapeHtml(CONTACT_PHONE)}</p>`,
+    ].join("");
+
     return {
       to: contact.email,
       cc,
       replyTo: cfg.config.replyTo,
       subject: `Your quote request is ready — ${property.address}`,
-      text: `Hi ${name},\n\nYour request for ${property.address} is complete. The insurance summary / listing snapshot is attached.\n\n— Brightway Insurance | The Harrington Agency`,
-      html: `<p>Hi ${escapeHtml(name)},</p><p>Your request for <strong>${escapeHtml(property.address)}</strong> is complete. The insurance summary / listing snapshot is attached.</p><p>— Brightway Insurance | The Harrington Agency</p>`,
+      text,
+      html,
       attachments,
       idempotencyKey: `quote-completion-${quoteRequestId}`,
     };

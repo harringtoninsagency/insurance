@@ -3,6 +3,7 @@ import { applyCountyEnrichment } from "@/lib/enrichment/apply-county-enrichment"
 import { describeCountyParcelMiss } from "@/lib/enrichment/county-parcels";
 import { splitStreetAddress } from "@/lib/ingest/onehome-email";
 import { todayEt } from "@/lib/dates";
+import { notifyNeedsReview } from "@/lib/quote-requests/needs-review-notify";
 
 export interface PrepareResult {
   status: "processing" | "needs_review";
@@ -38,6 +39,15 @@ export async function prepareQuoteRequest(requestId: string): Promise<PrepareRes
   } catch {
     const detail = "Could not read a house number and street name out of the address given.";
     await supabase.from("quote_requests").update({ status: "needs_review", status_detail: detail }).eq("id", requestId);
+    await notifyNeedsReview({
+      requesterType: request.requester_type,
+      requesterName: request.requester_name,
+      requesterEmail: request.requester_email,
+      addressLine: request.address_line,
+      city: request.city,
+      state: request.state,
+      detail,
+    });
     return { status: "needs_review", propertyId: "", detail };
   }
 
@@ -82,5 +92,16 @@ export async function prepareQuoteRequest(requestId: string): Promise<PrepareRes
         : `No matching county property record was found, and no year built / square footage was given with the request. ${describeCountyParcelMiss(enrichment.missReason)}`;
 
   await supabase.from("quote_requests").update({ status, status_detail: detail }).eq("id", requestId);
+  if (status === "needs_review") {
+    await notifyNeedsReview({
+      requesterType: request.requester_type,
+      requesterName: request.requester_name,
+      requesterEmail: request.requester_email,
+      addressLine: request.address_line,
+      city: request.city,
+      state: request.state,
+      detail,
+    });
+  }
   return { status, propertyId: property.id, detail };
 }

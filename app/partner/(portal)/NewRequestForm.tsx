@@ -17,8 +17,8 @@ function Field({ id, label, ...props }: { id: string; label: string } & React.In
 }
 
 const STATUS_COPY: Record<string, string> = {
-  processing: "Matched to county property records — a carrier quote is next.",
-  needs_review: "Couldn't fully match that address automatically — a producer will finish it by hand.",
+  processing: "Matched to county property records — a carrier quote is next. Most are ready within a few minutes (occasionally up to an hour); we'll email the results.",
+  needs_review: "Couldn't fully match that address automatically — a producer will finish it by hand and follow up directly.",
 };
 
 export function NewRequestForm({ defaultEmail }: { defaultEmail: string }) {

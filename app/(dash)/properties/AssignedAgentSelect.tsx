@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { updateAssignedAgentAction } from "./[id]/actions";
 
 type State = { ok: true } | { ok: false; error: string } | null;
@@ -23,13 +23,16 @@ export function AssignedAgentSelect({ propertyId, assignedAgentId, teamMembers }
   }
 
   const [state, formAction, isPending] = useActionState<State, FormData>(runAction, null);
+  const savedValue = assignedAgentId ?? "";
+  const [selected, setSelected] = useState(savedValue);
+  const dirty = selected !== savedValue;
 
   return (
-    <form action={formAction}>
+    <form action={formAction} className="flex items-center gap-1.5">
       <select
         name="assigned_agent_id"
-        defaultValue={assignedAgentId ?? ""}
-        onChange={(e) => e.currentTarget.form?.requestSubmit()}
+        value={selected}
+        onChange={(e) => setSelected(e.target.value)}
         disabled={isPending}
         aria-label="Assigned agent"
         className="w-full rounded border border-slate-300 bg-white px-2 py-1 text-sm disabled:opacity-50"
@@ -41,6 +44,13 @@ export function AssignedAgentSelect({ propertyId, assignedAgentId, teamMembers }
           </option>
         ))}
       </select>
+      <button
+        type="submit"
+        disabled={!dirty || isPending}
+        className="shrink-0 rounded border border-[#003049] px-2 py-1 text-xs font-medium text-[#003049] transition-colors hover:bg-[#003049]/5 disabled:cursor-default disabled:opacity-40 disabled:hover:bg-transparent"
+      >
+        {isPending ? "Saving..." : "Save"}
+      </button>
       {state && !state.ok && <p className="mt-1 text-xs text-red-600">{state.error}</p>}
     </form>
   );
