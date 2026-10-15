@@ -3,6 +3,8 @@
 // postal address and a working unsubscribe in every marketing email, so those
 // are treated as required configuration, not optional extras.
 
+import { appBaseUrl } from "@/lib/base-url";
+
 export interface EmailConfig {
   apiKey: string;
   /** e.g. "Brightway Insurance | The Harrington Agency <harringtonagency@brightway.com>" */
@@ -15,8 +17,6 @@ export interface EmailConfig {
   /** Public origin of this app, used to build unsubscribe links. */
   baseUrl: string;
 }
-
-const DEFAULT_BASE_URL = "https://insurance-rust-five.vercel.app";
 
 const REQUIRED: Array<[keyof NodeJS.ProcessEnv & string, string]> = [
   ["RESEND_API_KEY", "Resend API key"],
@@ -38,7 +38,7 @@ export function loadEmailConfig(env: NodeJS.ProcessEnv = process.env): EmailConf
       replyTo: env.OUTREACH_REPLY_TO?.trim() || null,
       postalAddress: env.OUTREACH_POSTAL_ADDRESS!.trim(),
       unsubscribeSecret: env.UNSUBSCRIBE_SECRET!.trim(),
-      baseUrl: (env.APP_BASE_URL?.trim() || DEFAULT_BASE_URL).replace(/\/+$/, ""),
+      baseUrl: appBaseUrl(),
     },
   };
 }

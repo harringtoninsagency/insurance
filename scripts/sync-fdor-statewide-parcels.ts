@@ -236,6 +236,26 @@ async function main() {
         const expectedCount = await countFdorParcels(countyNo, code);
         if (expectedCount === 0) continue;
 
+        // No sub-county resume (--start-county only skips whole counties),
+        // so a container restart mid-pair used to mean every relaunch
+        // re-fetched this exact county/code pair from page 1 — on a large
+        // county (Orange County alone is 200k+ Single Family parcels) that
+        // can outlive one relaunch window, repeatedly losing to the same
+        // restart before finishing. Skip a pair that's already at/near its
+        // expected count instead: 98% covers the sliver that can
+        // legitimately differ between the count call and the fetch (new
+        // parcels recorded in between). Same fix as _retry-fdor-pairs.ts.
+        const { count: existingCount } = await supabase
+          .from("county_parcels")
+          .select("strap", { count: "exact", head: true })
+          .eq("impr_dscr", label)
+          .like("strap", `FL-${countyNo}-%`);
+        if (existingCount !== null && existingCount >= expectedCount * 0.98) {
+          console.log(`  ${tag}: already has ${existingCount.toLocaleString()} / ${expectedCount.toLocaleString()} expected, skipping`);
+          totalSynced += existingCount;
+          continue;
+        }
+
         let countySynced = 0;
         for await (const page of fetchFdorParcels(countyNo, code)) {
           const records = page.map((row) => toParcelRecord(row, label)).filter((r): r is ParcelRecord => r !== null);

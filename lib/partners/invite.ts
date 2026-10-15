@@ -1,8 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/types/database";
-
-// Matches lib/email/config.ts's default — this app's one deployed origin.
-const DEFAULT_BASE_URL = "https://insurance-rust-five.vercel.app";
+import { appBaseUrl } from "@/lib/base-url";
 
 export type InviteResult = { ok: true } | { ok: false; error: string };
 
@@ -28,7 +26,7 @@ export async function invitePartner(supabase: SupabaseClient<Database>, agencyId
   const { data: existing } = await supabase.from("partner_accounts").select("id, status").eq("contact_id", contactId).maybeSingle();
   if (existing?.status === "active") return { ok: false, error: `${contact.full_name} already has an active partner account.` };
 
-  const baseUrl = (process.env.APP_BASE_URL?.trim() || DEFAULT_BASE_URL).replace(/\/+$/, "");
+  const baseUrl = appBaseUrl();
 
   if (!existing) {
     const { error: insertError } = await supabase.from("partner_accounts").insert({
