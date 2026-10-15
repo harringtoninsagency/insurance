@@ -72,7 +72,14 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
+  // manifest.webmanifest (app/manifest.ts's auto-served route) and the
+  // plain public/ static files it references (sw.js, icon-*.png) are PWA
+  // installability assets — without this exclusion they fell through to
+  // the same auth check as every real page and 307-redirected to /login
+  // for anyone not already signed in, which silently broke the service
+  // worker registration and made the manifest unreadable by a browser
+  // checking installability before a visitor's first login.
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|api/cron).*)",
+    "/((?!_next/static|_next/image|favicon.ico|api/cron|manifest.webmanifest|sw.js|icon-192.png|icon-512.png|icon-maskable-512.png).*)",
   ],
 };

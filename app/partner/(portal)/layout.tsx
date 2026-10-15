@@ -71,6 +71,13 @@ export default async function PartnerPortalLayout({
         </header>
         <main className="px-5 py-8">{children}</main>
         <footer className="border-t border-slate-200 px-5 py-4 text-center text-xs text-slate-500">
+          {/* iOS has no automatic install prompt (unlike Android's
+              beforeinstallprompt flow) — Share -> Add to Home Screen is the
+              only path, so it has to be told rather than offered. */}
+          <p className="mb-2">
+            Tip: add this to your home screen for one-tap access — tap <strong>Share</strong> then{" "}
+            <strong>Add to Home Screen</strong> on iPhone, or your browser menu&apos;s <strong>Install app</strong> on Android.
+          </p>
           Questions? Contact us at{" "}
           <a href="mailto:harringtonagency@brightway.com" className="font-medium text-[#003049] hover:underline">
             harringtonagency@brightway.com
