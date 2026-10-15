@@ -14,6 +14,7 @@ const NAV_LINKS = [
   { href: "/quote-requests", label: "Quote requests" },
   { href: "/review", label: "Outreach review" },
   { href: "/contacts", label: "Realtors & Brokers" },
+  { href: "/share", label: "Share with a partner" },
 ] as const;
 
 export default async function DashLayout({
@@ -110,6 +111,14 @@ export default async function DashLayout({
               className="block rounded px-3 py-2 font-medium text-[#003049] hover:bg-[#003049]/5"
             >
               Realtors &amp; Brokers
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/share"
+              className="block rounded px-3 py-2 font-medium text-[#003049] hover:bg-[#003049]/5"
+            >
+              Share with a partner
             </Link>
           </li>
           {profile.role === "admin" && (

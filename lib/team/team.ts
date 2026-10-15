@@ -1,19 +1,15 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { appBaseUrl as baseUrl } from "@/lib/base-url";
 import type { Database } from "@/lib/types/database";
 
 type Service = SupabaseClient<Database>;
 type Role = "producer" | "admin";
 
-const DEFAULT_BASE_URL = "https://insurance-rust-five.vercel.app";
 // Supabase treats ban_duration as a Go duration; this is "effectively forever".
 const BAN_FOREVER = "876000h";
 
 export type TeamResult = { ok: true } | { ok: false; error: string };
-
-function baseUrl(): string {
-  return (process.env.APP_BASE_URL?.trim() || DEFAULT_BASE_URL).replace(/\/+$/, "");
-}
 
 /**
  * The signed-in user's identity, only if they're an active agency admin.
