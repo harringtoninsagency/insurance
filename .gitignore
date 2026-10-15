@@ -27,3 +27,7 @@ logs/
 # each session's run per docs/process-*.md — ignored too, as a backstop,
 # since these can carry real customer data from local debugging/test runs)
 scripts/_*
+
+# ad-hoc research reports (deep-research skill output) — not application code
+research_notes/
+reports/
