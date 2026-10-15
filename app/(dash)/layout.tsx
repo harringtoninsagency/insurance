@@ -51,7 +51,8 @@ export default async function DashLayout({
     );
   }
 
-  const navLinks = profile.role === "admin" ? [...NAV_LINKS, { href: "/team", label: "Team" }] : [...NAV_LINKS];
+  const navLinks =
+    profile.role === "admin" ? [...NAV_LINKS, { href: "/team", label: "Team" }, { href: "/partner", label: "Partner portal" }] : [...NAV_LINKS];
 
   return (
     <div className="min-h-screen bg-[#003049] p-2 md:p-4">
@@ -109,6 +110,18 @@ export default async function DashLayout({
                 className="block rounded px-3 py-2 font-medium text-[#003049] hover:bg-[#003049]/5"
               >
                 Team
+              </Link>
+            </li>
+          )}
+          {profile.role === "admin" && (
+            <li>
+              <Link
+                href="/partner"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block rounded px-3 py-2 font-medium text-[#003049] hover:bg-[#003049]/5"
+              >
+                Partner portal
               </Link>
             </li>
           )}
