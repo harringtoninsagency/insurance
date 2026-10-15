@@ -1,6 +1,7 @@
 import QRCode from "qrcode";
 import { appBaseUrl } from "@/lib/base-url";
 import { CopyLinkButton } from "./CopyLinkButton";
+import { ShareImageActions } from "./ShareImageActions";
 
 export const metadata = { title: "Share with a partner" };
 
@@ -48,6 +49,27 @@ export default async function SharePage() {
           </div>
           <CopyLinkButton url={signupUrl} />
           <p className="text-xs text-slate-500">Scan the code to open the link directly on a phone.</p>
+        </div>
+      </div>
+
+      <div className="mt-8 rounded-lg border border-slate-200 bg-white p-6">
+        <h2 className="text-sm font-semibold text-[#003049]">Shareable image</h2>
+        <p className="mt-1 text-sm text-slate-500">
+          A ready-made graphic with the QR code and link baked in — easy to text or post to social instead of sending a bare link.
+        </p>
+        <div className="mt-4 flex flex-col items-center gap-4 sm:flex-row sm:items-start">
+          {/* eslint-disable-next-line @next/next/no-img-element -- server-generated PNG via a route handler, not an optimizable static asset */}
+          <img src="/share/og" alt="Shareable partner sign-up graphic" width={160} height={160} className="shrink-0 rounded-lg border border-slate-200" />
+          <div className="space-y-3">
+            <ShareImageActions
+              imageUrl="/share/og"
+              shareText={`Get instant home insurance quotes for your clients — sign up free: ${signupUrl}`}
+            />
+            <p className="text-xs text-slate-500">
+              On a phone, &quot;Share...&quot; opens the native share sheet so you can send it straight into Messages, Instagram, or
+              anywhere else. &quot;Download image&quot; works everywhere.
+            </p>
+          </div>
         </div>
       </div>
     </div>
