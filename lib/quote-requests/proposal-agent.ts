@@ -4,7 +4,6 @@ export interface ProposalAgentInfo {
   name: string;
   /** Agent's own direct inbox; falls back to their login email when personal_email isn't set. */
   email: string;
-  phoneExtension: string | null;
   photoPath: string | null;
 }
 
@@ -12,16 +11,18 @@ interface AgentProfileRow {
   full_name: string | null;
   email: string;
   personal_email: string | null;
-  phone_extension: string | null;
   photo_path: string | null;
   active: boolean;
 }
 
-const PROFILE_COLUMNS = "full_name, email, personal_email, phone_extension, photo_path, active";
+const PROFILE_COLUMNS = "full_name, email, personal_email, photo_path, active";
 
 /**
- * Resolves which in-house agent's photo/phone-extension/personal-email shows
- * in the bottom "your agent" section of a generated proposal PDF. Self
+ * Resolves which in-house agent's photo/personal-email shows in the bottom
+ * "your agent" section of a generated proposal PDF — the phone number shown
+ * there is the agency's one shared office line/extension
+ * (727-789-2200 X.1), not something per-agent, so it's hardcoded in each
+ * generator rather than resolved here. Self
  * contained — every proposal-generating call site (the quote-request
  * pipeline, a manual "regenerate" click, the OneHome auto-quote finalizer)
  * calls this with just the property id; `quoteRequestId` is an optional
@@ -102,7 +103,6 @@ export async function resolveProposalAgent(propertyId: string, quoteRequestId?: 
   return {
     name: profile.full_name ?? profile.email,
     email: profile.personal_email ?? profile.email,
-    phoneExtension: profile.phone_extension,
     photoPath: profile.photo_path,
   };
 }

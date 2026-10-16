@@ -13,7 +13,9 @@ function sniffImageKind(bytes: Uint8Array): "jpg" | "png" {
 }
 
 const AGENT_SECTION_HEIGHT = 74;
-const AGENCY_PHONE = "727-789-2200";
+// The agency's one office line with its one shared extension — every agent's
+// calls route through this same number/extension, not a per-agent one.
+const AGENCY_PHONE = "727-789-2200 X.1";
 
 export interface GenerateIndicationResult {
   proposalId: string;
@@ -303,8 +305,7 @@ export async function generateIndicationProposal(
     textY -= 15;
     page.drawText(agent.name, { x: textX, y: textY, size: 11, font: boldFont, color: DEEP_BLUE });
     textY -= 14;
-    const phoneText = agent.phoneExtension ? `${AGENCY_PHONE} ext. ${agent.phoneExtension}` : AGENCY_PHONE;
-    page.drawText(`${phoneText}  ·  ${agent.email}`, { x: textX, y: textY, size: 9, font, color: BLACK });
+    page.drawText(`${AGENCY_PHONE}  ·  ${agent.email}`, { x: textX, y: textY, size: 9, font, color: BLACK });
     y -= boxHeight + 14;
   }
 

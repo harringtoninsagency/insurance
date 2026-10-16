@@ -77,7 +77,6 @@ export interface Database {
           active: boolean;
           photo_path: string | null;
           personal_email: string | null;
-          phone_extension: string | null;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["profiles"]["Row"]> & {

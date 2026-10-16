@@ -34,6 +34,9 @@ const WHITE = rgb(1, 1, 1);
 
 const CONTACT_EMAIL = "HarringtonAgency@brightway.com";
 const CONTACT_PHONE = "727-789-2200";
+// The agency's one office line with its one shared extension — every agent's
+// calls route through this same number/extension, not a per-agent one.
+const AGENT_PHONE = "727-789-2200 X.1";
 
 const BRANDING_DIR = join(process.cwd(), "assets", "branding");
 const CARRIER_LOGOS_DIR = join(BRANDING_DIR, "carriers");
@@ -496,8 +499,7 @@ export async function generateListingSnapshotProposal(
     agentTextY -= 14;
     page.drawText(agent.name, { x: agentTextX, y: agentTextY, size: 10.5, font: boldFont, color: DEEP_BLUE });
     agentTextY -= 13;
-    const agentPhoneText = agent.phoneExtension ? `${CONTACT_PHONE} ext. ${agent.phoneExtension}` : CONTACT_PHONE;
-    page.drawText(`${agentPhoneText}  ·  ${agent.email}`, { x: agentTextX, y: agentTextY, size: 8.5, font, color: BLACK });
+    page.drawText(`${AGENT_PHONE}  ·  ${agent.email}`, { x: agentTextX, y: agentTextY, size: 8.5, font, color: BLACK });
     y -= agentBoxHeight + 5;
   }
 
