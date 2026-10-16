@@ -52,10 +52,22 @@ function nearestCoverageCOption(pct: number): "0%" | "25%" | "50%" {
  * a retry counter) — Fetch dedupes on client_item_id and silently returns the
  * OLD results for a repeat id instead of re-quoting, confirmed earlier this
  * project.
+ *
+ * `roofingCompanyOverride: true` applies that referral type's special quoting
+ * rules to both items (forces roof_year to the current calendar year, and
+ * sets the wind-mitigation credits described in
+ * lib/adapters/fetch-quoting.ts's roofingCompanyWindMitFields) — set it when
+ * the request's referring contact (industry_contacts, via quote_requests.contact_id)
+ * has contact_type = 'roofing_company'. See docs/process-quote-requests.md.
  */
-export function buildFetchQuoteItems(property: PropertyRow, coverage: CoverageOverride, runSuffix: string): FetchQuoteItemSpec[] {
-  const standardFields = fetchQuotingAdapter.buildQuoteFields(property);
-  const dp3Fields = fetchQuotingAdapter.buildQuoteFields(property, "universal-p-c", "dp3");
+export function buildFetchQuoteItems(
+  property: PropertyRow,
+  coverage: CoverageOverride,
+  runSuffix: string,
+  roofingCompanyOverride = false
+): FetchQuoteItemSpec[] {
+  const standardFields = fetchQuotingAdapter.buildQuoteFields(property, undefined, undefined, roofingCompanyOverride);
+  const dp3Fields = fetchQuotingAdapter.buildQuoteFields(property, "universal-p-c", "dp3", roofingCompanyOverride);
 
   if (coverage.dwellingA != null) {
     standardFields.dwelling_a = String(Math.round(coverage.dwellingA));
@@ -171,8 +183,8 @@ export async function finalizeQuoteRequest(quoteRequestId: string, standardQuote
     // queue, for non-partner requests) always has the insurance summary
     // and the listing snapshot attached together.
     const [indication, listingSnapshot] = await Promise.all([
-      generateIndicationProposal(request.property_id, referralPartner),
-      generateListingSnapshotProposal(request.property_id, referralPartner),
+      generateIndicationProposal(request.property_id, referralPartner, quoteRequestId),
+      generateListingSnapshotProposal(request.property_id, referralPartner, quoteRequestId),
     ]);
     proposalIds.push(indication.proposalId, listingSnapshot.proposalId);
   } catch (err) {

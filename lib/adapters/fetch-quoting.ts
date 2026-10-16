@@ -9,7 +9,7 @@ type QuoteInsert = Database["public"]["Tables"]["quotes"]["Insert"];
  * shape; `normalizeRate` maps one of its result rows back to a `quotes` insert.
  */
 export interface CarrierQuoteAdapter<TFields, TRate> {
-  buildQuoteFields(property: PropertyRow, carrierKey?: string, formType?: string): TFields;
+  buildQuoteFields(property: PropertyRow, carrierKey?: string, formType?: string, roofingCompanyOverride?: boolean): TFields;
   normalizeRate(rate: TRate, ctx: NormalizeContext): QuoteInsert;
 }
 
@@ -78,6 +78,28 @@ const CARRIER_DP3_OCCUPANCY_OVERRIDES: Record<string, { occupancy: string; usage
   "universal-p-c": { occupancy: "Tenant", usage: "Rental" },
 };
 
+// Year a roof-to-wall clip retrofit became the practical construction
+// standard — pre-1980 Florida homes were typically toe-nailed, not clipped,
+// and a Roofing Company referral's quote shouldn't claim a retrofit that
+// almost certainly never happened. See buildQuoteFields' roofingCompanyOverride.
+const HURRICANE_CLIP_MIN_YEAR_BUILT = 1980;
+
+/**
+ * Wind-mitigation credits a Roofing Company referral's quote always claims,
+ * regardless of what this property's own enrichment data says: FBC/Class C
+ * roof deck attachment and secondary water resistance are assumed done as
+ * part of that company's own re-roof work, and roof-to-wall clips are
+ * credited only when the home is new enough (built 1980+) that a clip
+ * retrofit is plausible.
+ */
+function roofingCompanyWindMitFields(yearBuilt: number): Pick<FetchQuoteFields, "roof_deck_attachment" | "secondary_water_resistance" | "roof_to_wall_attachment"> {
+  return {
+    roof_deck_attachment: "Type C (8d @ 6/6)",
+    secondary_water_resistance: "Yes",
+    roof_to_wall_attachment: yearBuilt >= HURRICANE_CLIP_MIN_YEAR_BUILT ? "Clips" : "Toe nails",
+  };
+}
+
 const CONSTRUCTION_TYPE_MAP: Record<string, string> = {
   frame: "Frame",
   masonry: "Masonry",
@@ -109,7 +131,7 @@ export interface FetchRate {
 }
 
 export const fetchQuotingAdapter: CarrierQuoteAdapter<FetchQuoteFields, FetchRate> = {
-  buildQuoteFields(property, carrierKey, formType) {
+  buildQuoteFields(property, carrierKey, formType, roofingCompanyOverride) {
     if (!property.house_number || !property.street || !property.city || !property.zipcode) {
       throw new Error(
         `Property ${property.id} is missing structured address fields (house_number/street/city/zipcode) required by Fetch's quote API`
@@ -154,6 +176,14 @@ export const fetchQuotingAdapter: CarrierQuoteAdapter<FetchQuoteFields, FetchRat
       // Never earlier than the build year — plumbing can't predate the house.
       plumbing_updated: String(Math.max(2020, Number(property.year_built))),
       ...(formType?.toLowerCase() === "dp3" && carrierKey ? (CARRIER_DP3_OCCUPANCY_OVERRIDES[carrierKey] ?? {}) : {}),
+      // A Roofing Company referral's special quoting rules — see
+      // lib/quote-requests/fetch-pipeline.ts's buildFetchQuoteItems, which is
+      // the only caller that ever sets this flag. Spread last: it overrides
+      // roof_year above regardless of what county-enrichment or any other
+      // programming computed, per that referral type's explicit requirement.
+      ...(roofingCompanyOverride
+        ? { roof_year: String(new Date().getFullYear()), ...roofingCompanyWindMitFields(Number(property.year_built)) }
+        : {}),
     };
   },
 

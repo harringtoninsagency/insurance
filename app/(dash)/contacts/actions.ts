@@ -19,7 +19,8 @@ const MAX_UI_IMPORT_BYTES = 2 * 1024 * 1024;
 const SOURCES: ContactSource[] = ["manual", "csv_import", "listing_agent", "public_license", "referral", "event", "web_form", "other"];
 
 const str = (formData: FormData, key: string) => String(formData.get(key) ?? "").trim();
-const asType = (v: string): ContactType => (v === "mortgage_broker" ? "mortgage_broker" : "realtor");
+const asType = (v: string): ContactType =>
+  v === "mortgage_broker" ? "mortgage_broker" : v === "roofing_company" ? "roofing_company" : "realtor";
 
 export type AddContactState = { added: string } | { updated: string } | { error: string } | null;
 
@@ -36,7 +37,7 @@ export async function addContactAction(_prev: AddContactState, formData: FormDat
       email: str(formData, "email"),
       licenseNumber: str(formData, "license_number"),
       city: str(formData, "city"),
-      referralPartnerAgent: str(formData, "referral_partner_agent") === "__other__" ? str(formData, "referral_partner_agent_other") : str(formData, "referral_partner_agent"),
+      referralPartnerAgentId: str(formData, "referral_partner_agent_id") || null,
       source: SOURCES.includes(source) ? source : "manual",
     });
     if (outcome.result === "rejected") return { error: `Not saved: ${outcome.reason}` };
@@ -131,10 +132,10 @@ export async function recordConsentAction(contactId: string, payload: RecordCons
 }
 
 export async function updateReferralPartnerAgentAction(contactId: string, formData: FormData): Promise<{ ok: true } | { ok: false; error: string }> {
-  const agent = str(formData, "referral_partner_agent");
+  const agentId = str(formData, "referral_partner_agent_id");
   try {
     const { supabase } = await sessionContext();
-    const { error } = await supabase.from("industry_contacts").update({ referral_partner_agent: agent || null }).eq("id", contactId);
+    const { error } = await supabase.from("industry_contacts").update({ referral_partner_agent_id: agentId || null }).eq("id", contactId);
     if (error) return { ok: false, error: error.message };
     revalidatePath(`/contacts/${contactId}`);
     revalidatePath("/contacts");

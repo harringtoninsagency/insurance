@@ -15,3 +15,25 @@ export function formatDayHeading(dayKey: string): string {
   const date = new Date(year!, month! - 1, day!);
   return new Intl.DateTimeFormat("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }).format(date);
 }
+
+/** An ISO timestamp -> its calendar date in the agency's time zone, e.g. "10/16/2026" — a bare `new Date(iso).toLocaleDateString()` renders the server's (UTC) calendar day instead. */
+export function formatDateOnlyEt(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  return new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", month: "numeric", day: "numeric", year: "numeric" }).format(
+    new Date(iso)
+  );
+}
+
+/** An ISO timestamp -> its date and time in the agency's time zone, e.g. "10/16/2026, 2:05 PM EDT". */
+export function formatDateTimeEt(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    month: "numeric",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZoneName: "short",
+  }).format(new Date(iso));
+}

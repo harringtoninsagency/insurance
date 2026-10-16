@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { formatDateTimeEt, formatDateOnlyEt } from "@/lib/dates";
 import { BackLink } from "@/app/BackLink";
 import { PullCountyDataButton } from "./PullCountyDataButton";
 import { GenerateProposalButton } from "./GenerateProposalButton";
@@ -8,6 +9,7 @@ import { PhotoUploadForm } from "./PhotoUploadForm";
 import { EditListingAgentForm } from "./EditListingAgentForm";
 import { QueueOutreachForm } from "./QueueOutreachForm";
 import { DateQuotedForm } from "./DateQuotedForm";
+import { ManualCarrierForm } from "./ManualCarrierForm";
 import { RunQuoteButton } from "../../quote-requests/RunQuoteButton";
 
 export default async function PropertyDetailPage({
@@ -115,7 +117,7 @@ export default async function PropertyDetailPage({
         </h2>
         {latestRequest && (latestRequest.status === "new" || latestRequest.status === "processing") ? (
           <p className="rounded bg-amber-50 px-3 py-2 text-sm text-amber-900">
-            Quote queued {new Date(latestRequest.created_at).toLocaleString()} — it will be pulled by the quote run now in progress, or at the latest the next hourly run.
+            Quote queued {formatDateTimeEt(latestRequest.created_at)} — it will be pulled by the quote run now in progress, or at the latest the next hourly run.
           </p>
         ) : (
           <>
@@ -270,6 +272,9 @@ export default async function PropertyDetailPage({
             <GenerateListingSnapshotButton propertyId={property.id} />
           </div>
         </div>
+        <div className="mb-3">
+          <ManualCarrierForm propertyId={property.id} name={property.manual_carrier_name} premium={property.manual_carrier_premium} />
+        </div>
         {proposals?.length ? (
           <ul className="space-y-2 text-sm">
             {proposals.map((p) => (
@@ -277,11 +282,13 @@ export default async function PropertyDetailPage({
                 <span className="font-medium capitalize">{p.kind.replace(/_/g, " ")} v{p.version}</span>
                 <div className="flex items-center gap-4">
                   <span className="text-slate-500">
-                    {new Date(p.created_at).toLocaleDateString()}
+                    {formatDateOnlyEt(p.created_at)}
                   </span>
                   {proposalDownloadUrls.has(p.id) && (
                     <a
                       href={proposalDownloadUrls.get(p.id)}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="font-medium text-[#003049] hover:underline"
                     >
                       Download

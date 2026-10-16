@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { todayEt, formatDayHeading } from "@/lib/dates";
+import { todayEt, formatDayHeading, formatDateTimeEt } from "@/lib/dates";
 import type { Database } from "@/lib/types/database";
 import { QuoteRequestAssignedAgentSelect } from "./QuoteRequestAssignedAgentSelect";
 
@@ -111,7 +111,7 @@ export default async function QuoteRequestsPage({
         <td className="min-w-[10rem] px-4 py-3">
           <QuoteRequestAssignedAgentSelect requestId={r.id} assignedAgentId={r.assigned_agent_id} teamMembers={teamMembers ?? []} />
         </td>
-        <td className="px-4 py-3 text-slate-500">{new Date(r.created_at).toLocaleString()}</td>
+        <td className="px-4 py-3 text-slate-500">{formatDateTimeEt(r.created_at)}</td>
       </tr>
     );
   }

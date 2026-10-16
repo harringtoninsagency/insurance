@@ -5,7 +5,11 @@ import { importContactsAction, type ImportState } from "./actions";
 
 const inputClass = "w-full rounded border border-slate-300 px-2 py-1.5 text-sm";
 
-export function ImportContactsForm({ defaultType = "realtor" }: { defaultType?: "realtor" | "mortgage_broker" }) {
+export function ImportContactsForm({
+  defaultType = "realtor",
+}: {
+  defaultType?: "realtor" | "mortgage_broker" | "roofing_company";
+}) {
   const [state, formAction, isPending] = useActionState<ImportState, FormData>(importContactsAction, null);
 
   return (
@@ -23,6 +27,7 @@ export function ImportContactsForm({ defaultType = "realtor" }: { defaultType?: 
           <select id="import_contact_type" name="contact_type" className={inputClass} defaultValue={defaultType}>
             <option value="realtor">Realtors</option>
             <option value="mortgage_broker">Mortgage brokers</option>
+            <option value="roofing_company">Roofing companies</option>
           </select>
         </div>
         <div className="space-y-1">

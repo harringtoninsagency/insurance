@@ -4,6 +4,16 @@ import { PDFDocument, StandardFonts, rgb, type PDFImage } from "pdf-lib";
 import { createServiceSupabase } from "@/lib/supabase/server";
 import { coverageLines, resolveCoverages } from "@/lib/quotes/coverage";
 import type { ReferralPartnerInfo } from "@/lib/quote-requests/referral-partner";
+import { resolveProposalAgent } from "@/lib/quote-requests/proposal-agent";
+import { todayEt, formatDateOnly } from "@/lib/dates";
+
+function sniffImageKind(bytes: Uint8Array): "jpg" | "png" {
+  if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) return "png";
+  return "jpg";
+}
+
+const AGENT_SECTION_HEIGHT = 74;
+const AGENCY_PHONE = "727-789-2200";
 
 export interface GenerateIndicationResult {
   proposalId: string;
@@ -61,9 +71,11 @@ function formatCurrency(value: number): string {
  */
 export async function generateIndicationProposal(
   propertyId: string,
-  referralPartner?: ReferralPartnerInfo | null
+  referralPartner?: ReferralPartnerInfo | null,
+  quoteRequestId?: string | null
 ): Promise<GenerateIndicationResult> {
   const supabase = createServiceSupabase();
+  const agent = await resolveProposalAgent(propertyId, quoteRequestId);
 
   const { data: property, error: propertyError } = await supabase
     .from("properties")
@@ -125,14 +137,6 @@ export async function generateIndicationProposal(
   const logoHeight = logoWidth * (headerLogo.height / headerLogo.width);
   page.drawImage(headerLogo, { x: MARGIN, y: y - logoHeight, width: logoWidth, height: logoHeight });
   y -= logoHeight + 10;
-  page.drawText("727-789-2200  ·  harringtonagency@brightway.com", {
-    x: MARGIN,
-    y,
-    size: 11,
-    font: boldFont,
-    color: DEEP_BLUE,
-  });
-  y -= 18;
   page.drawRectangle({ x: MARGIN, y: y - 3, width: PAGE_WIDTH - 2 * MARGIN, height: 3, color: BRIGHT_YELLOW });
   y -= 22;
 
@@ -140,7 +144,7 @@ export async function generateIndicationProposal(
   y -= 22;
   page.drawText(property.address, { x: MARGIN, y, size: 12, font, color: DEEP_BLUE });
   y -= 15;
-  page.drawText(`Prepared by The Harrington Agency  ·  ${new Date().toLocaleDateString()}`, {
+  page.drawText(`Prepared by The Harrington Agency  ·  ${formatDateOnly(todayEt())}`, {
     x: MARGIN,
     y,
     size: 9,
@@ -270,6 +274,40 @@ export async function generateIndicationProposal(
     });
   }
 
+  async function drawAgentSection() {
+    if (!agent) return;
+    const boxHeight = AGENT_SECTION_HEIGHT;
+    const photoSize = 50;
+    const boxTop = y;
+    page.drawRectangle({
+      x: MARGIN,
+      y: boxTop - boxHeight,
+      width: PAGE_WIDTH - 2 * MARGIN,
+      height: boxHeight,
+      color: CREAM,
+      borderColor: PERIWINKLE_GREY,
+      borderWidth: 0.75,
+    });
+    let textX = MARGIN + 12;
+    if (agent.photoPath) {
+      const { data: photoBlob } = await supabase.storage.from("agent-photos").download(agent.photoPath);
+      if (photoBlob) {
+        const photoBytes = new Uint8Array(await photoBlob.arrayBuffer());
+        const photoImage = sniffImageKind(photoBytes) === "png" ? await pdfDoc.embedPng(photoBytes) : await pdfDoc.embedJpg(photoBytes);
+        page.drawImage(photoImage, { x: textX, y: boxTop - boxHeight + (boxHeight - photoSize) / 2, width: photoSize, height: photoSize });
+        textX += photoSize + 14;
+      }
+    }
+    let textY = boxTop - 18;
+    page.drawText("YOUR AGENT", { x: textX, y: textY, size: 8, font: boldFont, color: PERIWINKLE_GREY });
+    textY -= 15;
+    page.drawText(agent.name, { x: textX, y: textY, size: 11, font: boldFont, color: DEEP_BLUE });
+    textY -= 14;
+    const phoneText = agent.phoneExtension ? `${AGENCY_PHONE} ext. ${agent.phoneExtension}` : AGENCY_PHONE;
+    page.drawText(`${phoneText}  ·  ${agent.email}`, { x: textX, y: textY, size: 9, font, color: BLACK });
+    y -= boxHeight + 14;
+  }
+
   function startContinuationPage() {
     drawFooter();
     page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
@@ -317,6 +355,8 @@ export async function generateIndicationProposal(
     y -= rowHeight;
   });
 
+  if (agent && y - AGENT_SECTION_HEIGHT < MARGIN + FOOTER_RESERVE) startContinuationPage();
+  await drawAgentSection();
   drawFooter();
 
   const pdfBytes = await pdfDoc.save();
