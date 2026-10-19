@@ -46,6 +46,7 @@ const CARRIER_LOGO_FILES: Record<string, string> = {
   "Universal P&C": "universal-pc.png",
   "American Integrity": "american-integrity.png",
   "Olympus Insurance": "olympus-insurance.png",
+  "Edison Insurance": "edison-insurance.png",
   "Tower Hill Insurance": "tower-hill.png",
   "Florida Peninsula": "florida-peninsula.png",
   "Cabrillo Coastal": "cabrillo-coastal.png",
