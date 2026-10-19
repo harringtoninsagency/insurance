@@ -133,19 +133,21 @@ export async function generateIndicationProposal(
 
   let y = PAGE_HEIGHT - MARGIN;
 
-  // --- Header: Brightway | The Harrington Agency lockup + contact line + yellow accent rule ---
+  // --- Header: Brightway | The Harrington Agency lockup, title, then the
+  // yellow accent rule below the title (not between the logo and title). ---
   // 4x the original 200pt width would be 800pt, wider than the page itself
   // (504pt of content width between margins) — capped to the widest size
   // that still fits cleanly on the page.
   const logoWidth = Math.min(200 * 4, PAGE_WIDTH - 2 * MARGIN - 24);
   const logoHeight = logoWidth * (headerLogo.height / headerLogo.width);
   page.drawImage(headerLogo, { x: MARGIN, y: y - logoHeight, width: logoWidth, height: logoHeight });
-  y -= logoHeight + 10;
-  page.drawRectangle({ x: MARGIN, y: y - 3, width: PAGE_WIDTH - 2 * MARGIN, height: 3, color: BRIGHT_YELLOW });
-  y -= 22;
+  y -= logoHeight + 18;
 
   page.drawText("Insurance Indication Summary", { x: MARGIN, y, size: 19, font: boldFont, color: DEEP_BLUE });
-  y -= 22;
+  y -= 12;
+  page.drawRectangle({ x: MARGIN, y: y - 3, width: PAGE_WIDTH - 2 * MARGIN, height: 3, color: BRIGHT_YELLOW });
+  y -= 19;
+
   page.drawText(titleCaseAddress(property.address), { x: MARGIN, y, size: 12, font, color: DEEP_BLUE });
   y -= 15;
   page.drawText(`Prepared by The Harrington Agency  ·  ${formatDateOnly(todayEt())}`, {
