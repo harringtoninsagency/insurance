@@ -42,11 +42,12 @@ function nearestCoverageCOption(pct: number): "0%" | "25%" | "50%" {
 }
 
 /**
- * Builds the two-item CreateBulkQuoteRequest payload for a property: the
- * standard item (every appointed carrier, every form) plus Universal P&C's
- * DP3-only override (Tenant/Rental occupancy — Universal's own standard DP3
- * quote is a bogus $128 placeholder otherwise; see
- * lib/adapters/fetch-quoting.ts's CARRIER_DP3_OCCUPANCY_OVERRIDES comment).
+ * Builds the single-item CreateBulkQuoteRequest payload for a property: every
+ * appointed carrier, every form Fetch still quotes. DP3 is a standing
+ * exclusion (see EXCLUDED_FORMS below) across every carrier, so there's no
+ * longer a separate DP3-only override item to build — Universal P&C's old
+ * DP3 occupancy override (lib/adapters/fetch-quoting.ts) is gone with it,
+ * since no DP3 rate is ever saved or shown regardless of how it was quoted.
  *
  * `runSuffix` must be unique per run (e.g. the quote_request id, or that plus
  * a retry counter) — Fetch dedupes on client_item_id and silently returns the
@@ -54,8 +55,8 @@ function nearestCoverageCOption(pct: number): "0%" | "25%" | "50%" {
  * project.
  *
  * `roofingCompanyOverride: true` applies that referral type's special quoting
- * rules to both items (forces roof_year to the current calendar year, and
- * sets the wind-mitigation credits described in
+ * rules (forces roof_year to the current calendar year, and sets the
+ * wind-mitigation credits described in
  * lib/adapters/fetch-quoting.ts's roofingCompanyWindMitFields) — set it when
  * the request's referring contact (industry_contacts, via quote_requests.contact_id)
  * has contact_type = 'roofing_company'. See docs/process-quote-requests.md.
@@ -66,12 +67,10 @@ export function buildFetchQuoteItems(
   runSuffix: string,
   roofingCompanyOverride = false
 ): FetchQuoteItemSpec[] {
-  const standardFields = fetchQuotingAdapter.buildQuoteFields(property, undefined, undefined, roofingCompanyOverride);
-  const dp3Fields = fetchQuotingAdapter.buildQuoteFields(property, "universal-p-c", "dp3", roofingCompanyOverride);
+  const standardFields = fetchQuotingAdapter.buildQuoteFields(property, roofingCompanyOverride);
 
   if (coverage.dwellingA != null) {
     standardFields.dwelling_a = String(Math.round(coverage.dwellingA));
-    dp3Fields.dwelling_a = String(Math.round(coverage.dwellingA));
   }
   if (coverage.personalPropertyPct != null) {
     // Fetch's schema: ho_3_coverage_c "applies to HO3 quotes only — DP3, DP1,
@@ -80,10 +79,7 @@ export function buildFetchQuoteItems(
     standardFields.ho_3_coverage_c = nearestCoverageCOption(coverage.personalPropertyPct);
   }
 
-  return [
-    { client_item_id: `${property.id}-${runSuffix}`, fields: standardFields },
-    { client_item_id: `upc-dp3-${property.id.slice(0, 8)}-${runSuffix}`, fields: dp3Fields, form_types: ["dp3"], carrier_keys: ["universal-p-c"] },
-  ];
+  return [{ client_item_id: `${property.id}-${runSuffix}`, fields: standardFields }];
 }
 
 export interface RawFetchRate {
@@ -95,7 +91,12 @@ export interface RawFetchRate {
   carrier_response_messages?: unknown;
 }
 
-const EXCLUDED_FORMS = new Set(["HO8", "DP1"]);
+// DP3 is a standing exclusion across every carrier — not a data-quality
+// fix like the eligibility-warning check below, just a decision not to
+// quote/show it going forward (it was previously excluded for Frontline
+// only; now dropped for every carrier that returns it). HO8/DP1 are never
+// shown on a proposal regardless of carrier.
+const EXCLUDED_FORMS = new Set(["HO8", "DP1", "DP3"]);
 
 /**
  * A "success" status with a real premium can still carry a substantive
@@ -116,29 +117,24 @@ function hasEligibilityWarning(r: RawFetchRate): boolean {
 function isUsableRate(r: RawFetchRate): boolean {
   if (r.status !== "success") return false;
   if (!r.form_type || EXCLUDED_FORMS.has(r.form_type.toUpperCase())) return false;
-  // Frontline's DP3 product is excluded from every proposal going forward —
-  // not a data-quality issue like the eligibility-warning check below, just
-  // a standing decision not to quote/show it. Frontline's HO3 quotes are
-  // unaffected.
-  if (r.carrier === "Frontline" && r.form_type.toUpperCase() === "DP3") return false;
   if (hasEligibilityWarning(r)) return false;
   const premium = r.premium != null ? Number(String(r.premium).replace(/,/g, "")) : null;
   return premium != null && premium > 0;
 }
 
 /**
- * Merges the standard item's rates with the Universal P&C DP3 override
- * item's rate(s) into the final list worth saving. Drops declined/errored
- * rates, HO8 and DP1 (never shown on a proposal), any $0 or placeholder
- * premium a "success" status can still carry, and — always — the standard
- * item's own Universal P&C DP3 row, which is a $128 placeholder every time
- * (Owner occupancy isn't quotable for that carrier's DP3); the override
- * item's real DP3 rate replaces it.
+ * Filters a Fetch item's raw rates down to what's worth saving: drops
+ * declined/errored rates, excluded forms (HO8, DP1, DP3 — see
+ * EXCLUDED_FORMS), any $0 or placeholder premium a "success" status can
+ * still carry, and any rate carrying a real underwriting warning even
+ * alongside a priced premium. Named `mergeFetchRates` for historical
+ * continuity with docs/process-quote-requests.md and
+ * docs/process-onehome-listings.md, though it now filters a single item's
+ * rates rather than merging two (the old Universal P&C DP3 override item no
+ * longer exists — see buildFetchQuoteItems).
  */
-export function mergeFetchRates(standardRates: RawFetchRate[], dp3OverrideRates: RawFetchRate[]): RawFetchRate[] {
-  const fromStandard = standardRates.filter((r) => isUsableRate(r) && !(r.carrier === "Universal P&C" && r.form_type?.toUpperCase() === "DP3"));
-  const fromOverride = dp3OverrideRates.filter(isUsableRate);
-  return [...fromStandard, ...fromOverride];
+export function mergeFetchRates(rates: RawFetchRate[]): RawFetchRate[] {
+  return rates.filter(isUsableRate);
 }
 
 export interface FinalizeResult {

@@ -9,7 +9,7 @@ type QuoteInsert = Database["public"]["Tables"]["quotes"]["Insert"];
  * shape; `normalizeRate` maps one of its result rows back to a `quotes` insert.
  */
 export interface CarrierQuoteAdapter<TFields, TRate> {
-  buildQuoteFields(property: PropertyRow, carrierKey?: string, formType?: string, roofingCompanyOverride?: boolean): TFields;
+  buildQuoteFields(property: PropertyRow, roofingCompanyOverride?: boolean): TFields;
   normalizeRate(rate: TRate, ctx: NormalizeContext): QuoteInsert;
 }
 
@@ -60,23 +60,6 @@ export function defaultDwellingA(sqft: number): number {
 
 // Fetch's own default for HO3 Coverage C (personal property) when not set.
 export const DEFAULT_PERSONAL_PROPERTY_PCT = 50;
-
-// Universal P&C's DP3 quotes reject occupancy: Owner ("Coverage is
-// unavailable for this combination of policy type, occupancy, and wind
-// coverage", returned as a placeholder $128, not a real error) — DP3 is a
-// Dwelling Fire form typically written for non-owner-occupied risk, and this
-// carrier apparently validates that. Confirmed this is carrier-specific, not
-// a general Fetch/DP3 issue: switching occupancy to Tenant/Rental for ALL
-// carriers' DP3 quotes fixed Universal P&C but broke two others that were
-// previously pricing fine with Owner (Florida Peninsula: new "Tenant
-// occupied risks must specify applicable Rental Frequency" error; Amwins:
-// silently returned null with no message) — so this override is scoped to
-// Universal P&C's DP3 quotes only, same carrier-scoping pattern as
-// CARRIER_DWELLING_A_MINIMUMS above. Every other carrier's DP3 quote keeps
-// Owner/Primary.
-const CARRIER_DP3_OCCUPANCY_OVERRIDES: Record<string, { occupancy: string; usage: string }> = {
-  "universal-p-c": { occupancy: "Tenant", usage: "Rental" },
-};
 
 // Year a roof-to-wall clip retrofit became the practical construction
 // standard — pre-1980 Florida homes were typically toe-nailed, not clipped,
@@ -131,7 +114,7 @@ export interface FetchRate {
 }
 
 export const fetchQuotingAdapter: CarrierQuoteAdapter<FetchQuoteFields, FetchRate> = {
-  buildQuoteFields(property, carrierKey, formType, roofingCompanyOverride) {
+  buildQuoteFields(property, roofingCompanyOverride) {
     if (!property.house_number || !property.street || !property.city || !property.zipcode) {
       throw new Error(
         `Property ${property.id} is missing structured address fields (house_number/street/city/zipcode) required by Fetch's quote API`
@@ -175,7 +158,6 @@ export const fetchQuotingAdapter: CarrierQuoteAdapter<FetchQuoteFields, FetchRat
       // silently fail on blank optionals rather than surfacing an error.
       // Never earlier than the build year — plumbing can't predate the house.
       plumbing_updated: String(Math.max(2020, Number(property.year_built))),
-      ...(formType?.toLowerCase() === "dp3" && carrierKey ? (CARRIER_DP3_OCCUPANCY_OVERRIDES[carrierKey] ?? {}) : {}),
       // A Roofing Company referral's special quoting rules — see
       // lib/quote-requests/fetch-pipeline.ts's buildFetchQuoteItems, which is
       // the only caller that ever sets this flag. Spread last: it overrides

@@ -84,7 +84,7 @@ If the script returns none, stop — nothing to do (or nothing unclaimed).
 otherwise wait for the next hourly run; if it returns anything new, process those too, then check again until it
 comes back empty.
 
-### 2. For each pending request, build the Fetch items
+### 2. For each pending request, build the Fetch item
 
 ```ts
 // scripts/_build-items.mts (scratch; .mts, not .ts)
@@ -118,31 +118,29 @@ client_item_id dedupe (a repeated id silently returns OLD results instead of re-
 
 ### 3. Submit to Fetch
 
-Call `CreateBulkQuoteRequest` (`product_code: "home"`) with the two items from step 2. Poll
+Call `CreateBulkQuoteRequest` (`product_code: "home"`) with the one item from step 2. Poll
 `GetBulkQuoteStatus` (with `include_items: true, item_status: "submitted"`) every ~15-20 seconds until
-`rates_done: true` for both items — this typically takes 30-90 seconds. Note the two `quote_request_id`s
-Fetch returns (one per item: the standard item, and the `upc-dp3-...` override item).
+`rates_done: true` — this typically takes 30-90 seconds. Note the `quote_request_id` Fetch returns.
 
-### 4. Get full rates and merge
+### 4. Get full rates and filter
 
-Call `GetQuoteStatus(quote_request_id, include_rates: true)` for both Fetch quote_request_ids. Then:
+Call `GetQuoteStatus(quote_request_id, include_rates: true)` for that Fetch quote_request_id. Then:
 
 ```ts
 // scripts/_merge.mts (scratch; .mts, not .ts)
 import { mergeFetchRates, type RawFetchRate } from "@/lib/quote-requests/fetch-pipeline";
-const standardRates: RawFetchRate[] = [...]; // paste from GetQuoteStatus's `rates` array — keep id, carrier, form_type, status, premium, carrier_response_messages
-const overrideRates: RawFetchRate[] = [...];
-console.log(JSON.stringify(mergeFetchRates(standardRates, overrideRates)));
+const rates: RawFetchRate[] = [...]; // paste from GetQuoteStatus's `rates` array — keep id, carrier, form_type, status, premium, carrier_response_messages
+console.log(JSON.stringify(mergeFetchRates(rates)));
 ```
 
 `mergeFetchRates` already handles everything that used to be manual judgment calls: drops declined/errored
-rates, HO8/DP1 forms, $0 or null-premium "success" rows, any rate carrying a real underwriting warning in
-`carrier_response_messages` even alongside a priced premium (e.g. "Year of construction is ineligible",
-"Property age exceeds maximum"), the standard item's own Universal P&C DP3 row (always a $128
-placeholder, replaced by the override item's real DP3 rate), and — standing decision, not a data-quality
-fix — Frontline's DP3 product entirely; Frontline's HO3 quotes are unaffected. Fetch still quotes Frontline
-DP3 as part of the standard item (there's no per-carrier-per-form exclusion at submission time), it's just
-never saved or shown.
+rates, excluded forms (HO8, DP1, and — standing decision, not a data-quality fix — DP3 from every carrier;
+Fetch still quotes DP3 as part of the one item submitted, there's no per-carrier-per-form exclusion at
+submission time, it's just never saved or shown), $0 or null-premium "success" rows, and any rate carrying a
+real underwriting warning in `carrier_response_messages` even alongside a priced premium (e.g. "Year of
+construction is ineligible", "Property age exceeds maximum"). There's no longer a separate DP3-only override
+item or carrier to special-case (Universal P&C's old DP3 occupancy override is gone — see
+`lib/adapters/fetch-quoting.ts` and `buildFetchQuoteItems`'s doc comment).
 
 ### 5. Finalize
 
