@@ -31,8 +31,6 @@ const PERIWINKLE_GREY = rgb(0x82 / 255, 0x91 / 255, 0xac / 255); // #8291AC
 const BRIGHT_YELLOW = rgb(0xf0 / 255, 0xff / 255, 0x00 / 255); // #F0FF00
 const CREAM = rgb(0xff / 255, 0xff / 255, 0xe6 / 255); // #FFFFE6
 const LIGHT_GREY = rgb(0xf1 / 255, 0xf5 / 255, 0xf9 / 255);
-const GREEN = rgb(0x16 / 255, 0xa3 / 255, 0x4a / 255);
-const AMBER = rgb(0xd9 / 255, 0x8c / 255, 0x0d / 255);
 const BLACK = rgb(0, 0, 0);
 const WHITE = rgb(1, 1, 1);
 
@@ -59,19 +57,6 @@ const CARRIER_LOGO_FILES: Record<string, string> = {
   "Patriot Select": "patriot-select.png",
   "Slide Insurance": "slide.png",
 };
-
-// Static advisory checklist — every reference layout shows the same values
-// regardless of the property. Computing these for real (e.g. from wind-mit
-// credits or a 4-point-inspection rule engine) is a separate feature; this
-// is deliberately just the boilerplate "here's what's still ahead" list a
-// producer would say to any new-listing buyer.
-const STATIC_READINESS_ITEMS: Array<{ label: string; status: string }> = [
-  { label: "Roof documentation", status: "Needs verification" },
-  { label: "4-point inspection", status: "May be required" },
-  { label: "Wind mitigation", status: "May be required" },
-  { label: "Flood insurance", status: "Separate review" },
-  { label: "Final eligibility", status: "Underwriting review" },
-];
 
 function formatCurrency(value: number): string {
   return `$${Math.round(value).toLocaleString()}`;
@@ -436,49 +421,12 @@ export async function generateListingSnapshotProposal(
     }
     y -= tableRowHeight;
   });
-  y -= 10;
-
-  // --- Insurance readiness: 2-column checklist — kept near the bottom of
-  // the page, after the carrier table, rather than up near the property
-  // facts. ---
-  drawSectionHeader("INSURANCE READINESS");
-  const marketsFound = !!quotes?.length;
-  const readinessItems = [
-    { label: "Preliminary markets", status: marketsFound ? "Options identified" : "Not yet found", ok: marketsFound },
-    ...STATIC_READINESS_ITEMS.map((item) => ({ ...item, ok: false })),
-  ];
-  const colGap = 24;
-  const readinessColWidth = (CONTENT_WIDTH - colGap) / 2;
-  const readinessRowHeight = 13;
-  const rowsPerCol = Math.ceil(readinessItems.length / 2);
-  const readinessBoxTop = y + 6;
-  const readinessBoxBottom = y - rowsPerCol * readinessRowHeight + 2;
-  page.drawRectangle({
-    x: MARGIN,
-    y: readinessBoxBottom,
-    width: CONTENT_WIDTH,
-    height: readinessBoxTop - readinessBoxBottom,
-    borderColor: PERIWINKLE_GREY,
-    borderWidth: 0.75,
-  });
-  readinessItems.forEach((item, i) => {
-    const col = Math.floor(i / rowsPerCol);
-    const row = i % rowsPerCol;
-    const x = MARGIN + col * (readinessColWidth + colGap);
-    const itemY = y - row * readinessRowHeight;
-    const dotColor = item.ok ? GREEN : AMBER;
-    page.drawEllipse({ x: x + 4, y: itemY - 3, xScale: 4, yScale: 4, color: dotColor });
-    page.drawText(item.label, { x: x + 14, y: itemY - 7, size: 9, font, color: rgb(0.3, 0.35, 0.4) });
-    const statusX = x + 130;
-    page.drawText(item.status, { x: statusX, y: itemY - 7, size: 9, font: boldFont, color: DEEP_BLUE });
-  });
-  y -= rowsPerCol * readinessRowHeight + 8;
 
   // --- Bottom section, 3 columns: a reserved photo area (blank until an
   // agent headshot is uploaded on the Team page), the agent's info stacked
   // vertically, and "Have an interested buyer?" — resolved by
   // lib/quote-requests/proposal-agent.ts. Anchored just above the footer
-  // rather than following straight on from Insurance Readiness, so it sits
+  // rather than following straight on from the carrier table, so it sits
   // at the bottom of the page instead of trailing whatever whitespace is
   // left above it.
   const footerY = MARGIN + 24;
