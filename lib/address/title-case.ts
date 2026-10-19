@@ -14,6 +14,11 @@ function titleCaseWord(word: string): string {
   if (!word) return word;
   const bare = word.replace(/[^A-Za-z]/g, "");
   if (ALL_CAPS_WORDS.has(bare.toUpperCase())) return word.toUpperCase();
+  // An ordinal street number ("94th", "21st", "3rd") reads normally with a
+  // lowercase suffix — checked before the lettered-unit rule below, which
+  // would otherwise catch it too and uppercase the whole token ("94TH").
+  const ordinal = word.match(/^(\d+)(st|nd|rd|th)$/i);
+  if (ordinal) return ordinal[1] + ordinal[2]!.toLowerCase();
   // A house-number/unit token like "2004" or "1121A" — keep any trailing
   // letter uppercase (Florida's own convention for a lettered house number).
   if (/^\d+[A-Za-z]*$/.test(word)) return word.toUpperCase();

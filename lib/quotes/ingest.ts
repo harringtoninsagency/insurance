@@ -7,8 +7,10 @@ import { todayEt } from "@/lib/dates";
 /**
  * Writes results from a Fetch quoting run (CreateQuoteRequest + GetQuoteStatus,
  * run via the Fetch MCP tools in a Claude session) into the `quotes` table.
- * Upserts on (property_id, external_rate_id) so re-ingesting the same
- * quote_request_id is safe.
+ * Upserts on (property_id, carrier, form_type) — not external_rate_id, which
+ * Fetch mints fresh on every quote run even for the same carrier/form, so it
+ * could never actually match an existing row. This way, re-quoting a
+ * property replaces its old carrier rows instead of piling up duplicates.
  *
  * Pass `coverages` whenever the run overrode the default coverage amounts
  * (e.g. a specific Coverage A / Coverage C), so proposals can state what the
@@ -43,7 +45,7 @@ export async function ingestFetchQuoteResults(
 
   const { data, error } = await supabase
     .from("quotes")
-    .upsert(rows, { onConflict: "property_id,external_rate_id" })
+    .upsert(rows, { onConflict: "property_id,carrier,form_type" })
     .select("id, carrier, premium");
 
   if (error) {
