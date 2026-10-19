@@ -138,8 +138,11 @@ console.log(JSON.stringify(mergeFetchRates(standardRates, overrideRates)));
 `mergeFetchRates` already handles everything that used to be manual judgment calls: drops declined/errored
 rates, HO8/DP1 forms, $0 or null-premium "success" rows, any rate carrying a real underwriting warning in
 `carrier_response_messages` even alongside a priced premium (e.g. "Year of construction is ineligible",
-"Property age exceeds maximum"), and the standard item's own Universal P&C DP3 row (always a $128
-placeholder), replacing it with the override item's real DP3 rate.
+"Property age exceeds maximum"), the standard item's own Universal P&C DP3 row (always a $128
+placeholder, replaced by the override item's real DP3 rate), and — standing decision, not a data-quality
+fix — Frontline's DP3 product entirely; Frontline's HO3 quotes are unaffected. Fetch still quotes Frontline
+DP3 as part of the standard item (there's no per-carrier-per-form exclusion at submission time), it's just
+never saved or shown.
 
 ### 5. Finalize
 

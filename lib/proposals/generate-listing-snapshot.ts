@@ -146,9 +146,9 @@ export async function generateListingSnapshotProposal(
   const logoWidth = Math.min(180 * 3, CONTENT_WIDTH);
   const logoHeight = logoWidth * (headerLogo.height / headerLogo.width);
   page.drawImage(headerLogo, { x: MARGIN, y: y - logoHeight, width: logoWidth, height: logoHeight });
-  y -= logoHeight + 10;
+  y -= logoHeight + 6;
   page.drawRectangle({ x: MARGIN, y: y - 3, width: CONTENT_WIDTH, height: 3, color: BRIGHT_YELLOW });
-  y -= 16;
+  y -= 14;
 
   page.drawText("NEW LISTING INSURANCE SNAPSHOT", { x: MARGIN, y, size: 17, font: boldFont, color: DEEP_BLUE });
   y -= 16;
@@ -305,7 +305,7 @@ export async function generateListingSnapshotProposal(
     page.drawText(basis, { x: indicationX + boxPad, y: boxY, size: 7.5, font, color: rgb(0.75, 0.79, 0.85) });
   }
 
-  y = rowTop - rowHeight - 4;
+  y = rowTop - rowHeight - 10;
 
   function drawSectionHeader(label: string) {
     page.drawText(label, { x: MARGIN, y, size: 10.5, font: boldFont, color: DEEP_BLUE });
@@ -332,7 +332,7 @@ export async function generateListingSnapshotProposal(
     page.drawText(item.label, { x: x + 10, y: y - 13, size: 7, font: boldFont, color: PERIWINKLE_GREY });
     page.drawText(item.value, { x: x + 10, y: y - 25, size: 9.5, font: boldFont, color: DEEP_BLUE });
   });
-  y -= glanceHeight + 6;
+  y -= glanceHeight + 10;
 
   // --- Preliminary carrier indications: a fixed 5-row table of the most
   // competitive options on file (cheapest first, any form), so it reads the
@@ -431,7 +431,7 @@ export async function generateListingSnapshotProposal(
     }
     y -= tableRowHeight;
   });
-  y -= 6;
+  y -= 10;
 
   // --- Insurance readiness: 2-column checklist — kept near the bottom of
   // the page, after the carrier table, rather than up near the property
@@ -469,28 +469,42 @@ export async function generateListingSnapshotProposal(
   });
   y -= rowsPerCol * readinessRowHeight + 8;
 
-  // --- Your agent: photo, extension off the shared office line, and their
-  // own direct email — resolved by lib/quote-requests/proposal-agent.ts. ---
+  // --- Bottom section: your agent (photo, shared-office-line extension,
+  // personal email — resolved by lib/quote-requests/proposal-agent.ts) on
+  // the left, "Have an interested buyer?" on the right, as one combined box
+  // instead of two stacked ones. ---
+  const bottomBoxHeight = AGENT_SECTION_HEIGHT;
+  const photoSize = 40;
+  const leftWidth = 250;
+  const dividerX = MARGIN + leftWidth + 10;
+  const rightX = dividerX + 14;
+  const boxTop = y;
+  page.drawRectangle({
+    x: MARGIN,
+    y: boxTop - bottomBoxHeight,
+    width: CONTENT_WIDTH,
+    height: bottomBoxHeight,
+    color: CREAM,
+    borderColor: BRIGHT_YELLOW,
+    borderWidth: 1.5,
+  });
+  page.drawRectangle({
+    x: dividerX,
+    y: boxTop - bottomBoxHeight + 10,
+    width: 0.75,
+    height: bottomBoxHeight - 20,
+    color: PERIWINKLE_GREY,
+  });
+
+  // Left: your agent.
   if (agent) {
-    const agentBoxHeight = AGENT_SECTION_HEIGHT;
-    const photoSize = 38;
-    const boxTop = y;
-    page.drawRectangle({
-      x: MARGIN,
-      y: boxTop - agentBoxHeight,
-      width: CONTENT_WIDTH,
-      height: agentBoxHeight,
-      color: CREAM,
-      borderColor: PERIWINKLE_GREY,
-      borderWidth: 0.75,
-    });
     let agentTextX = MARGIN + 10;
     if (agent.photoPath) {
       const { data: photoBlob } = await supabase.storage.from("agent-photos").download(agent.photoPath);
       if (photoBlob) {
         const photoBytes = new Uint8Array(await photoBlob.arrayBuffer());
         const photoImage = sniffImageKind(photoBytes) === "png" ? await pdfDoc.embedPng(photoBytes) : await pdfDoc.embedJpg(photoBytes);
-        page.drawImage(photoImage, { x: agentTextX, y: boxTop - agentBoxHeight + (agentBoxHeight - photoSize) / 2, width: photoSize, height: photoSize });
+        page.drawImage(photoImage, { x: agentTextX, y: boxTop - bottomBoxHeight + (bottomBoxHeight - photoSize) / 2, width: photoSize, height: photoSize });
         agentTextX += photoSize + 12;
       }
     }
@@ -500,38 +514,21 @@ export async function generateListingSnapshotProposal(
     page.drawText(agent.name, { x: agentTextX, y: agentTextY, size: 10.5, font: boldFont, color: DEEP_BLUE });
     agentTextY -= 13;
     page.drawText(`${AGENT_PHONE}  ·  ${agent.email}`, { x: agentTextX, y: agentTextY, size: 8.5, font, color: BLACK });
-    y -= agentBoxHeight + 5;
   }
 
-  // --- "Have an interested buyer?" callout ---
-  const calloutHeight = 42;
-  page.drawRectangle({
-    x: MARGIN,
-    y: y - calloutHeight,
-    width: CONTENT_WIDTH,
-    height: calloutHeight,
-    color: CREAM,
-    borderColor: BRIGHT_YELLOW,
-    borderWidth: 1.5,
-  });
-  page.drawText("HAVE AN INTERESTED BUYER?", { x: MARGIN + 14, y: y - 17, size: 9, font: boldFont, color: DEEP_BLUE });
-  page.drawText("Email us the buyer's name, phone number and email", {
-    x: MARGIN + 14,
-    y: y - 28,
-    size: 8,
-    font,
-    color: rgb(0.3, 0.35, 0.4),
-  });
-  page.drawText("for a personalized quote.", { x: MARGIN + 14, y: y - 37, size: 8, font, color: rgb(0.3, 0.35, 0.4) });
+  // Right: "Have an interested buyer?" callout.
+  let rightTextY = boxTop - 13;
+  page.drawText("HAVE AN INTERESTED BUYER?", { x: rightX, y: rightTextY, size: 8.5, font: boldFont, color: DEEP_BLUE });
+  rightTextY -= 10;
+  page.drawText("Email us the buyer's name, phone number and email", { x: rightX, y: rightTextY, size: 7.5, font, color: rgb(0.3, 0.35, 0.4) });
+  rightTextY -= 9;
+  page.drawText("for a personalized quote.", { x: rightX, y: rightTextY, size: 7.5, font, color: rgb(0.3, 0.35, 0.4) });
+  rightTextY -= 11;
+  page.drawText(CONTACT_EMAIL, { x: rightX, y: rightTextY, size: 9, font: boldFont, color: DEEP_BLUE });
+  rightTextY -= 11;
+  page.drawText(CONTACT_PHONE, { x: rightX, y: rightTextY, size: 9, font: boldFont, color: DEEP_BLUE });
 
-  // Contact details, right-aligned so the call to action has somewhere to go.
-  const contactSize = 10;
-  const contactRight = MARGIN + CONTENT_WIDTH - 14;
-  const emailWidth = boldFont.widthOfTextAtSize(CONTACT_EMAIL, contactSize);
-  const phoneWidth = boldFont.widthOfTextAtSize(CONTACT_PHONE, contactSize);
-  page.drawRectangle({ x: contactRight - emailWidth - 14, y: y - calloutHeight + 8, width: 0.75, height: calloutHeight - 16, color: PERIWINKLE_GREY });
-  page.drawText(CONTACT_EMAIL, { x: contactRight - emailWidth, y: y - 20, size: contactSize, font: boldFont, color: DEEP_BLUE });
-  page.drawText(CONTACT_PHONE, { x: contactRight - phoneWidth, y: y - 34, size: contactSize, font: boldFont, color: DEEP_BLUE });
+  y -= bottomBoxHeight;
 
   // --- Footer ---
   const footerY = MARGIN + 24;
