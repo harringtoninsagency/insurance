@@ -2,13 +2,14 @@ import { notFound } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { BackLink } from "@/app/BackLink";
 import { EVENT_LABEL, METHOD_LABEL } from "@/lib/contacts/consent";
+import { formatDateOnly, formatDateOnlyEt } from "@/lib/dates";
 import { ConsentForm } from "./ConsentForm";
 import { InvitePartnerButton } from "./InvitePartnerButton";
 import { ReferralPartnerAgentSelect } from "./ReferralPartnerAgentSelect";
 import { FollowUpForm } from "./FollowUpForm";
 import { EditContactDetailsForm } from "./EditContactDetailsForm";
 
-const TYPE_LABEL = { realtor: "Realtor", mortgage_broker: "Mortgage broker" } as const;
+const TYPE_LABEL = { realtor: "Realtor", mortgage_broker: "Mortgage broker", roofing_company: "Roofing company" } as const;
 
 function Badge({ children, tone }: { children: React.ReactNode; tone: "green" | "amber" | "red" | "grey" }) {
   const tones = {
@@ -20,7 +21,7 @@ function Badge({ children, tone }: { children: React.ReactNode; tone: "green" | 
   return <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${tones[tone]}`}>{children}</span>;
 }
 
-const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString() : null);
+const fmt = (iso: string | null) => (iso ? formatDateOnlyEt(iso) : null);
 
 export default async function ContactPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -74,7 +75,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
           <div className="text-xs text-slate-500">Referral partner agent</div>
           <ReferralPartnerAgentSelect
             contactId={contact.id}
-            referralPartnerAgent={contact.referral_partner_agent}
+            referralPartnerAgentId={contact.referral_partner_agent_id}
             teamMembers={teamMembers ?? []}
           />
         </div>
@@ -123,7 +124,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
           <h2 className="font-medium text-[#003049]">Follow-up information</h2>
           {nextFollowUpOn && (
             <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
-              Next follow-up: {fmt(nextFollowUpOn)}
+              Next follow-up: {formatDateOnly(nextFollowUpOn)}
             </span>
           )}
         </div>
@@ -139,9 +140,9 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
             {followUps.map((f) => (
               <li key={f.id} className="rounded-lg border border-slate-200 px-4 py-3 text-sm">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <span className="text-xs text-slate-500">{new Date(f.created_at).toLocaleDateString()}</span>
+                  <span className="text-xs text-slate-500">{formatDateOnlyEt(f.created_at)}</span>
                   {f.next_follow_up_on && (
-                    <span className="text-xs font-medium text-amber-800">Next: {fmt(f.next_follow_up_on)}</span>
+                    <span className="text-xs font-medium text-amber-800">Next: {formatDateOnly(f.next_follow_up_on)}</span>
                   )}
                 </div>
                 <p className="mt-1 text-slate-700">{f.note}</p>
@@ -162,7 +163,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
               <li key={e.id} className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <span className="font-medium text-slate-800">{EVENT_LABEL[e.event_type]}</span>
-                  <span className="text-xs text-slate-500">{new Date(e.occurred_at).toLocaleDateString()}</span>
+                  <span className="text-xs text-slate-500">{formatDateOnlyEt(e.occurred_at)}</span>
                 </div>
                 <div className="text-xs text-slate-500">
                   {METHOD_LABEL[e.method]}

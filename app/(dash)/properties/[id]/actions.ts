@@ -73,6 +73,24 @@ export async function updateDateQuotedAction(propertyId: string, formData: FormD
   }
 }
 
+export async function updateManualCarrierAction(propertyId: string, formData: FormData): Promise<{ ok: true } | { ok: false; error: string }> {
+  const name = String(formData.get("manual_carrier_name") ?? "").trim();
+  const premiumRaw = String(formData.get("manual_carrier_premium") ?? "").trim();
+  if (premiumRaw && !/^\d+(\.\d+)?$/.test(premiumRaw)) return { ok: false, error: "Enter a valid premium amount." };
+  try {
+    const { supabase } = await sessionContext();
+    const { error } = await supabase
+      .from("properties")
+      .update({ manual_carrier_name: name || null, manual_carrier_premium: premiumRaw ? Number(premiumRaw) : null })
+      .eq("id", propertyId);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath(`/properties/${propertyId}`);
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Failed to save the manual carrier row." };
+  }
+}
+
 export async function updateAssignedAgentAction(propertyId: string, formData: FormData): Promise<{ ok: true } | { ok: false; error: string }> {
   const agentId = String(formData.get("assigned_agent_id") ?? "").trim();
   try {

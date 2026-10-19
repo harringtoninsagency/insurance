@@ -1,6 +1,8 @@
 import { createServiceSupabase } from "@/lib/supabase/server";
 import { findCountyParcel, type CountyParcelMissReason } from "@/lib/enrichment/county-parcels";
 import { validateAddress } from "@/lib/address/usps-validate";
+import { titleCaseAddress } from "@/lib/address/title-case";
+import { splitStreetAddress } from "@/lib/ingest/onehome-email";
 import { isBdrsCovered } from "@/lib/enrichment/building-jurisdiction";
 import { findLatestRoofPermitYear, resolveRoofYearFromPermit } from "@/lib/enrichment/roof-permits";
 import { lookupFloodZone } from "@/lib/enrichment/flood-zone";
@@ -66,6 +68,34 @@ export async function applyCountyEnrichment(propertyId: string): Promise<ApplyCo
     }
     if (usps.status === "error") {
       console.warn(`USPS address validation skipped for ${propertyId}: ${usps.message}`);
+    }
+    if (usps.status === "valid") {
+      // USPS's standardized address is always ALL CAPS by its own
+      // convention — fine for the matching above, wrong for anything a
+      // buyer or partner actually sees (PDFs, the dashboard). Persist it
+      // title-cased instead of the discarded-until-now result.
+      const std = usps.standardized;
+      const { houseNumber, street } = splitStreetAddress(std.streetAddress);
+      const titleCasedCity = titleCaseAddress(std.city);
+      const addressLine = titleCaseAddress(`${houseNumber} ${street}`);
+      const { error: addressUpdateError } = await supabase
+        .from("properties")
+        .update({
+          house_number: houseNumber,
+          street: titleCaseAddress(street),
+          city: titleCasedCity,
+          state: std.state,
+          zipcode: std.zipPlus4 ? `${std.zipCode}-${std.zipPlus4}` : std.zipCode,
+          address: `${addressLine}, ${titleCasedCity}, ${std.state} ${std.zipCode}`,
+        })
+        .eq("id", propertyId);
+      if (addressUpdateError) {
+        console.warn(`Failed to persist standardized address for ${propertyId}: ${addressUpdateError.message}`);
+      } else {
+        property.house_number = houseNumber;
+        property.street = titleCaseAddress(street);
+        property.city = titleCasedCity;
+      }
     }
   }
 

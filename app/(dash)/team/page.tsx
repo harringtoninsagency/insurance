@@ -3,6 +3,7 @@ import { createServerSupabase, createServiceSupabase } from "@/lib/supabase/serv
 import { listTeam } from "@/lib/team/team";
 import { InviteForm } from "./InviteForm";
 import { MemberControls } from "./MemberControls";
+import { AgentPhotoForm } from "./AgentPhotoForm";
 
 export const metadata = { title: "Team" };
 
@@ -16,13 +17,29 @@ export default async function TeamPage() {
   const { data: me } = await session.from("profiles").select("agency_id, role, active").eq("id", user.id).maybeSingle();
   if (!me || !me.active || me.role !== "admin") redirect("/home");
 
-  const team = await listTeam(createServiceSupabase(), me.agency_id);
+  const service = createServiceSupabase();
+  const team = await listTeam(service, me.agency_id);
+
+  const withPhoto = team.filter((m): m is typeof m & { photoPath: string } => !!m.photoPath);
+  const photoUrlById = new Map<string, string>();
+  if (withPhoto.length) {
+    const signed = await Promise.all(withPhoto.map((m) => service.storage.from("agent-photos").createSignedUrl(m.photoPath, 3600)));
+    withPhoto.forEach((m, i) => {
+      const url = signed[i]?.data?.signedUrl;
+      if (url) photoUrlById.set(m.id, url);
+    });
+  }
 
   return (
     <div className="max-w-4xl space-y-6">
       <div>
         <h1 className="text-xl font-semibold text-[#003049]">Team</h1>
         <p className="text-sm text-slate-600">Everyone here signs in with their own email and password.</p>
+        <p className="mt-1 text-sm text-slate-600">
+          "Proposal contact" is what shows in the "Your agent" section of a generated indication/listing-snapshot
+          PDF: a headshot and a direct email. The phone number there is always the shared office line, 727-789-2200
+          X.1.
+        </p>
       </div>
 
       <InviteForm />
@@ -33,6 +50,7 @@ export default async function TeamPage() {
             <tr>
               <th className="px-4 py-2.5">Name</th>
               <th className="px-4 py-2.5">Status</th>
+              <th className="px-4 py-2.5">Proposal contact</th>
               <th className="px-4 py-2.5">Manage</th>
             </tr>
           </thead>
@@ -54,6 +72,9 @@ export default async function TeamPage() {
                   ) : (
                     <span className="rounded bg-green-50 px-2 py-0.5 text-green-800">Active</span>
                   )}
+                </td>
+                <td className="px-4 py-3">
+                  <AgentPhotoForm memberId={m.id} photoUrl={photoUrlById.get(m.id) ?? null} personalEmail={m.personalEmail} />
                 </td>
                 <td className="px-4 py-3">
                   <MemberControls memberId={m.id} role={m.role} active={m.active} invitePending={m.invitePending} isSelf={m.id === user.id} />

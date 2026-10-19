@@ -20,7 +20,7 @@ export type PropertyStatus =
   | "closed"
   | "dead";
 export type ProposalKind = "indication" | "firm" | "listing_snapshot";
-export type ContactType = "realtor" | "mortgage_broker";
+export type ContactType = "realtor" | "mortgage_broker" | "roofing_company";
 export type ConsentEventType =
   | "email_opt_in"
   | "sms_opt_in"
@@ -75,6 +75,8 @@ export interface Database {
           role: "producer" | "admin";
           full_name: string | null;
           active: boolean;
+          photo_path: string | null;
+          personal_email: string | null;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["profiles"]["Row"]> & {
@@ -114,6 +116,8 @@ export interface Database {
           photo_path: string | null;
           date_quoted: string | null;
           assigned_agent_id: string | null;
+          manual_carrier_name: string | null;
+          manual_carrier_premium: number | null;
           status: PropertyStatus;
           created_at: string;
           updated_at: string;
@@ -380,7 +384,7 @@ export interface Database {
           license_number: string | null;
           license_state: string;
           city: string | null;
-          referral_partner_agent: string | null;
+          referral_partner_agent_id: string | null;
           source: ContactSource;
           source_detail: string | null;
           email_consent: "unknown" | "opted_in" | "opted_out";

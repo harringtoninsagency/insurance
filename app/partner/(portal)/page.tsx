@@ -1,5 +1,5 @@
 import { createServerSupabase } from "@/lib/supabase/server";
-import { todayEt, formatDayHeading } from "@/lib/dates";
+import { todayEt, formatDayHeading, formatDateOnlyEt } from "@/lib/dates";
 import type { Database } from "@/lib/types/database";
 import { NewRequestForm } from "./NewRequestForm";
 
@@ -101,7 +101,7 @@ export default async function PartnerPortalPage() {
         <p className="mt-1 text-slate-600">
           {isAdminView && <span className="font-medium">{r.requester_name}</span>}
           {isAdminView && " · "}
-          {KIND_LABEL[r.request_kind] ?? r.request_kind} · requested {new Date(r.created_at).toLocaleDateString()}
+          {KIND_LABEL[r.request_kind] ?? r.request_kind} · requested {formatDateOnlyEt(r.created_at)}
         </p>
         {partnerFacingDetail(r.status_detail) && <p className="mt-1 text-xs text-slate-500">{partnerFacingDetail(r.status_detail)}</p>}
         {!!requestProposals.length && (
@@ -110,6 +110,8 @@ export default async function PartnerPortalPage() {
               <a
                 key={p.id}
                 href={downloadUrls.get(p.id)}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="rounded border border-[#003049] px-3 py-1 text-xs font-medium text-[#003049] hover:bg-[#003049]/5"
               >
                 Download {p.kind.replace(/_/g, " ")} (v{p.version})

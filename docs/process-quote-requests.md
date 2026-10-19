@@ -96,7 +96,20 @@ const s = createServiceSupabase();
 const REQUEST_ID = "..."; // fill in
 const { data: request } = await s.from("quote_requests").select("*").eq("id", REQUEST_ID).single();
 const { data: property } = await s.from("properties").select("*").eq("id", request!.property_id!).single();
-const items = buildFetchQuoteItems(property!, { dwellingA: request!.dwelling_a, personalPropertyPct: request!.personal_property_pct }, REQUEST_ID);
+// A roofing-company referral runs under special rules (forced roof_year,
+// fixed wind-mit credits) — see lib/adapters/fetch-quoting.ts. Check this
+// every time; it's the request's own contact, not the property's.
+let isRoofingCompanyReferral = false;
+if (request!.contact_id) {
+  const { data: contact } = await s.from("industry_contacts").select("contact_type").eq("id", request!.contact_id).single();
+  isRoofingCompanyReferral = contact?.contact_type === "roofing_company";
+}
+const items = buildFetchQuoteItems(
+  property!,
+  { dwellingA: request!.dwelling_a, personalPropertyPct: request!.personal_property_pct },
+  REQUEST_ID,
+  isRoofingCompanyReferral
+);
 console.log(JSON.stringify(items));
 ```
 

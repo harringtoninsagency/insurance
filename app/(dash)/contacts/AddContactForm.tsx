@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState } from "react";
 import { addContactAction, type AddContactState } from "./actions";
 
 const inputClass = "w-full rounded border border-slate-300 px-2 py-1.5 text-sm";
@@ -26,11 +26,10 @@ export function AddContactForm({
   defaultType = "realtor",
   teamMembers,
 }: {
-  defaultType?: "realtor" | "mortgage_broker";
+  defaultType?: "realtor" | "mortgage_broker" | "roofing_company";
   teamMembers: TeamMember[];
 }) {
   const [state, formAction, isPending] = useActionState<AddContactState, FormData>(addContactAction, null);
-  const [referralPartnerAgent, setReferralPartnerAgent] = useState("");
 
   return (
     <form action={formAction} className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
@@ -41,6 +40,7 @@ export function AddContactForm({
         <select id="contact_type" name="contact_type" className={inputClass} defaultValue={defaultType}>
           <option value="realtor">Realtor</option>
           <option value="mortgage_broker">Mortgage broker</option>
+          <option value="roofing_company">Roofing company</option>
         </select>
       </div>
       <Field id="full_name" label="Full name" type="text" required />
@@ -51,31 +51,17 @@ export function AddContactForm({
       <Field id="license_number" label="License # (optional)" type="text" />
       <Field id="city" label="City (optional)" type="text" />
       <div className="space-y-1">
-        <label htmlFor="referral_partner_agent" className="text-xs text-slate-500">
+        <label htmlFor="referral_partner_agent_id" className="text-xs text-slate-500">
           Referral partner agent
         </label>
-        <select
-          id="referral_partner_agent"
-          name="referral_partner_agent"
-          className={inputClass}
-          value={referralPartnerAgent}
-          onChange={(e) => setReferralPartnerAgent(e.target.value)}
-        >
+        <select id="referral_partner_agent_id" name="referral_partner_agent_id" className={inputClass} defaultValue="">
           <option value="">— None selected —</option>
           {teamMembers.map((m) => (
-            <option key={m.id} value={m.full_name ?? m.email}>
+            <option key={m.id} value={m.id}>
               {m.full_name ?? m.email}
             </option>
           ))}
-          <option value="__other__">Other (type a name)</option>
         </select>
-        {referralPartnerAgent === "__other__" && (
-          <input
-            name="referral_partner_agent_other"
-            placeholder="Agent's name"
-            className={`${inputClass} mt-1`}
-          />
-        )}
       </div>
       <div className="space-y-1">
         <label htmlFor="source" className="text-xs text-slate-500">

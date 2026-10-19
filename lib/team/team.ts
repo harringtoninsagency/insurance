@@ -38,12 +38,16 @@ export interface TeamMember {
   active: boolean;
   /** True until the person has signed in once — i.e. the invite is still unused. */
   invitePending: boolean;
+  /** Headshot shown in a generated proposal PDF's "your agent" section — see lib/proposals/agent-photo.ts. */
+  photoPath: string | null;
+  /** Direct inbox shown in that same section; falls back to `email` (their login) when unset. */
+  personalEmail: string | null;
 }
 
 export async function listTeam(service: Service, agencyId: string): Promise<TeamMember[]> {
   const { data: profiles, error } = await service
     .from("profiles")
-    .select("id, email, full_name, role, active, created_at")
+    .select("id, email, full_name, role, active, photo_path, personal_email, created_at")
     .eq("agency_id", agencyId)
     .order("created_at", { ascending: true });
   if (error) throw new Error(`Couldn't load the team: ${error.message}`);
@@ -60,6 +64,8 @@ export async function listTeam(service: Service, agencyId: string): Promise<Team
     role: p.role,
     active: p.active,
     invitePending: !signedIn.get(p.id),
+    photoPath: p.photo_path,
+    personalEmail: p.personal_email,
   }));
 }
 
@@ -161,6 +167,13 @@ export async function setTeamMemberActive(service: Service, agencyId: string, ac
   const { error: banError } = await service.auth.admin.updateUserById(memberId, { ban_duration: active ? "none" : BAN_FOREVER });
   if (banError) return { ok: false, error: `Saved, but couldn't update their sign-in access: ${banError.message}` };
   return { ok: true };
+}
+
+/** The agent's own direct email shown in a generated proposal's "your agent" section — separate from `email` (their login, agency-issued). */
+export async function setPersonalEmail(service: Service, agencyId: string, memberId: string, personalEmail: string | null): Promise<TeamResult> {
+  if (personalEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(personalEmail)) return { ok: false, error: "Enter a valid email address." };
+  const { error } = await service.from("profiles").update({ personal_email: personalEmail }).eq("id", memberId).eq("agency_id", agencyId);
+  return error ? { ok: false, error: error.message } : { ok: true };
 }
 
 /** Emails a password-set/reset link — also how an unused invite is re-sent. */

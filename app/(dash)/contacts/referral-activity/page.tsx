@@ -6,27 +6,33 @@ interface PartnerRow {
   id: string;
   full_name: string;
   company_name: string | null;
-  contact_type: "realtor" | "mortgage_broker";
-  referral_partner_agent: string;
+  contact_type: "realtor" | "mortgage_broker" | "roofing_company";
+  referral_partner_agent_id: string;
   quoteCount: number;
 }
 
+const CONTACT_TYPE_LABEL = { realtor: "Realtor", mortgage_broker: "Mortgage broker", roofing_company: "Roofing company" } as const;
+
 /**
- * Cross-tabs referral partners (realtors/brokers) against the in-house agent
- * each relationship is assigned to on their directory entry
- * (`referral_partner_agent`, set from the Add Contact form). "Active" is
- * measured by how many quote_requests their referred properties produced —
- * the one concrete, countable signal this app already has for "they sent us
- * business," as opposed to just being in the directory.
+ * Cross-tabs referral partners against the in-house agent each relationship
+ * is assigned to on their directory entry (`referral_partner_agent_id`, set
+ * from the Add Contact form). "Active" is measured by how many
+ * quote_requests their referred properties produced — the one concrete,
+ * countable signal this app already has for "they sent us business," as
+ * opposed to just being in the directory.
  */
 export default async function ReferralActivityPage() {
   const supabase = await createServerSupabase();
 
-  const { data: partners, error } = await supabase
-    .from("industry_contacts")
-    .select("id, full_name, company_name, contact_type, referral_partner_agent")
-    .not("referral_partner_agent", "is", null)
-    .order("full_name");
+  const [{ data: partners, error }, { data: teamMembers }] = await Promise.all([
+    supabase
+      .from("industry_contacts")
+      .select("id, full_name, company_name, contact_type, referral_partner_agent_id")
+      .not("referral_partner_agent_id", "is", null)
+      .order("full_name"),
+    supabase.from("profiles").select("id, full_name, email"),
+  ]);
+  const agentNameById = new Map((teamMembers ?? []).map((m) => [m.id, m.full_name ?? m.email]));
 
   const partnerIds = (partners ?? []).map((p) => p.id);
   const { data: quoteRequests } = partnerIds.length
@@ -41,15 +47,15 @@ export default async function ReferralActivityPage() {
 
   const rows: PartnerRow[] = (partners ?? []).map((p) => ({
     ...p,
-    referral_partner_agent: p.referral_partner_agent!,
+    referral_partner_agent_id: p.referral_partner_agent_id!,
     quoteCount: countByContactId.get(p.id) ?? 0,
   }));
 
   const byAgent = new Map<string, PartnerRow[]>();
   for (const r of rows) {
-    const bucket = byAgent.get(r.referral_partner_agent);
+    const bucket = byAgent.get(r.referral_partner_agent_id);
     if (bucket) bucket.push(r);
-    else byAgent.set(r.referral_partner_agent, [r]);
+    else byAgent.set(r.referral_partner_agent_id, [r]);
   }
   for (const bucket of byAgent.values()) bucket.sort((a, b) => b.quoteCount - a.quoteCount);
 
@@ -78,13 +84,13 @@ export default async function ReferralActivityPage() {
       )}
 
       <div className="space-y-6">
-        {agents.map((agent) => {
-          const partnerRows = byAgent.get(agent)!;
+        {agents.map((agentId) => {
+          const partnerRows = byAgent.get(agentId)!;
           const total = partnerRows.reduce((sum, r) => sum + r.quoteCount, 0);
           return (
-            <div key={agent} className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+            <div key={agentId} className="overflow-hidden rounded-lg border border-slate-200 bg-white">
               <div className="flex items-center justify-between bg-[#003049] px-4 py-3 text-white">
-                <span className="font-medium">{agent}</span>
+                <span className="font-medium">{agentNameById.get(agentId) ?? "—"}</span>
                 <span className="text-xs text-white/80">{total} quote request{total === 1 ? "" : "s"} total</span>
               </div>
               <table className="w-full text-left text-sm">
@@ -105,7 +111,7 @@ export default async function ReferralActivityPage() {
                         </Link>
                       </td>
                       <td className="px-4 py-2 text-slate-600">{r.company_name ?? "—"}</td>
-                      <td className="px-4 py-2 text-slate-600">{r.contact_type === "realtor" ? "Realtor" : "Mortgage broker"}</td>
+                      <td className="px-4 py-2 text-slate-600">{CONTACT_TYPE_LABEL[r.contact_type]}</td>
                       <td className="px-4 py-2 text-slate-600">{r.quoteCount}</td>
                     </tr>
                   ))}

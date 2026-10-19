@@ -6,6 +6,12 @@ import { DoNotContactButton } from "./DoNotContactButton";
 
 const PAGE_SIZE = 200;
 
+const TYPE_PLURAL: Record<"realtor" | "mortgage_broker" | "roofing_company", string> = {
+  realtor: "realtors",
+  mortgage_broker: "mortgage brokers",
+  roofing_company: "roofing companies",
+};
+
 const SOURCE_LABEL: Record<string, string> = {
   manual: "Entered by hand",
   csv_import: "CSV / roster",
@@ -23,9 +29,12 @@ export default async function ContactsPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const params = await searchParams;
-  // Realtors and mortgage brokers are kept as separate views rather than one
-  // merged list — always exactly one active tab, defaulting to realtors.
-  const type = params.type === "mortgage_broker" ? "mortgage_broker" : "realtor";
+  // Realtors, mortgage brokers, and roofing companies are kept as separate
+  // views rather than one merged list — always exactly one active tab,
+  // defaulting to realtors.
+  const type =
+    params.type === "mortgage_broker" ? "mortgage_broker" : params.type === "roofing_company" ? "roofing_company" : "realtor";
+  const typeLabel = TYPE_PLURAL[type];
   // Strip characters that would break out of the PostgREST or() filter or act as LIKE wildcards.
   const q = (typeof params.q === "string" ? params.q : "").replace(/[,()%_*\\]/g, " ").trim();
 
@@ -44,18 +53,22 @@ export default async function ContactsPage({
     return supabase.from("industry_contacts").select("id", { count: "exact", head: true });
   }
 
-  const [{ data: contacts, error }, realtors, brokers, withEmail, withCell, { data: teamMembers }] = await Promise.all([
+  const [{ data: contacts, error }, realtors, brokers, roofingCompanies, withEmail, withCell, { data: teamMembers }] = await Promise.all([
     query,
     count((b) => b.eq("contact_type", "realtor")),
     count((b) => b.eq("contact_type", "mortgage_broker")),
+    count((b) => b.eq("contact_type", "roofing_company")),
     count((b) => b.not("email", "is", null)),
     count((b) => b.not("cell_phone", "is", null)),
     supabase.from("profiles").select("id, full_name, email").eq("active", true).order("full_name"),
   ]);
 
+  const agentNameById = new Map((teamMembers ?? []).map((m) => [m.id, m.full_name ?? m.email]));
+
   const stats = [
     { label: "Realtors", value: realtors.count ?? 0 },
     { label: "Mortgage brokers", value: brokers.count ?? 0 },
+    { label: "Roofing companies", value: roofingCompanies.count ?? 0 },
     { label: "With email", value: withEmail.count ?? 0 },
     { label: "With cell phone", value: withCell.count ?? 0 },
   ];
@@ -64,10 +77,10 @@ export default async function ContactsPage({
     <div className="space-y-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-[#003049]">Realtor &amp; mortgage broker directory</h1>
+          <h1 className="text-xl font-semibold text-[#003049]">Referral partner directory</h1>
           <div className="mb-2 mt-2 h-[3px] w-16 bg-[#F0FF00]" />
           <p className="text-sm text-slate-500">
-            Referral partners in Florida. Every contact records where it came from and what they&apos;ve agreed to
+            Realtors, mortgage brokers, and roofing companies in Florida. Every contact records where it came from and what they&apos;ve agreed to
             receive — texting a cell number requires written consent, so &quot;SMS consent&quot; stays blank until it&apos;s documented.
           </p>
         </div>
@@ -102,6 +115,7 @@ export default async function ContactsPage({
             [
               { value: "realtor", label: "Realtors", count: stats[0]!.value },
               { value: "mortgage_broker", label: "Mortgage brokers", count: stats[1]!.value },
+              { value: "roofing_company", label: "Roofing companies", count: stats[2]!.value },
             ] as const
           ).map((tab) => {
             const href = `/contacts?type=${tab.value}${q ? `&q=${encodeURIComponent(q)}` : ""}`;
@@ -125,7 +139,7 @@ export default async function ContactsPage({
           <input
             name="q"
             defaultValue={q}
-            placeholder={`Search ${type === "realtor" ? "realtors" : "mortgage brokers"} by name, company or email`}
+            placeholder={`Search ${typeLabel} by name, company or email`}
             className="w-full rounded border border-slate-300 px-2 py-1.5 sm:w-80"
           />
           <button type="submit" className="rounded border border-[#003049] px-3 py-1.5 font-medium text-[#003049]">
@@ -136,7 +150,7 @@ export default async function ContactsPage({
         {error && <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">{error.message}</p>}
         {!error && contacts?.length === 0 && (
           <p className="text-sm text-slate-500">
-            No {type === "realtor" ? "realtors" : "mortgage brokers"} match. Add one above, or import a list.
+            No {typeLabel} match. Add one above, or import a list.
           </p>
         )}
 
@@ -168,7 +182,9 @@ export default async function ContactsPage({
                     <td className="whitespace-nowrap px-4 py-3 text-slate-600">{c.cell_phone ?? "—"}</td>
                     <td className="whitespace-nowrap px-4 py-3 text-slate-600">{c.office_phone ?? "—"}</td>
                     <td className="px-4 py-3 text-slate-600">{c.email ?? "—"}</td>
-                    <td className="px-4 py-3 text-slate-600">{c.referral_partner_agent ?? "—"}</td>
+                    <td className="px-4 py-3 text-slate-600">
+                      {c.referral_partner_agent_id ? agentNameById.get(c.referral_partner_agent_id) ?? "—" : "—"}
+                    </td>
                     <td className="px-4 py-3 text-slate-600">
                       {SOURCE_LABEL[c.source] ?? c.source}
                       {c.source_detail && <div className="text-xs text-slate-400">{c.source_detail}</div>}

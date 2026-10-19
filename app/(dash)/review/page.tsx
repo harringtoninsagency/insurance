@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { loadEmailConfig } from "@/lib/email/config";
+import { formatDateTimeEt } from "@/lib/dates";
 import { ReviewActions } from "./ReviewActions";
 import { SendAllButton, SendOneButton } from "./SendButtons";
 
-const TYPE_LABEL = { realtor: "Realtor", mortgage_broker: "Mortgage broker" } as const;
+const TYPE_LABEL = { realtor: "Realtor", mortgage_broker: "Mortgage broker", roofing_company: "Roofing company" } as const;
 
 type Standing = { label: string; className: string };
 
@@ -114,7 +115,7 @@ export default async function ReviewPage() {
             <li key={item.id} className={card}>
               <div className="space-y-1">
                 <Details item={item} />
-                <p className="text-slate-500">Queued {new Date(item.created_at).toLocaleString()}</p>
+                <p className="text-slate-500">Queued {formatDateTimeEt(item.created_at)}</p>
               </div>
               <ReviewActions outreachId={item.id} />
             </li>
@@ -167,7 +168,7 @@ export default async function ReviewPage() {
                 >
                   {item.status === "bounced" ? "Bounced" : "Sent"}
                 </span>
-                {item.sent_at && <p className="mt-1">{new Date(item.sent_at).toLocaleString()}</p>}
+                {item.sent_at && <p className="mt-1">{formatDateTimeEt(item.sent_at)}</p>}
               </div>
             </li>
           ))}

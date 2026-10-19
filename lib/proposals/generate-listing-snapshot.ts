@@ -4,6 +4,10 @@ import { PDFDocument, StandardFonts, rgb, type PDFImage } from "pdf-lib";
 import { createServiceSupabase } from "@/lib/supabase/server";
 import { resolveCoverages } from "@/lib/quotes/coverage";
 import type { ReferralPartnerInfo } from "@/lib/quote-requests/referral-partner";
+import { resolveProposalAgent } from "@/lib/quote-requests/proposal-agent";
+import { todayEt, formatDateOnly } from "@/lib/dates";
+
+const AGENT_SECTION_HEIGHT = 58;
 
 export interface GenerateListingSnapshotResult {
   proposalId: string;
@@ -30,6 +34,9 @@ const WHITE = rgb(1, 1, 1);
 
 const CONTACT_EMAIL = "HarringtonAgency@brightway.com";
 const CONTACT_PHONE = "727-789-2200";
+// The agency's one office line with its one shared extension — every agent's
+// calls route through this same number/extension, not a per-agent one.
+const AGENT_PHONE = "727-789-2200 X.1";
 
 const BRANDING_DIR = join(process.cwd(), "assets", "branding");
 const CARRIER_LOGOS_DIR = join(BRANDING_DIR, "carriers");
@@ -58,7 +65,7 @@ const CARRIER_LOGO_FILES: Record<string, string> = {
 const STATIC_READINESS_ITEMS: Array<{ label: string; status: string }> = [
   { label: "Roof documentation", status: "Needs verification" },
   { label: "4-point inspection", status: "May be required" },
-  { label: "Wind mitigation", status: "Recommended" },
+  { label: "Wind mitigation", status: "May be required" },
   { label: "Flood insurance", status: "Separate review" },
   { label: "Final eligibility", status: "Underwriting review" },
 ];
@@ -92,9 +99,11 @@ function sniffImageKind(bytes: Uint8Array): "jpg" | "png" {
  */
 export async function generateListingSnapshotProposal(
   propertyId: string,
-  referralPartner?: ReferralPartnerInfo | null
+  referralPartner?: ReferralPartnerInfo | null,
+  quoteRequestId?: string | null
 ): Promise<GenerateListingSnapshotResult> {
   const supabase = createServiceSupabase();
+  const agent = await resolveProposalAgent(propertyId, quoteRequestId);
 
   const { data: property, error: propertyError } = await supabase
     .from("properties")
@@ -133,29 +142,19 @@ export async function generateListingSnapshotProposal(
   let y = PAGE_HEIGHT - MARGIN;
 
   // --- Header: logo (3x native size, per brand emphasis for this
-  // buyer-facing document) + contact line + yellow accent rule — same
-  // contact-line format/size and yellow-rule-to-title spacing as
-  // generate-indication.ts, so the two documents read as a matched set.
+  // buyer-facing document) + yellow accent rule.
   const logoWidth = Math.min(180 * 3, CONTENT_WIDTH);
   const logoHeight = logoWidth * (headerLogo.height / headerLogo.width);
   page.drawImage(headerLogo, { x: MARGIN, y: y - logoHeight, width: logoWidth, height: logoHeight });
   y -= logoHeight + 10;
-  page.drawText(`${CONTACT_PHONE}  ·  harringtonagency@brightway.com`, {
-    x: MARGIN,
-    y,
-    size: 11,
-    font: boldFont,
-    color: DEEP_BLUE,
-  });
-  y -= 18;
   page.drawRectangle({ x: MARGIN, y: y - 3, width: CONTENT_WIDTH, height: 3, color: BRIGHT_YELLOW });
-  y -= 22;
+  y -= 16;
 
   page.drawText("NEW LISTING INSURANCE SNAPSHOT", { x: MARGIN, y, size: 17, font: boldFont, color: DEEP_BLUE });
   y -= 16;
   page.drawText(property.address, { x: MARGIN, y, size: 11.5, font: boldFont, color: rgb(0x1c / 255, 0x64 / 255, 0x8b / 255) });
   y -= 12;
-  page.drawText(`Preliminary insurance review for a new MLS listing  |  Prepared ${new Date().toLocaleDateString()}`, {
+  page.drawText(`Preliminary insurance review for a new MLS listing  |  Prepared ${formatDateOnly(todayEt())}`, {
     x: MARGIN,
     y,
     size: 8.5,
@@ -306,7 +305,7 @@ export async function generateListingSnapshotProposal(
     page.drawText(basis, { x: indicationX + boxPad, y: boxY, size: 7.5, font, color: rgb(0.75, 0.79, 0.85) });
   }
 
-  y = rowTop - rowHeight - 10;
+  y = rowTop - rowHeight - 4;
 
   function drawSectionHeader(label: string) {
     page.drawText(label, { x: MARGIN, y, size: 10.5, font: boldFont, color: DEEP_BLUE });
@@ -333,9 +332,110 @@ export async function generateListingSnapshotProposal(
     page.drawText(item.label, { x: x + 10, y: y - 13, size: 7, font: boldFont, color: PERIWINKLE_GREY });
     page.drawText(item.value, { x: x + 10, y: y - 25, size: 9.5, font: boldFont, color: DEEP_BLUE });
   });
-  y -= glanceHeight + 10;
+  y -= glanceHeight + 6;
 
-  // --- Insurance readiness: 2-column checklist ---
+  // --- Preliminary carrier indications: a fixed 5-row table of the most
+  // competitive options on file (cheapest first, any form), so it reads the
+  // same regardless of how many carriers actually priced it. The 5th row is
+  // always the customizable one — a producer's own manual entry
+  // (properties.manual_carrier_name/manual_carrier_premium) for a company
+  // that didn't pull a result through Fetch, blank until they fill it in.
+  drawSectionHeader("PRELIMINARY CARRIER INDICATIONS");
+  const sortedQuotes = [...((quotes ?? []) as QuoteRow[])].sort((a, b) => Number(a.premium) - Number(b.premium));
+  const topQuotes = sortedQuotes.slice(0, 4);
+
+  interface CarrierTableRow {
+    carrier: string;
+    form: string | null;
+    premium: number | null;
+    isManual: boolean;
+    isBlank: boolean;
+  }
+  const tableRows: CarrierTableRow[] = [];
+  for (let i = 0; i < 4; i++) {
+    const q = topQuotes[i];
+    tableRows.push(q ? { carrier: q.carrier, form: q.form_type, premium: Number(q.premium), isManual: false, isBlank: false } : { carrier: "", form: null, premium: null, isManual: false, isBlank: true });
+  }
+  tableRows.push(
+    property.manual_carrier_name
+      ? { carrier: property.manual_carrier_name, form: null, premium: property.manual_carrier_premium != null ? Number(property.manual_carrier_premium) : null, isManual: true, isBlank: false }
+      : { carrier: "", form: null, premium: null, isManual: true, isBlank: true }
+  );
+
+  const colCarrier = MARGIN + 10;
+  const colForm = MARGIN + 320;
+  const colPremium = MARGIN + 420;
+  const tableRowHeight = 16;
+  const logoMaxWidth = 65;
+  const logoMaxHeight = 12;
+
+  const carrierLogos = new Map<string, PDFImage>();
+  for (const carrier of new Set(tableRows.filter((r) => !r.isBlank).map((r) => r.carrier))) {
+    const filename = CARRIER_LOGO_FILES[carrier];
+    if (!filename) continue;
+    const logoPath = join(CARRIER_LOGOS_DIR, filename);
+    if (!existsSync(logoPath)) continue;
+    carrierLogos.set(carrier, await pdfDoc.embedPng(readFileSync(logoPath)));
+  }
+
+  page.drawRectangle({
+    x: MARGIN,
+    y: y - tableRowHeight,
+    width: CONTENT_WIDTH,
+    height: tableRowHeight,
+    color: DEEP_BLUE,
+    borderColor: PERIWINKLE_GREY,
+    borderWidth: 0.75,
+  });
+  page.drawText("CARRIER", { x: colCarrier, y: y - 12, size: 9, font: boldFont, color: WHITE });
+  page.drawText("FORM", { x: colForm, y: y - 12, size: 9, font: boldFont, color: WHITE });
+  page.drawText("ANNUAL", { x: colPremium, y: y - 12, size: 9, font: boldFont, color: WHITE });
+  y -= tableRowHeight;
+
+  tableRows.forEach((row, i) => {
+    const rowTop2 = y;
+    if (i === 0 && !row.isBlank) {
+      page.drawRectangle({ x: MARGIN, y: rowTop2 - tableRowHeight, width: CONTENT_WIDTH, height: tableRowHeight, color: CREAM });
+      page.drawRectangle({ x: MARGIN, y: rowTop2 - tableRowHeight, width: 3, height: tableRowHeight, color: BRIGHT_YELLOW });
+    }
+    page.drawRectangle({
+      x: MARGIN,
+      y: rowTop2 - tableRowHeight,
+      width: CONTENT_WIDTH,
+      height: tableRowHeight,
+      borderColor: PERIWINKLE_GREY,
+      borderWidth: 0.5,
+      borderDashArray: row.isBlank ? [3, 3] : undefined,
+    });
+    const textY = rowTop2 - 12;
+    const carrierFont = i === 0 && !row.isBlank ? boldFont : font;
+
+    if (row.isBlank) {
+      page.drawText(row.isManual ? "— add a company by hand —" : "—", { x: colCarrier, y: textY, size: 9, font: italicFont, color: PERIWINKLE_GREY });
+    } else {
+      let carrierTextX = colCarrier;
+      const logo = carrierLogos.get(row.carrier);
+      if (logo) {
+        let lw = logoMaxWidth;
+        let lh = lw * (logo.height / logo.width);
+        if (lh > logoMaxHeight) {
+          lh = logoMaxHeight;
+          lw = lh * (logo.width / logo.height);
+        }
+        page.drawImage(logo, { x: colCarrier, y: rowTop2 - tableRowHeight / 2 - lh / 2, width: lw, height: lh });
+        carrierTextX = colCarrier + logoMaxWidth + 8;
+      }
+      page.drawText(row.carrier, { x: carrierTextX, y: textY, size: 9.5, font: carrierFont, color: BLACK });
+      page.drawText(row.form ?? "-", { x: colForm, y: textY, size: 9.5, font: carrierFont, color: BLACK });
+      page.drawText(row.premium != null ? formatCurrency(row.premium) : "-", { x: colPremium, y: textY, size: 9.5, font: carrierFont, color: DEEP_BLUE });
+    }
+    y -= tableRowHeight;
+  });
+  y -= 6;
+
+  // --- Insurance readiness: 2-column checklist — kept near the bottom of
+  // the page, after the carrier table, rather than up near the property
+  // facts. ---
   drawSectionHeader("INSURANCE READINESS");
   const marketsFound = !!quotes?.length;
   const readinessItems = [
@@ -344,9 +444,9 @@ export async function generateListingSnapshotProposal(
   ];
   const colGap = 24;
   const readinessColWidth = (CONTENT_WIDTH - colGap) / 2;
-  const readinessRowHeight = 16;
+  const readinessRowHeight = 13;
   const rowsPerCol = Math.ceil(readinessItems.length / 2);
-  const readinessBoxTop = y + 8;
+  const readinessBoxTop = y + 6;
   const readinessBoxBottom = y - rowsPerCol * readinessRowHeight + 2;
   page.drawRectangle({
     x: MARGIN,
@@ -367,136 +467,41 @@ export async function generateListingSnapshotProposal(
     const statusX = x + 130;
     page.drawText(item.status, { x: statusX, y: itemY - 7, size: 9, font: boldFont, color: DEEP_BLUE });
   });
-  // +4 left the readiness box's bottom border close enough to the next
-  // section header that its bold caps poked above the border line; +14
-  // gives it clear room to breathe.
-  y -= rowsPerCol * readinessRowHeight + 14;
+  y -= rowsPerCol * readinessRowHeight + 8;
 
-  // --- Preliminary carrier indications table ---
-  drawSectionHeader("PRELIMINARY CARRIER INDICATIONS");
-  const ho3Quotes = ((quotes ?? []) as QuoteRow[]).filter((q) => q.form_type === "HO3");
-  const dp3Quotes = ((quotes ?? []) as QuoteRow[]).filter((q) => q.form_type === "DP3");
-  const topHo3 = ho3Quotes.slice(0, 5);
-  const additionalHo3 = ho3Quotes.slice(5);
-  const topDp3 = dp3Quotes.slice(0, 3);
-
-  const colCarrier = MARGIN + 10;
-  const colForm = MARGIN + 320;
-  const colPremium = MARGIN + 420;
-  const tableRowHeight = 18;
-  const logoMaxWidth = 65;
-  const logoMaxHeight = 12;
-
-  const carrierLogos = new Map<string, PDFImage>();
-  for (const carrier of new Set(topHo3.map((q) => q.carrier))) {
-    const filename = CARRIER_LOGO_FILES[carrier];
-    if (!filename) continue;
-    const logoPath = join(CARRIER_LOGOS_DIR, filename);
-    if (!existsSync(logoPath)) continue;
-    carrierLogos.set(carrier, await pdfDoc.embedPng(readFileSync(logoPath)));
-  }
-
-  // Reserve space below the table for the condensed lines (now up to
-  // MAX_CONDENSED_ROWS wrapped rows + a "+N more" line per label, not just
-  // one line each), the "have an interested buyer" callout, and the footer
-  // (which is pinned to a fixed position near the bottom of the page, not
-  // flowing with the content above it) — so a longer carrier list degrades
-  // by skipping table rows rather than the callout overlapping the footer.
-  const FOOTER_RESERVE = 170;
-
-  page.drawRectangle({
-    x: MARGIN,
-    y: y - tableRowHeight,
-    width: CONTENT_WIDTH,
-    height: tableRowHeight,
-    color: DEEP_BLUE,
-    borderColor: PERIWINKLE_GREY,
-    borderWidth: 0.75,
-  });
-  page.drawText("CARRIER", { x: colCarrier, y: y - 13.5, size: 9, font: boldFont, color: WHITE });
-  page.drawText("FORM", { x: colForm, y: y - 13.5, size: 9, font: boldFont, color: WHITE });
-  page.drawText("ANNUAL", { x: colPremium, y: y - 13.5, size: 9, font: boldFont, color: WHITE });
-  y -= tableRowHeight;
-
-  topHo3.forEach((quote, i) => {
-    if (y < MARGIN + FOOTER_RESERVE) return; // stay on one page
-    const rowTop2 = y;
-    if (i === 0) {
-      page.drawRectangle({ x: MARGIN, y: rowTop2 - tableRowHeight, width: CONTENT_WIDTH, height: tableRowHeight, color: CREAM });
-      page.drawRectangle({ x: MARGIN, y: rowTop2 - tableRowHeight, width: 3, height: tableRowHeight, color: BRIGHT_YELLOW });
-    }
-    page.drawRectangle({ x: MARGIN, y: rowTop2 - tableRowHeight, width: CONTENT_WIDTH, height: tableRowHeight, borderColor: PERIWINKLE_GREY, borderWidth: 0.5 });
-    const textY = rowTop2 - 13.5;
-    const carrierFont = i === 0 ? boldFont : font;
-
-    let carrierTextX = colCarrier;
-    const logo = carrierLogos.get(quote.carrier);
-    if (logo) {
-      let lw = logoMaxWidth;
-      let lh = lw * (logo.height / logo.width);
-      if (lh > logoMaxHeight) {
-        lh = logoMaxHeight;
-        lw = lh * (logo.width / logo.height);
-      }
-      page.drawImage(logo, { x: colCarrier, y: rowTop2 - tableRowHeight / 2 - lh / 2, width: lw, height: lh });
-      carrierTextX = colCarrier + logoMaxWidth + 8;
-    }
-    page.drawText(quote.carrier, { x: carrierTextX, y: textY, size: 9.5, font: carrierFont, color: BLACK });
-    page.drawText(quote.form_type ?? "-", { x: colForm, y: textY, size: 9.5, font: carrierFont, color: BLACK });
-    page.drawText(formatCurrency(Number(quote.premium)), { x: colPremium, y: textY, size: 9.5, font: carrierFont, color: DEEP_BLUE });
-    y -= tableRowHeight;
-  });
-
-  // 4 left less vertical room than the condensed text's own ascender
-  // height, so its first line visually overlapped the table's bottom
-  // border instead of sitting below it — 12 clears it.
-  y -= 12;
-  const condensedSize = 8;
-  const condensedColor = rgb(0.4, 0.45, 0.5);
-  const condensedSeparator = "  |  ";
-  const MAX_CONDENSED_ROWS = 2;
-
-  /**
-   * Wraps the carrier/premium segments to fit the page width instead of
-   * drawing one unbroken line that ran off the right edge — previously
-   * cutting a carrier name or premium off mid-word for a long list. Capped
-   * at MAX_CONDENSED_ROWS real rows of carriers, with any remainder
-   * summarized on its own short "+N more" line, so a very long list can't
-   * keep growing and push the callout box into the fixed-position footer.
-   */
-  function drawCondensedLine(label: string, condensedQuotes: QuoteRow[]) {
-    if (!condensedQuotes.length) return;
-    const segments = condensedQuotes.map((q) => `${q.carrier} ${formatCurrency(Number(q.premium))}`);
-
-    const rows: string[][] = [[]];
-    for (const segment of segments) {
-      const row = rows[rows.length - 1]!;
-      const candidateText = [...row, segment].join(condensedSeparator);
-      const prefixedText = rows.length === 1 ? `${label}: ${candidateText}` : candidateText;
-      if (row.length > 0 && font.widthOfTextAtSize(prefixedText, condensedSize) > CONTENT_WIDTH) {
-        rows.push([segment]);
-      } else {
-        row.push(segment);
-      }
-    }
-
-    const shownRows = rows.slice(0, MAX_CONDENSED_ROWS);
-    const shownCount = shownRows.reduce((n, row) => n + row.length, 0);
-    const hiddenCount = segments.length - shownCount;
-
-    shownRows.forEach((row, i) => {
-      const text = i === 0 ? `${label}: ${row.join(condensedSeparator)}` : row.join(condensedSeparator);
-      page.drawText(text, { x: MARGIN, y, size: condensedSize, font, color: condensedColor });
-      y -= 11;
+  // --- Your agent: photo, extension off the shared office line, and their
+  // own direct email — resolved by lib/quote-requests/proposal-agent.ts. ---
+  if (agent) {
+    const agentBoxHeight = AGENT_SECTION_HEIGHT;
+    const photoSize = 38;
+    const boxTop = y;
+    page.drawRectangle({
+      x: MARGIN,
+      y: boxTop - agentBoxHeight,
+      width: CONTENT_WIDTH,
+      height: agentBoxHeight,
+      color: CREAM,
+      borderColor: PERIWINKLE_GREY,
+      borderWidth: 0.75,
     });
-    if (hiddenCount > 0) {
-      page.drawText(`+${hiddenCount} more`, { x: MARGIN, y, size: condensedSize, font: italicFont, color: condensedColor });
-      y -= 11;
+    let agentTextX = MARGIN + 10;
+    if (agent.photoPath) {
+      const { data: photoBlob } = await supabase.storage.from("agent-photos").download(agent.photoPath);
+      if (photoBlob) {
+        const photoBytes = new Uint8Array(await photoBlob.arrayBuffer());
+        const photoImage = sniffImageKind(photoBytes) === "png" ? await pdfDoc.embedPng(photoBytes) : await pdfDoc.embedJpg(photoBytes);
+        page.drawImage(photoImage, { x: agentTextX, y: boxTop - agentBoxHeight + (agentBoxHeight - photoSize) / 2, width: photoSize, height: photoSize });
+        agentTextX += photoSize + 12;
+      }
     }
+    let agentTextY = boxTop - 16;
+    page.drawText("YOUR AGENT", { x: agentTextX, y: agentTextY, size: 7.5, font: boldFont, color: PERIWINKLE_GREY });
+    agentTextY -= 14;
+    page.drawText(agent.name, { x: agentTextX, y: agentTextY, size: 10.5, font: boldFont, color: DEEP_BLUE });
+    agentTextY -= 13;
+    page.drawText(`${AGENT_PHONE}  ·  ${agent.email}`, { x: agentTextX, y: agentTextY, size: 8.5, font, color: BLACK });
+    y -= agentBoxHeight + 5;
   }
-  drawCondensedLine("Additional HO3 indications", additionalHo3);
-  drawCondensedLine("DP3 indications", topDp3);
-  y -= 8;
 
   // --- "Have an interested buyer?" callout ---
   const calloutHeight = 42;
