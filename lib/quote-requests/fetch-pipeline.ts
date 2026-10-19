@@ -116,6 +116,11 @@ function hasEligibilityWarning(r: RawFetchRate): boolean {
 function isUsableRate(r: RawFetchRate): boolean {
   if (r.status !== "success") return false;
   if (!r.form_type || EXCLUDED_FORMS.has(r.form_type.toUpperCase())) return false;
+  // Frontline's DP3 product is excluded from every proposal going forward —
+  // not a data-quality issue like the eligibility-warning check below, just
+  // a standing decision not to quote/show it. Frontline's HO3 quotes are
+  // unaffected.
+  if (r.carrier === "Frontline" && r.form_type.toUpperCase() === "DP3") return false;
   if (hasEligibilityWarning(r)) return false;
   const premium = r.premium != null ? Number(String(r.premium).replace(/,/g, "")) : null;
   return premium != null && premium > 0;
