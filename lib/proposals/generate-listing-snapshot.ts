@@ -425,11 +425,12 @@ export async function generateListingSnapshotProposal(
   // --- Bottom section, 3 columns: a reserved photo area (blank until an
   // agent headshot is uploaded on the Team page), the agent's info stacked
   // vertically, and "Have an interested buyer?" — resolved by
-  // lib/quote-requests/proposal-agent.ts. Anchored just above the footer
-  // rather than following straight on from the carrier table, so it sits
-  // at the bottom of the page instead of trailing whatever whitespace is
-  // left above it.
+  // lib/quote-requests/proposal-agent.ts. Follows directly on from the
+  // carrier table (now the last content section, since Insurance Readiness
+  // was removed) rather than being pinned to the footer, which otherwise
+  // left a wide gap of empty whitespace between the table and this box.
   const footerY = MARGIN + 24;
+  y -= 16;
   const bottomBoxHeight = AGENT_SECTION_HEIGHT;
   const photoSize = 54;
   const photoX = MARGIN + 10;
@@ -437,7 +438,7 @@ export async function generateListingSnapshotProposal(
   const col2Width = 150;
   const divider2X = col2X + col2Width + 10;
   const col3X = divider2X + 14;
-  const boxTop = footerY + 14 + bottomBoxHeight;
+  const boxTop = y;
   page.drawRectangle({
     x: MARGIN,
     y: boxTop - bottomBoxHeight,
