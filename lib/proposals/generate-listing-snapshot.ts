@@ -6,8 +6,12 @@ import { resolveCoverages } from "@/lib/quotes/coverage";
 import type { ReferralPartnerInfo } from "@/lib/quote-requests/referral-partner";
 import { resolveProposalAgent } from "@/lib/quote-requests/proposal-agent";
 import { todayEt, formatDateOnly } from "@/lib/dates";
+import { titleCaseAddress } from "@/lib/address/title-case";
 
-const AGENT_SECTION_HEIGHT = 58;
+const AGENT_SECTION_HEIGHT = 76;
+// Margin above the logo specifically (1/2in) — independent of the body
+// MARGIN below, which stays as-is for left/right/bottom content.
+const LOGO_TOP_MARGIN = 36;
 
 export interface GenerateListingSnapshotResult {
   proposalId: string;
@@ -138,7 +142,7 @@ export async function generateListingSnapshotProposal(
   const headerLogoBytes = readFileSync(join(BRANDING_DIR, "brightway-harrington-horizontal-deep-blue.png"));
   const headerLogo = await pdfDoc.embedPng(headerLogoBytes);
 
-  let y = PAGE_HEIGHT - MARGIN;
+  let y = PAGE_HEIGHT - LOGO_TOP_MARGIN;
 
   // --- Header: logo (3x native size, per brand emphasis for this
   // buyer-facing document) + yellow accent rule.
@@ -151,7 +155,7 @@ export async function generateListingSnapshotProposal(
 
   page.drawText("NEW LISTING INSURANCE SNAPSHOT", { x: MARGIN, y, size: 17, font: boldFont, color: DEEP_BLUE });
   y -= 16;
-  page.drawText(property.address, { x: MARGIN, y, size: 11.5, font: boldFont, color: rgb(0x1c / 255, 0x64 / 255, 0x8b / 255) });
+  page.drawText(titleCaseAddress(property.address), { x: MARGIN, y, size: 11.5, font: boldFont, color: rgb(0x1c / 255, 0x64 / 255, 0x8b / 255) });
   y -= 12;
   page.drawText(`Preliminary insurance review for a new MLS listing  |  Prepared ${formatDateOnly(todayEt())}`, {
     x: MARGIN,
@@ -471,15 +475,19 @@ export async function generateListingSnapshotProposal(
   // --- Bottom section, 3 columns: a reserved photo area (blank until an
   // agent headshot is uploaded on the Team page), the agent's info stacked
   // vertically, and "Have an interested buyer?" — resolved by
-  // lib/quote-requests/proposal-agent.ts. ---
+  // lib/quote-requests/proposal-agent.ts. Anchored just above the footer
+  // rather than following straight on from Insurance Readiness, so it sits
+  // at the bottom of the page instead of trailing whatever whitespace is
+  // left above it.
+  const footerY = MARGIN + 24;
   const bottomBoxHeight = AGENT_SECTION_HEIGHT;
-  const photoSize = 42;
+  const photoSize = 54;
   const photoX = MARGIN + 10;
   const col2X = photoX + photoSize + 12;
-  const col2Width = 140;
+  const col2Width = 150;
   const divider2X = col2X + col2Width + 10;
   const col3X = divider2X + 14;
-  const boxTop = y;
+  const boxTop = footerY + 14 + bottomBoxHeight;
   page.drawRectangle({
     x: MARGIN,
     y: boxTop - bottomBoxHeight,
@@ -508,28 +516,25 @@ export async function generateListingSnapshotProposal(
 
   // Column 2: your agent, one line each.
   if (agent) {
-    let agentTextY = boxTop - 14;
-    page.drawText("YOUR AGENT", { x: col2X, y: agentTextY, size: 7.5, font: boldFont, color: PERIWINKLE_GREY });
-    agentTextY -= 13;
-    page.drawText(agent.name, { x: col2X, y: agentTextY, size: 10, font: boldFont, color: DEEP_BLUE });
-    agentTextY -= 12;
-    page.drawText(AGENT_PHONE, { x: col2X, y: agentTextY, size: 8.5, font, color: BLACK });
-    agentTextY -= 12;
-    page.drawText(agent.email, { x: col2X, y: agentTextY, size: 8.5, font, color: BLACK });
+    let agentTextY = boxTop - 18;
+    page.drawText("YOUR AGENT", { x: col2X, y: agentTextY, size: 8.5, font: boldFont, color: PERIWINKLE_GREY });
+    agentTextY -= 16;
+    page.drawText(agent.name, { x: col2X, y: agentTextY, size: 12, font: boldFont, color: DEEP_BLUE });
+    agentTextY -= 15;
+    page.drawText(AGENT_PHONE, { x: col2X, y: agentTextY, size: 9.5, font, color: BLACK });
+    agentTextY -= 14;
+    page.drawText(agent.email, { x: col2X, y: agentTextY, size: 9.5, font, color: BLACK });
   }
 
   // Column 3: "Have an interested buyer?" callout.
-  let col3TextY = boxTop - 13;
-  page.drawText("HAVE AN INTERESTED BUYER?", { x: col3X, y: col3TextY, size: 8.5, font: boldFont, color: DEEP_BLUE });
-  col3TextY -= 10;
-  page.drawText("Email us the buyer's name, phone number and email", { x: col3X, y: col3TextY, size: 7.5, font, color: rgb(0.3, 0.35, 0.4) });
-  col3TextY -= 9;
-  page.drawText("for a personalized quote.", { x: col3X, y: col3TextY, size: 7.5, font, color: rgb(0.3, 0.35, 0.4) });
-
-  y -= bottomBoxHeight;
+  let col3TextY = boxTop - 17;
+  page.drawText("HAVE AN INTERESTED BUYER?", { x: col3X, y: col3TextY, size: 9.5, font: boldFont, color: DEEP_BLUE });
+  col3TextY -= 13;
+  page.drawText("Email us the buyer's name, phone number and email", { x: col3X, y: col3TextY, size: 8.5, font, color: rgb(0.3, 0.35, 0.4) });
+  col3TextY -= 11;
+  page.drawText("for a personalized quote.", { x: col3X, y: col3TextY, size: 8.5, font, color: rgb(0.3, 0.35, 0.4) });
 
   // --- Footer ---
-  const footerY = MARGIN + 24;
   page.drawRectangle({ x: MARGIN, y: footerY, width: CONTENT_WIDTH, height: 0.75, color: PERIWINKLE_GREY });
   page.drawText(
     "Indicative estimates only, based on a placeholder applicant profile. Final premiums require a full application and",

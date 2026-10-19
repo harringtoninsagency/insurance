@@ -6,6 +6,7 @@ import { coverageLines, resolveCoverages } from "@/lib/quotes/coverage";
 import type { ReferralPartnerInfo } from "@/lib/quote-requests/referral-partner";
 import { resolveProposalAgent } from "@/lib/quote-requests/proposal-agent";
 import { todayEt, formatDateOnly } from "@/lib/dates";
+import { titleCaseAddress } from "@/lib/address/title-case";
 
 function sniffImageKind(bytes: Uint8Array): "jpg" | "png" {
   if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) return "png";
@@ -145,7 +146,7 @@ export async function generateIndicationProposal(
 
   page.drawText("Insurance Indication Summary", { x: MARGIN, y, size: 19, font: boldFont, color: DEEP_BLUE });
   y -= 22;
-  page.drawText(property.address, { x: MARGIN, y, size: 12, font, color: DEEP_BLUE });
+  page.drawText(titleCaseAddress(property.address), { x: MARGIN, y, size: 12, font, color: DEEP_BLUE });
   y -= 15;
   page.drawText(`Prepared by The Harrington Agency  ·  ${formatDateOnly(todayEt())}`, {
     x: MARGIN,
@@ -236,7 +237,7 @@ export async function generateIndicationProposal(
   // form and usually cheaper, so it shouldn't read as the top pick.
   const bestQuoteId = (displayQuotes.find((q) => q.form_type === "HO3") ?? displayQuotes[0])!.id;
 
-  const propertyAddress = property.address;
+  const propertyAddress = titleCaseAddress(property.address);
   const formLabel = (form: string | null) => (form === "DP3" ? "DP3 (rental property)" : (form ?? "-"));
 
   function drawTableHeader() {
