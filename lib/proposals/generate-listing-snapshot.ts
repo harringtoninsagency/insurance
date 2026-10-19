@@ -145,16 +145,18 @@ export async function generateListingSnapshotProposal(
   let y = PAGE_HEIGHT - LOGO_TOP_MARGIN;
 
   // --- Header: logo (3x native size, per brand emphasis for this
-  // buyer-facing document) + yellow accent rule.
+  // buyer-facing document), title, then the yellow accent rule below the
+  // title (not between the logo and title).
   const logoWidth = Math.min(180 * 3, CONTENT_WIDTH);
   const logoHeight = logoWidth * (headerLogo.height / headerLogo.width);
   page.drawImage(headerLogo, { x: MARGIN, y: y - logoHeight, width: logoWidth, height: logoHeight });
-  y -= logoHeight + 6;
+  y -= logoHeight + 14;
+
+  page.drawText("NEW LISTING INSURANCE SNAPSHOT", { x: MARGIN, y, size: 17, font: boldFont, color: DEEP_BLUE });
+  y -= 10;
   page.drawRectangle({ x: MARGIN, y: y - 3, width: CONTENT_WIDTH, height: 3, color: BRIGHT_YELLOW });
   y -= 14;
 
-  page.drawText("NEW LISTING INSURANCE SNAPSHOT", { x: MARGIN, y, size: 17, font: boldFont, color: DEEP_BLUE });
-  y -= 16;
   page.drawText(titleCaseAddress(property.address), { x: MARGIN, y, size: 11.5, font: boldFont, color: rgb(0x1c / 255, 0x64 / 255, 0x8b / 255) });
   y -= 12;
   page.drawText(`Preliminary insurance review for a new MLS listing  |  Prepared ${formatDateOnly(todayEt())}`, {
