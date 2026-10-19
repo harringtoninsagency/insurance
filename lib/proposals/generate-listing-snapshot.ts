@@ -32,8 +32,6 @@ const AMBER = rgb(0xd9 / 255, 0x8c / 255, 0x0d / 255);
 const BLACK = rgb(0, 0, 0);
 const WHITE = rgb(1, 1, 1);
 
-const CONTACT_EMAIL = "HarringtonAgency@brightway.com";
-const CONTACT_PHONE = "727-789-2200";
 // The agency's one office line with its one shared extension — every agent's
 // calls route through this same number/extension, not a per-agent one.
 const AGENT_PHONE = "727-789-2200 X.1";
@@ -470,15 +468,17 @@ export async function generateListingSnapshotProposal(
   });
   y -= rowsPerCol * readinessRowHeight + 8;
 
-  // --- Bottom section: your agent (photo, shared-office-line extension,
-  // personal email — resolved by lib/quote-requests/proposal-agent.ts) on
-  // the left, "Have an interested buyer?" on the right, as one combined box
-  // instead of two stacked ones. ---
+  // --- Bottom section, 3 columns: a reserved photo area (blank until an
+  // agent headshot is uploaded on the Team page), the agent's info stacked
+  // vertically, and "Have an interested buyer?" — resolved by
+  // lib/quote-requests/proposal-agent.ts. ---
   const bottomBoxHeight = AGENT_SECTION_HEIGHT;
-  const photoSize = 40;
-  const leftWidth = 250;
-  const dividerX = MARGIN + leftWidth + 10;
-  const rightX = dividerX + 14;
+  const photoSize = 42;
+  const photoX = MARGIN + 10;
+  const col2X = photoX + photoSize + 12;
+  const col2Width = 140;
+  const divider2X = col2X + col2Width + 10;
+  const col3X = divider2X + 14;
   const boxTop = y;
   page.drawRectangle({
     x: MARGIN,
@@ -489,45 +489,42 @@ export async function generateListingSnapshotProposal(
     borderColor: BRIGHT_YELLOW,
     borderWidth: 1.5,
   });
-  page.drawRectangle({
-    x: dividerX,
-    y: boxTop - bottomBoxHeight + 10,
-    width: 0.75,
-    height: bottomBoxHeight - 20,
-    color: PERIWINKLE_GREY,
-  });
+  const dividerY = boxTop - bottomBoxHeight + 10;
+  const dividerHeight = bottomBoxHeight - 20;
+  page.drawRectangle({ x: divider2X, y: dividerY, width: 0.75, height: dividerHeight, color: PERIWINKLE_GREY });
 
-  // Left: your agent.
-  if (agent) {
-    let agentTextX = MARGIN + 10;
-    if (agent.photoPath) {
-      const { data: photoBlob } = await supabase.storage.from("agent-photos").download(agent.photoPath);
-      if (photoBlob) {
-        const photoBytes = new Uint8Array(await photoBlob.arrayBuffer());
-        const photoImage = sniffImageKind(photoBytes) === "png" ? await pdfDoc.embedPng(photoBytes) : await pdfDoc.embedJpg(photoBytes);
-        page.drawImage(photoImage, { x: agentTextX, y: boxTop - bottomBoxHeight + (bottomBoxHeight - photoSize) / 2, width: photoSize, height: photoSize });
-        agentTextX += photoSize + 12;
-      }
+  // Column 1: agent photo — a reserved, bordered area whether or not one's
+  // been uploaded yet, so the layout doesn't shift once it is.
+  const photoY = boxTop - bottomBoxHeight + (bottomBoxHeight - photoSize) / 2;
+  page.drawRectangle({ x: photoX, y: photoY, width: photoSize, height: photoSize, color: WHITE, borderColor: PERIWINKLE_GREY, borderWidth: 0.75 });
+  if (agent?.photoPath) {
+    const { data: photoBlob } = await supabase.storage.from("agent-photos").download(agent.photoPath);
+    if (photoBlob) {
+      const photoBytes = new Uint8Array(await photoBlob.arrayBuffer());
+      const photoImage = sniffImageKind(photoBytes) === "png" ? await pdfDoc.embedPng(photoBytes) : await pdfDoc.embedJpg(photoBytes);
+      page.drawImage(photoImage, { x: photoX, y: photoY, width: photoSize, height: photoSize });
     }
-    let agentTextY = boxTop - 16;
-    page.drawText("YOUR AGENT", { x: agentTextX, y: agentTextY, size: 7.5, font: boldFont, color: PERIWINKLE_GREY });
-    agentTextY -= 14;
-    page.drawText(agent.name, { x: agentTextX, y: agentTextY, size: 10.5, font: boldFont, color: DEEP_BLUE });
-    agentTextY -= 13;
-    page.drawText(`${AGENT_PHONE}  ·  ${agent.email}`, { x: agentTextX, y: agentTextY, size: 8.5, font, color: BLACK });
   }
 
-  // Right: "Have an interested buyer?" callout.
-  let rightTextY = boxTop - 13;
-  page.drawText("HAVE AN INTERESTED BUYER?", { x: rightX, y: rightTextY, size: 8.5, font: boldFont, color: DEEP_BLUE });
-  rightTextY -= 10;
-  page.drawText("Email us the buyer's name, phone number and email", { x: rightX, y: rightTextY, size: 7.5, font, color: rgb(0.3, 0.35, 0.4) });
-  rightTextY -= 9;
-  page.drawText("for a personalized quote.", { x: rightX, y: rightTextY, size: 7.5, font, color: rgb(0.3, 0.35, 0.4) });
-  rightTextY -= 11;
-  page.drawText(CONTACT_EMAIL, { x: rightX, y: rightTextY, size: 9, font: boldFont, color: DEEP_BLUE });
-  rightTextY -= 11;
-  page.drawText(CONTACT_PHONE, { x: rightX, y: rightTextY, size: 9, font: boldFont, color: DEEP_BLUE });
+  // Column 2: your agent, one line each.
+  if (agent) {
+    let agentTextY = boxTop - 14;
+    page.drawText("YOUR AGENT", { x: col2X, y: agentTextY, size: 7.5, font: boldFont, color: PERIWINKLE_GREY });
+    agentTextY -= 13;
+    page.drawText(agent.name, { x: col2X, y: agentTextY, size: 10, font: boldFont, color: DEEP_BLUE });
+    agentTextY -= 12;
+    page.drawText(AGENT_PHONE, { x: col2X, y: agentTextY, size: 8.5, font, color: BLACK });
+    agentTextY -= 12;
+    page.drawText(agent.email, { x: col2X, y: agentTextY, size: 8.5, font, color: BLACK });
+  }
+
+  // Column 3: "Have an interested buyer?" callout.
+  let col3TextY = boxTop - 13;
+  page.drawText("HAVE AN INTERESTED BUYER?", { x: col3X, y: col3TextY, size: 8.5, font: boldFont, color: DEEP_BLUE });
+  col3TextY -= 10;
+  page.drawText("Email us the buyer's name, phone number and email", { x: col3X, y: col3TextY, size: 7.5, font, color: rgb(0.3, 0.35, 0.4) });
+  col3TextY -= 9;
+  page.drawText("for a personalized quote.", { x: col3X, y: col3TextY, size: 7.5, font, color: rgb(0.3, 0.35, 0.4) });
 
   y -= bottomBoxHeight;
 
