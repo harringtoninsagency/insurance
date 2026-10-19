@@ -46,6 +46,7 @@ const CARRIER_LOGO_FILES: Record<string, string> = {
   "Universal P&C": "universal-pc.png",
   "American Integrity": "american-integrity.png",
   "Olympus Insurance": "olympus-insurance.png",
+  "Edison Insurance": "edison-insurance.png",
   "Tower Hill Insurance": "tower-hill.png",
   "Florida Peninsula": "florida-peninsula.png",
   "Cabrillo Coastal": "cabrillo-coastal.png",
@@ -276,36 +277,66 @@ export async function generateIndicationProposal(
     });
   }
 
+  // 3 columns: a reserved photo area (blank until an agent headshot is
+  // uploaded on the Team page), the agent's info stacked vertically, and
+  // "Have an interested buyer?" — no agency contact info in that last
+  // column, just the call to action.
   async function drawAgentSection() {
-    if (!agent) return;
+    const contentWidth = PAGE_WIDTH - 2 * MARGIN;
     const boxHeight = AGENT_SECTION_HEIGHT;
     const photoSize = 50;
+    const photoX = MARGIN + 12;
+    const col2X = photoX + photoSize + 14;
+    const col2Width = 160;
+    const divider2X = col2X + col2Width + 10;
+    const col3X = divider2X + 14;
     const boxTop = y;
     page.drawRectangle({
       x: MARGIN,
       y: boxTop - boxHeight,
-      width: PAGE_WIDTH - 2 * MARGIN,
+      width: contentWidth,
       height: boxHeight,
       color: CREAM,
       borderColor: PERIWINKLE_GREY,
       borderWidth: 0.75,
     });
-    let textX = MARGIN + 12;
-    if (agent.photoPath) {
+    const dividerY = boxTop - boxHeight + 12;
+    const dividerHeight = boxHeight - 24;
+    page.drawRectangle({ x: divider2X, y: dividerY, width: 0.75, height: dividerHeight, color: PERIWINKLE_GREY });
+
+    // Column 1: agent photo — reserved and bordered whether or not one's
+    // been uploaded yet, so the layout doesn't shift once it is.
+    const photoY = boxTop - boxHeight + (boxHeight - photoSize) / 2;
+    page.drawRectangle({ x: photoX, y: photoY, width: photoSize, height: photoSize, color: WHITE, borderColor: PERIWINKLE_GREY, borderWidth: 0.75 });
+    if (agent?.photoPath) {
       const { data: photoBlob } = await supabase.storage.from("agent-photos").download(agent.photoPath);
       if (photoBlob) {
         const photoBytes = new Uint8Array(await photoBlob.arrayBuffer());
         const photoImage = sniffImageKind(photoBytes) === "png" ? await pdfDoc.embedPng(photoBytes) : await pdfDoc.embedJpg(photoBytes);
-        page.drawImage(photoImage, { x: textX, y: boxTop - boxHeight + (boxHeight - photoSize) / 2, width: photoSize, height: photoSize });
-        textX += photoSize + 14;
+        page.drawImage(photoImage, { x: photoX, y: photoY, width: photoSize, height: photoSize });
       }
     }
-    let textY = boxTop - 18;
-    page.drawText("YOUR AGENT", { x: textX, y: textY, size: 8, font: boldFont, color: PERIWINKLE_GREY });
-    textY -= 15;
-    page.drawText(agent.name, { x: textX, y: textY, size: 11, font: boldFont, color: DEEP_BLUE });
-    textY -= 14;
-    page.drawText(`${AGENCY_PHONE}  ·  ${agent.email}`, { x: textX, y: textY, size: 9, font, color: BLACK });
+
+    // Column 2: your agent, one line each.
+    if (agent) {
+      let textY = boxTop - 18;
+      page.drawText("YOUR AGENT", { x: col2X, y: textY, size: 8, font: boldFont, color: PERIWINKLE_GREY });
+      textY -= 15;
+      page.drawText(agent.name, { x: col2X, y: textY, size: 11, font: boldFont, color: DEEP_BLUE });
+      textY -= 14;
+      page.drawText(AGENCY_PHONE, { x: col2X, y: textY, size: 9, font, color: BLACK });
+      textY -= 13;
+      page.drawText(agent.email, { x: col2X, y: textY, size: 9, font, color: BLACK });
+    }
+
+    // Column 3: "Have an interested buyer?" callout.
+    let col3Y = boxTop - 18;
+    page.drawText("HAVE AN INTERESTED BUYER?", { x: col3X, y: col3Y, size: 9, font: boldFont, color: DEEP_BLUE });
+    col3Y -= 13;
+    page.drawText("Email us the buyer's name, phone number", { x: col3X, y: col3Y, size: 8, font, color: PERIWINKLE_GREY });
+    col3Y -= 11;
+    page.drawText("and email for a personalized quote.", { x: col3X, y: col3Y, size: 8, font, color: PERIWINKLE_GREY });
+
     y -= boxHeight + 14;
   }
 
@@ -356,7 +387,7 @@ export async function generateIndicationProposal(
     y -= rowHeight;
   });
 
-  if (agent && y - AGENT_SECTION_HEIGHT < MARGIN + FOOTER_RESERVE) startContinuationPage();
+  if (y - AGENT_SECTION_HEIGHT < MARGIN + FOOTER_RESERVE) startContinuationPage();
   await drawAgentSection();
   drawFooter();
 
