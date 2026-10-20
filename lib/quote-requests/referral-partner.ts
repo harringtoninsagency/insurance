@@ -1,10 +1,16 @@
 import { createServiceSupabase } from "@/lib/supabase/server";
+import type { ContactType } from "@/lib/types/database";
 
 export interface ReferralPartnerInfo {
   name: string;
   companyName: string | null;
   phone: string | null;
   email: string;
+  // Drives the roofing_company -> "New Roof Scenario" proposal swap in
+  // finalizeQuoteRequest (lib/quote-requests/fetch-pipeline.ts) — this
+  // directory record is the same source of truth the Fetch quoting override
+  // already keys off of (see buildFetchQuoteItems's doc comment).
+  contactType: ContactType;
 }
 
 /**
@@ -31,7 +37,7 @@ export async function resolveReferralPartner(quoteRequestId: string | null | und
 
   const { data: contact } = await supabase
     .from("industry_contacts")
-    .select("full_name, company_name, cell_phone, office_phone, email")
+    .select("full_name, company_name, cell_phone, office_phone, email, contact_type")
     .eq("id", request.contact_id)
     .maybeSingle();
   if (!contact) return null;
@@ -43,5 +49,6 @@ export async function resolveReferralPartner(quoteRequestId: string | null | und
     // are on file; office is the fallback, not the other way around.
     phone: contact.cell_phone ?? contact.office_phone,
     email: contact.email ?? request.requester_email,
+    contactType: contact.contact_type,
   };
 }

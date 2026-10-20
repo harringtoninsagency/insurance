@@ -79,6 +79,7 @@ export async function buildQuoteCompletionEmail(quoteRequestId: string, proposal
 
     const withPdf = (proposals ?? []).filter((p): p is typeof p & { pdf_path: string } => !!p.pdf_path);
     if (!withPdf.length) return null;
+    const summaryLabel = withPdf.some((p) => p.kind === "roof_scenario") ? "New Roof Scenario - Insurance Summary" : "insurance summary";
 
     const addressSlug = property.address.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "");
     const signed = await Promise.all(
@@ -104,7 +105,7 @@ export async function buildQuoteCompletionEmail(quoteRequestId: string, proposal
       "",
       "Thank you for reaching out to Brightway Insurance | The Harrington Agency!",
       "",
-      `Your request for ${property.address} is complete. The insurance summary and listing snapshot are attached.`,
+      `Your request for ${property.address} is complete. The ${summaryLabel} and listing snapshot are attached.`,
       "",
       "Brightway Insurance | The Harrington Agency",
       `${CONTACT_EMAIL} | ${CONTACT_PHONE}`,
@@ -114,7 +115,7 @@ export async function buildQuoteCompletionEmail(quoteRequestId: string, proposal
       [
         `<p style="margin:0 0 16px;">Hi ${escapeHtml(name)},</p>`,
         `<p style="margin:0 0 16px;">Thank you for reaching out to Brightway Insurance | The Harrington Agency!</p>`,
-        `<p style="margin:0 0 24px;">Your request for <strong>${escapeHtml(property.address)}</strong> is complete. The insurance summary and listing snapshot are attached.</p>`,
+        `<p style="margin:0 0 24px;">Your request for <strong>${escapeHtml(property.address)}</strong> is complete. The ${escapeHtml(summaryLabel)} and listing snapshot are attached.</p>`,
         brandedSignatureHtml(escapeHtml(CONTACT_EMAIL), escapeHtml(CONTACT_PHONE)),
       ].join("")
     );
