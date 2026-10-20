@@ -23,9 +23,16 @@ export default async function DashLayout({
   children: React.ReactNode;
 }) {
   const supabase = await createServerSupabase();
+  // getSession() (local decode of the request's cookies), not getUser() (a
+  // live network round trip to Supabase Auth) — proxy.ts's middleware has
+  // already done that authoritative verification and refreshed the cookies
+  // for this exact request before this layout ever runs, so re-verifying
+  // here is pure duplicate latency on every single navigation, not an
+  // extra security check (see lib/supabase/server.ts's doc comment).
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
+  const user = session?.user ?? null;
 
   if (!user) {
     redirect("/login");
