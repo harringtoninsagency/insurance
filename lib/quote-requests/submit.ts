@@ -24,6 +24,17 @@ export interface SubmitQuoteRequestInput {
   listPrice?: string;
   dwellingA?: string;
   personalPropertyPct?: string;
+  /**
+   * Set when the referring partner's directory contact already has an
+   * in-house agent linked (e.g. they signed up via that agent's share link —
+   * see lib/team/team.ts's resolvePublicAgent and lib/partners/self-signup.ts).
+   * Written straight onto quote_requests.assigned_agent_id so it shows up
+   * immediately in the home dashboard's workload tracker
+   * (app/(dash)/home/page.tsx), rather than waiting on resolveProposalAgent's
+   * lazy contact-level fallback, which only kicks in once a proposal PDF is
+   * generated.
+   */
+  assignedAgentId?: string | null;
 }
 
 export type SubmitResult = { ok: true; id: string } | { ok: false; error: string };
@@ -119,6 +130,7 @@ export async function submitQuoteRequest(
       list_price: parsed.listPrice ?? null,
       dwelling_a: parsed.dwellingA ?? null,
       personal_property_pct: parsed.personalPropertyPct ?? null,
+      assigned_agent_id: input.assignedAgentId ?? null,
       status: "new",
     })
     .select("id")

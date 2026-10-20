@@ -30,11 +30,19 @@ export async function submitPartnerQuoteRequestAction(_prev: PartnerRequestState
   const { data: account } = await service.from("partner_accounts").select("agency_id, contact_id, status").eq("user_id", user.id).maybeSingle();
   if (!account || account.status !== "active") return { error: "Your partner account isn't active. Contact your Brightway representative.", values: {} };
 
-  const { data: contact } = await service.from("industry_contacts").select("full_name, email").eq("id", account.contact_id).single();
+  const { data: contact } = await service
+    .from("industry_contacts")
+    .select("full_name, email, referral_partner_agent_id")
+    .eq("id", account.contact_id)
+    .single();
 
   const input: SubmitQuoteRequestInput = {
     requesterType: "partner",
     contactId: account.contact_id,
+    // Set once at signup (self-signup via an agent's share link, or an
+    // admin's /contacts edit) and carried onto every request this partner
+    // submits from here on — see lib/team/team.ts's resolvePublicAgent.
+    assignedAgentId: contact?.referral_partner_agent_id ?? null,
     // A partner's own directory identity is the requester, but let them
     // override the email/phone a lead should actually reach (e.g. their own
     // preferred inbox) rather than forcing whatever's on file.

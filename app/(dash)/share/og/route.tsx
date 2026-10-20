@@ -3,14 +3,21 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import QRCode from "qrcode";
 import { appBaseUrl } from "@/lib/base-url";
+import { createServiceSupabase } from "@/lib/supabase/server";
+import { resolvePublicAgent } from "@/lib/team/team";
 
 export const runtime = "nodejs";
+
+// Matches lib/quote-requests/submit.ts's PUBLIC_FORM_AGENCY_ID — this app's one agency.
+const PUBLIC_FORM_AGENCY_ID = "ccb0a58e-0b78-4799-b236-66d1bda42f67";
 
 const markBytes = readFileSync(join(process.cwd(), "assets", "branding", "brightway-mark-bright-yellow.png"));
 const markDataUrl = `data:image/png;base64,${markBytes.toString("base64")}`;
 
-export async function GET() {
-  const signupUrl = `${appBaseUrl()}/partner/signup`;
+export async function GET(request: Request) {
+  const agentParam = new URL(request.url).searchParams.get("agent");
+  const agent = await resolvePublicAgent(createServiceSupabase(), PUBLIC_FORM_AGENCY_ID, agentParam);
+  const signupUrl = agent ? `${appBaseUrl()}/partner/signup?agent=${agent.id}` : `${appBaseUrl()}/partner/signup`;
   const qrDataUrl = await QRCode.toDataURL(signupUrl, {
     type: "image/png",
     color: { dark: "#003049", light: "#FFFFFF" },
@@ -68,6 +75,7 @@ export async function GET() {
         </div>
 
         <div style={{ marginTop: 32, fontSize: 24, fontWeight: 600, color: "#F0FF00" }}>{signupUrl.replace(/^https?:\/\//, "")}</div>
+        {agent?.fullName && <div style={{ marginTop: 14, fontSize: 22, color: "#C3D1E3" }}>Your Brightway agent: {agent.fullName}</div>}
       </div>
     ),
     { width: 1080, height: 1080 },
