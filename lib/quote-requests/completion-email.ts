@@ -79,7 +79,7 @@ export async function buildQuoteCompletionEmail(quoteRequestId: string, proposal
 
     const withPdf = (proposals ?? []).filter((p): p is typeof p & { pdf_path: string } => !!p.pdf_path);
     if (!withPdf.length) return null;
-    const summaryLabel = withPdf.some((p) => p.kind === "roof_scenario") ? "new roof scenario insurance summary" : "insurance summary";
+    const summaryLabel = withPdf.some((p) => p.kind === "roof_scenario") ? "New Roof Scenario - Insurance Summary" : "insurance summary";
 
     const addressSlug = property.address.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "");
     const signed = await Promise.all(
