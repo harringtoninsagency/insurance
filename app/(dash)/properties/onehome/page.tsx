@@ -26,20 +26,20 @@ function formatDayHeading(dayKey: string): string {
 
 export default async function OneHomeQueuePage() {
   const supabase = await createServerSupabase();
-  const { data: propertiesData, error } = await supabase
-    .from("properties")
-    .select("id, address, status, list_price, listing_agent_name, assigned_agent_id, date_quoted, photo_path, created_at")
-    .eq("source", "onehome")
-    .order("created_at", { ascending: false })
-    .limit(500);
+  // Three independent queries, parallelized — each pays the same
+  // Vercel-function-to-Supabase network round trip regardless of size.
+  const [{ data: propertiesData, error }, { data: teamMembers }, { data: queued }] = await Promise.all([
+    supabase
+      .from("properties")
+      .select("id, address, status, list_price, listing_agent_name, assigned_agent_id, date_quoted, photo_path, created_at")
+      .eq("source", "onehome")
+      .order("created_at", { ascending: false })
+      .limit(500),
+    supabase.from("profiles").select("id, full_name, email").eq("active", true).order("full_name"),
+    supabase.from("quote_requests").select("property_id").in("status", ["new", "processing"]).not("property_id", "is", null),
+  ]);
   const properties = propertiesData as PropertyRow[] | null;
-
-  const { data: teamMembers } = await supabase.from("profiles").select("id, full_name, email").eq("active", true).order("full_name");
-
-  const queued = properties?.length
-    ? await supabase.from("quote_requests").select("property_id").in("status", ["new", "processing"]).not("property_id", "is", null)
-    : { data: [] };
-  const queuedIds = new Set((queued.data ?? []).map((r) => r.property_id as string));
+  const queuedIds = new Set((queued ?? []).map((r) => r.property_id as string));
 
   const photoPaths = ((properties ?? []) as PropertyRow[]).filter((p): p is PropertyRow & { photo_path: string } => !!p.photo_path);
   const photoUrlByPath = new Map<string, string>();

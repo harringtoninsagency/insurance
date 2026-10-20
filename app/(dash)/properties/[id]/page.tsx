@@ -21,58 +21,65 @@ export default async function PropertyDetailPage({
   const { id } = await params;
   const supabase = await createServerSupabase();
 
-  // Realtors/brokers offered as recipients when queuing outreach. People who
-  // opted out or are marked do-not-contact are left out (and blocked anyway).
-  const { data: directoryContacts } = await supabase
-    .from("industry_contacts")
-    .select("full_name, company_name, email")
-    .not("email", "is", null)
-    .eq("do_not_contact", false)
-    .neq("email_consent", "opted_out")
-    .order("full_name")
-    .limit(1000);
-
-  const { data: latestRequest } = await supabase
-    .from("quote_requests")
-    .select("status, status_detail, created_at")
-    .eq("property_id", id)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  const [{ data: property }, { data: enrichment }, { data: riskProfile }, { data: quotes }, { data: proposals }, { data: notes }] =
-    await Promise.all([
-      supabase.from("properties").select("*").eq("id", id).single(),
-      supabase
-        .from("enrichments")
-        .select("*")
-        .eq("property_id", id)
-        .order("fetched_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-      supabase
-        .from("risk_profiles")
-        .select("*")
-        .eq("property_id", id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-      supabase
-        .from("quotes")
-        .select("*")
-        .eq("property_id", id)
-        .order("premium", { ascending: true }),
-      supabase
-        .from("proposals")
-        .select("*")
-        .eq("property_id", id)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("property_notes")
-        .select("*")
-        .eq("property_id", id)
-        .order("created_at", { ascending: false }),
-    ]);
+  const [
+    { data: directoryContacts },
+    { data: latestRequest },
+    { data: property },
+    { data: enrichment },
+    { data: riskProfile },
+    { data: quotes },
+    { data: proposals },
+    { data: notes },
+  ] = await Promise.all([
+    // Realtors/brokers offered as recipients when queuing outreach. People
+    // who opted out or are marked do-not-contact are left out (and blocked
+    // anyway).
+    supabase
+      .from("industry_contacts")
+      .select("full_name, company_name, email")
+      .not("email", "is", null)
+      .eq("do_not_contact", false)
+      .neq("email_consent", "opted_out")
+      .order("full_name")
+      .limit(1000),
+    supabase
+      .from("quote_requests")
+      .select("status, status_detail, created_at")
+      .eq("property_id", id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase.from("properties").select("*").eq("id", id).single(),
+    supabase
+      .from("enrichments")
+      .select("*")
+      .eq("property_id", id)
+      .order("fetched_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("risk_profiles")
+      .select("*")
+      .eq("property_id", id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("quotes")
+      .select("*")
+      .eq("property_id", id)
+      .order("premium", { ascending: true }),
+    supabase
+      .from("proposals")
+      .select("*")
+      .eq("property_id", id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("property_notes")
+      .select("*")
+      .eq("property_id", id)
+      .order("created_at", { ascending: false }),
+  ]);
 
   if (!property) {
     notFound();
