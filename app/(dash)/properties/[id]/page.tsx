@@ -10,6 +10,7 @@ import { EditListingAgentForm } from "./EditListingAgentForm";
 import { QueueOutreachForm } from "./QueueOutreachForm";
 import { DateQuotedForm } from "./DateQuotedForm";
 import { ManualCarrierForm } from "./ManualCarrierForm";
+import { PropertyNoteForm } from "./PropertyNoteForm";
 import { RunQuoteButton } from "../../quote-requests/RunQuoteButton";
 
 export default async function PropertyDetailPage({
@@ -39,7 +40,7 @@ export default async function PropertyDetailPage({
     .limit(1)
     .maybeSingle();
 
-  const [{ data: property }, { data: enrichment }, { data: riskProfile }, { data: quotes }, { data: proposals }] =
+  const [{ data: property }, { data: enrichment }, { data: riskProfile }, { data: quotes }, { data: proposals }, { data: notes }] =
     await Promise.all([
       supabase.from("properties").select("*").eq("id", id).single(),
       supabase
@@ -63,6 +64,11 @@ export default async function PropertyDetailPage({
         .order("premium", { ascending: true }),
       supabase
         .from("proposals")
+        .select("*")
+        .eq("property_id", id)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("property_notes")
         .select("*")
         .eq("property_id", id)
         .order("created_at", { ascending: false }),
@@ -310,6 +316,33 @@ export default async function PropertyDetailPage({
               label: `${c.full_name}${c.company_name ? ` — ${c.company_name}` : ""}`,
             }))}
           />
+        )}
+      </section>
+
+      <section>
+        <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase text-[#003049]">
+          <span className="inline-block h-2 w-2 shrink-0 bg-[#F0FF00]" />
+          Notes
+        </h2>
+        <p className="mb-3 text-xs text-slate-500">
+          Log anything worth remembering about this property. Each entry is added to the history below and
+          can&apos;t be edited or deleted later.
+        </p>
+        <PropertyNoteForm propertyId={property.id} />
+        {!notes?.length ? (
+          <p className="mt-3 text-sm text-slate-500">Nothing logged yet.</p>
+        ) : (
+          <ul className="mt-3 space-y-2">
+            {notes.map((n) => (
+              <li key={n.id} className="rounded-lg border border-slate-200 px-4 py-3 text-sm">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <span className="text-xs text-slate-500">{formatDateTimeEt(n.created_at)}</span>
+                  {n.recorded_by && <span className="text-xs text-slate-400">{n.recorded_by}</span>}
+                </div>
+                <p className="mt-1 whitespace-pre-wrap text-slate-700">{n.note}</p>
+              </li>
+            ))}
+          </ul>
         )}
       </section>
     </div>

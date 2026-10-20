@@ -31,10 +31,13 @@ const PROFILE_COLUMNS = "full_name, email, personal_email, photo_path, active";
  * assignment.
  *
  * Priority:
- *   1. `quoteRequestId`'s own assigned_agent_id, when given (a producer
- *      explicitly took this particular request).
- *   2. The property's assigned_agent_id (set from the Properties list, or
- *      carried over from any earlier request against this property).
+ *   1. The property's assigned_agent_id (set from the Properties list) —
+ *      authoritative: whoever currently owns the property on that page is
+ *      who shows on every proposal for it, even one generated through an
+ *      older quote request assigned to someone else.
+ *   2. `quoteRequestId`'s own assigned_agent_id, when given and the property
+ *      itself has no assignment (a producer explicitly took this particular
+ *      request, and nobody's since been assigned at the property level).
  *   3. The referring partner's linked agent
  *      (industry_contacts.referral_partner_agent_id) — via quoteRequestId's
  *      own contact_id when given, otherwise the most recent quote_request on
@@ -57,7 +60,7 @@ export async function resolveProposalAgent(propertyId: string, quoteRequestId?: 
       .select("assigned_agent_id, contact_id")
       .eq("id", quoteRequestId)
       .maybeSingle();
-    if (request?.assigned_agent_id) agentId = request.assigned_agent_id;
+    if (!agentId && request?.assigned_agent_id) agentId = request.assigned_agent_id;
     contactId = request?.contact_id ?? null;
   } else {
     const { data: latestRequest } = await supabase

@@ -207,8 +207,6 @@ export async function generateListingSnapshotProposal(
       width: photoWidth,
       height: rowHeight,
       color: WHITE,
-      borderColor: PERIWINKLE_GREY,
-      borderWidth: 0.75,
     });
     page.drawImage(photoImage, {
       x: MARGIN + offsetX,
@@ -222,9 +220,6 @@ export async function generateListingSnapshotProposal(
       y: rowTop - rowHeight,
       width: photoWidth,
       height: rowHeight,
-      borderColor: PERIWINKLE_GREY,
-      borderWidth: 1,
-      borderDashArray: [4, 4],
       color: rgb(0.98, 0.99, 1),
     });
     const centerX = MARGIN + photoWidth / 2;

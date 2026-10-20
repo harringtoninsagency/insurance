@@ -105,6 +105,24 @@ export async function updateAssignedAgentAction(propertyId: string, formData: Fo
   }
 }
 
+export async function recordPropertyNoteAction(propertyId: string, note: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  if (!note.trim()) return { ok: false, error: "Add a note first." };
+  try {
+    const { supabase, agencyId, userEmail } = await sessionContext();
+    const { error } = await supabase.from("property_notes").insert({
+      agency_id: agencyId,
+      property_id: propertyId,
+      note: note.trim(),
+      recorded_by: userEmail,
+    });
+    if (error) return { ok: false, error: error.message };
+    revalidatePath(`/properties/${propertyId}`);
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Failed to save the note." };
+  }
+}
+
 export async function queueOutreachAction(propertyId: string, proposalId: string, recipient: string) {
   const supabase = createServiceSupabase();
   const { data: proposal, error } = await supabase

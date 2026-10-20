@@ -1,10 +1,9 @@
 import type { EmailConfig } from "@/lib/email/config";
+import { escapeHtml } from "@/lib/email/escape-html";
+import { brandedEmailShell, brandedSignatureHtml, SLATE_MUTED } from "@/lib/email/brand-template";
 
 const CONTACT_EMAIL = "harringtonagency@brightway.com";
 const CONTACT_PHONE = "727-789-2200";
-
-const escapeHtml = (s: string) =>
-  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
 export interface OutreachMessageInput {
   /** The recipient's full name if they're in the directory. */
@@ -42,17 +41,16 @@ export function buildOutreachMessage({ recipientName, propertyAddress, unsubscri
     `Don't want these emails? Unsubscribe: ${unsubscribeUrl}`,
   ].join("\n");
 
-  const html = `<!doctype html>
-<html><body style="margin:0;padding:24px;background:#ffffff;font-family:Arial,Helvetica,sans-serif;color:#1e293b;font-size:15px;line-height:1.55;">
-<div style="max-width:560px;">
-<p style="margin:0 0 16px;">${escapeHtml(greeting)}</p>
-${paragraphs.map((p) => `<p style="margin:0 0 16px;">${escapeHtml(p)}</p>`).join("\n")}
-<p style="margin:0 0 4px;font-weight:bold;color:#003049;">Brightway Insurance | The Harrington Agency</p>
-<p style="margin:0 0 24px;">${CONTACT_EMAIL} | ${CONTACT_PHONE}</p>
-<hr style="border:none;border-top:1px solid #e2e8f0;margin:0 0 12px;">
-<p style="margin:0 0 4px;font-size:12px;color:#64748b;">${escapeHtml(config.postalAddress)}</p>
-<p style="margin:0;font-size:12px;color:#64748b;">Don't want these emails? <a href="${escapeHtml(unsubscribeUrl)}" style="color:#64748b;">Unsubscribe</a></p>
-</div></body></html>`;
+  const html = brandedEmailShell(
+    [
+      `<p style="margin:0 0 16px;">${escapeHtml(greeting)}</p>`,
+      paragraphs.map((p) => `<p style="margin:0 0 16px;">${escapeHtml(p)}</p>`).join(""),
+      brandedSignatureHtml(CONTACT_EMAIL, CONTACT_PHONE),
+      `<hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0 12px;">`,
+      `<p style="margin:0 0 4px;font-size:12px;color:${SLATE_MUTED};">${escapeHtml(config.postalAddress)}</p>`,
+      `<p style="margin:0;font-size:12px;color:${SLATE_MUTED};">Don't want these emails? <a href="${escapeHtml(unsubscribeUrl)}" style="color:${SLATE_MUTED};">Unsubscribe</a></p>`,
+    ].join("")
+  );
 
   return { subject, text, html };
 }
