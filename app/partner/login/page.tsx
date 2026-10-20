@@ -61,7 +61,7 @@ export default function PartnerLoginPage() {
 
         <div>
           <h1 className="text-lg font-semibold text-[#003049]">Partner portal</h1>
-          <p className="text-sm text-[#8291AC]">For invited realtors and mortgage brokers</p>
+          <p className="text-sm text-[#8291AC]">For invited realtors, mortgage brokers, and roofing companies</p>
         </div>
 
         {error && <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
