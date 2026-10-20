@@ -1,6 +1,7 @@
 import { createServiceSupabase } from "@/lib/supabase/server";
 import { loadEmailConfig } from "@/lib/email/config";
 import { escapeHtml } from "@/lib/email/escape-html";
+import { brandedEmailShell, brandedSignatureHtml } from "@/lib/email/brand-template";
 import { CONTACT_EMAIL, CONTACT_PHONE } from "@/lib/contacts/consent-text";
 
 // Every outbound email to a referral partner gets the agency CC'd, by
@@ -109,13 +110,14 @@ export async function buildQuoteCompletionEmail(quoteRequestId: string, proposal
       `${CONTACT_EMAIL} | ${CONTACT_PHONE}`,
     ].join("\n");
 
-    const html = [
-      `<p>Hi ${escapeHtml(name)},</p>`,
-      `<p>Thank you for reaching out to Brightway Insurance | The Harrington Agency!</p>`,
-      `<p>Your request for <strong>${escapeHtml(property.address)}</strong> is complete. The insurance summary and listing snapshot are attached.</p>`,
-      `<p style="margin:0 0 4px;font-weight:bold;color:#003049;">Brightway Insurance | The Harrington Agency</p>`,
-      `<p style="margin:0;">${escapeHtml(CONTACT_EMAIL)} | ${escapeHtml(CONTACT_PHONE)}</p>`,
-    ].join("");
+    const html = brandedEmailShell(
+      [
+        `<p style="margin:0 0 16px;">Hi ${escapeHtml(name)},</p>`,
+        `<p style="margin:0 0 16px;">Thank you for reaching out to Brightway Insurance | The Harrington Agency!</p>`,
+        `<p style="margin:0 0 24px;">Your request for <strong>${escapeHtml(property.address)}</strong> is complete. The insurance summary and listing snapshot are attached.</p>`,
+        brandedSignatureHtml(escapeHtml(CONTACT_EMAIL), escapeHtml(CONTACT_PHONE)),
+      ].join("")
+    );
 
     return {
       to: contact.email,
