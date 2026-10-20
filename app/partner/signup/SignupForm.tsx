@@ -8,7 +8,7 @@ import type { SelfSignupResult } from "@/lib/partners/self-signup";
 
 const inputClass = "w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-[#003049] focus:outline-none";
 
-export function SignupForm() {
+export function SignupForm({ agentId, agentName }: { agentId: string | null; agentName: string | null }) {
   const router = useRouter();
   const supabase = createBrowserSupabase();
   const [state, formAction, isPending] = useActionState<SelfSignupResult | null, FormData>(signUpPartnerAction, null);
@@ -37,6 +37,13 @@ export function SignupForm() {
 
   return (
     <form action={formAction} className="space-y-5">
+      {agentId && <input type="hidden" name="agent_id" value={agentId} />}
+      {agentName && (
+        <p className="rounded bg-[#F0FF00]/20 px-3 py-2 text-xs text-[#003049]">
+          You&apos;ll be connected with <span className="font-semibold">{agentName}</span>.
+        </p>
+      )}
+
       <div className="space-y-1">
         <label htmlFor="full_name" className="text-sm font-medium text-[#003049]">
           Full name

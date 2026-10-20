@@ -14,10 +14,11 @@ export async function signUpPartnerAction(_prev: SelfSignupResult | null, formDa
   const fullName = String(formData.get("full_name") ?? "");
   const email = String(formData.get("email") ?? "");
   const phoneDigits = String(formData.get("phone") ?? "").replace(/\D/g, "");
+  const referralPartnerAgentId = String(formData.get("agent_id") ?? "").trim() || null;
 
   try {
     const supabase = createServiceSupabase();
-    const result = await signUpPartner(supabase, { fullName, email, phoneDigits, contactType });
+    const result = await signUpPartner(supabase, { fullName, email, phoneDigits, contactType, referralPartnerAgentId });
     if (result.ok) {
       await notifyNewPartnerAccount({ fullName, email, phoneDigits, contactType });
     }

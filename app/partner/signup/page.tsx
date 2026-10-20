@@ -2,9 +2,20 @@ import Link from "next/link";
 import Image from "next/image";
 import brightwayLogo from "@/assets/branding/brightway-harrington-horizontal-deep-blue.png";
 import brightwayMarkYellow from "@/assets/branding/brightway-mark-bright-yellow.png";
+import { createServiceSupabase } from "@/lib/supabase/server";
+import { resolvePublicAgent } from "@/lib/team/team";
 import { SignupForm } from "./SignupForm";
 
-export default function PartnerSignupPage() {
+// Matches lib/quote-requests/submit.ts's PUBLIC_FORM_AGENCY_ID — this app's one agency.
+const PUBLIC_FORM_AGENCY_ID = "ccb0a58e-0b78-4799-b236-66d1bda42f67";
+
+export default async function PartnerSignupPage({ searchParams }: { searchParams: Promise<{ agent?: string }> }) {
+  const { agent } = await searchParams;
+  // Only used to show the friendly "you'll be connected with X" note below —
+  // the value that actually gets persisted is re-validated server-side in
+  // signUpPartner, not trusted from this page render.
+  const resolvedAgent = await resolvePublicAgent(createServiceSupabase(), PUBLIC_FORM_AGENCY_ID, agent);
+
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#003049] px-4 py-8">
       <Image
@@ -25,7 +36,7 @@ export default function PartnerSignupPage() {
           <p className="text-sm text-[#8291AC]">For realtors and mortgage brokers</p>
         </div>
 
-        <SignupForm />
+        <SignupForm agentId={resolvedAgent?.id ?? null} agentName={resolvedAgent?.fullName ?? null} />
 
         <p className="text-center text-xs text-[#8291AC]">
           Already have an account?{" "}

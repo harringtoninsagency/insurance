@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, ContactType } from "@/lib/types/database";
 import { upsertContact } from "@/lib/contacts/upsert-contact";
 import { normalizeEmail, normalizePersonName } from "@/lib/contacts/normalize";
+import { resolvePublicAgent } from "@/lib/team/team";
 
 // Matches lib/quote-requests/submit.ts's PUBLIC_FORM_AGENCY_ID — this app's
 // one agency, for the other unauthenticated-form flow.
@@ -26,7 +27,14 @@ export type SelfSignupResult = { ok: true } | { ok: false; error: string };
  */
 export async function signUpPartner(
   supabase: SupabaseClient<Database>,
-  input: { fullName: string; email: string; phoneDigits: string; contactType: ContactType }
+  input: {
+    fullName: string;
+    email: string;
+    phoneDigits: string;
+    contactType: ContactType;
+    /** The agent.id off a per-agent share link's `?agent=` param, if the signup form carried one — re-validated here, never trusted from the hidden field alone. */
+    referralPartnerAgentId?: string | null;
+  }
 ): Promise<SelfSignupResult> {
   const fullName = normalizePersonName(input.fullName);
   if (!fullName) return { ok: false, error: "Enter your full name." };
@@ -36,15 +44,24 @@ export async function signUpPartner(
 
   if (!/^\d{10}$/.test(input.phoneDigits)) return { ok: false, error: "Enter a 10-digit phone number (digits only)." };
 
+  // Re-validated against this agency's active profiles — the actual
+  // authorization boundary for referral_partner_agent_id. The page-load
+  // check in app/partner/signup/page.tsx is only for the friendly "you'll
+  // be connected with X" message; it isn't trusted on its own here.
+  const resolvedAgent = await resolvePublicAgent(supabase, PUBLIC_FORM_AGENCY_ID, input.referralPartnerAgentId);
+
   // Reuses the same matching logic as every other contact-creation path
   // (by email, then license, then name+company) so a self-signup links up
   // with an existing directory entry (e.g. imported from a DBPR license
-  // file) instead of creating a duplicate.
+  // file) instead of creating a duplicate. upsertContact only fills a blank
+  // referral_partner_agent_id — an existing contact's agent assignment is
+  // never overwritten by a later signup attempt.
   const outcome = await upsertContact(supabase, PUBLIC_FORM_AGENCY_ID, {
     contactType: input.contactType,
     fullName,
     email,
     cellPhone: input.phoneDigits,
+    referralPartnerAgentId: resolvedAgent?.id ?? null,
     source: "web_form",
     sourceDetail: "Partner portal self-signup",
   });

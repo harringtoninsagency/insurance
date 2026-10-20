@@ -1,29 +1,46 @@
 import QRCode from "qrcode";
 import { appBaseUrl } from "@/lib/base-url";
+import { createServerSupabase } from "@/lib/supabase/server";
 import { CopyLinkButton } from "./CopyLinkButton";
 import { ShareImageActions } from "./ShareImageActions";
 
 export const metadata = { title: "Share with a partner" };
 
+interface AgentLink {
+  id: string;
+  label: string;
+  url: string;
+  qrSvg: string;
+}
+
 export default async function SharePage() {
-  const signupUrl = `${appBaseUrl()}/partner/signup`;
-  // Deep blue instead of pure black to match the brand, but still dark
-  // enough for a phone camera to read reliably — plain black-on-white is
-  // the safer default for scannability, this is close to it.
-  const qrSvg = await QRCode.toString(signupUrl, {
-    type: "svg",
-    color: { dark: "#003049", light: "#FFFFFF" },
-    margin: 1,
-    width: 240,
-  });
+  const supabase = await createServerSupabase();
+  const { data: teamMembers } = await supabase.from("profiles").select("id, full_name, email").eq("active", true).order("full_name");
+
+  const base = appBaseUrl();
+  const agentLinks: AgentLink[] = await Promise.all(
+    (teamMembers ?? []).map(async (m) => {
+      const url = `${base}/partner/signup?agent=${m.id}`;
+      // Deep blue instead of pure black to match the brand, but still dark
+      // enough for a phone camera to read reliably.
+      const qrSvg = await QRCode.toString(url, {
+        type: "svg",
+        color: { dark: "#003049", light: "#FFFFFF" },
+        margin: 1,
+        width: 180,
+      });
+      return { id: m.id, label: m.full_name ?? m.email, url, qrSvg };
+    })
+  );
 
   return (
-    <div className="max-w-xl">
+    <div className="max-w-2xl">
       <h1 className="text-xl font-semibold text-[#003049]">Share with a partner</h1>
       <div className="mb-2 mt-2 h-[3px] w-16 bg-[#F0FF00]" />
       <p className="mb-6 text-sm text-slate-500">
-        Hand a realtor or mortgage broker this link or QR code — at a showing, closing, or anywhere else — to sign
-        up for the partner portal. Once they&apos;re signed in, they can{" "}
+        Each agent below has their own sign-up link and QR code. Hand a realtor, mortgage broker, or roofing
+        company that agent&apos;s link — at a showing, closing, or anywhere else — and any quote request they
+        submit afterward is automatically assigned to that agent. Once they&apos;re signed in, they can{" "}
         <a
           href="https://developer.mozilla.org/en-US/docs/Web/Progressive_Web_Apps/Add_to_home_screen"
           target="_blank"
@@ -35,42 +52,49 @@ export default async function SharePage() {
         like a regular app.
       </p>
 
-      <div className="flex flex-col items-center gap-5 rounded-lg border border-slate-200 bg-white p-8 text-center sm:flex-row sm:items-start sm:text-left">
-        <div
-          className="shrink-0 rounded border border-slate-200 p-2"
-          // qrSvg is generated server-side from a URL this app itself built
-          // (appBaseUrl() + a fixed path) — no user input ever reaches it.
-          dangerouslySetInnerHTML={{ __html: qrSvg }}
-        />
-        <div className="flex-1 space-y-3">
-          <div>
-            <div className="text-xs font-medium uppercase text-slate-400">Partner sign-up link</div>
-            <div className="mt-1 break-all rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-[#003049]">{signupUrl}</div>
-          </div>
-          <CopyLinkButton url={signupUrl} />
-          <p className="text-xs text-slate-500">Scan the code to open the link directly on a phone.</p>
-        </div>
-      </div>
+      {agentLinks.length === 0 && <p className="text-sm text-slate-500">No active team members yet.</p>}
 
-      <div className="mt-8 rounded-lg border border-slate-200 bg-white p-6">
-        <h2 className="text-sm font-semibold text-[#003049]">Shareable image</h2>
-        <p className="mt-1 text-sm text-slate-500">
-          A ready-made graphic with the QR code and link baked in — easy to text or post to social instead of sending a bare link.
-        </p>
-        <div className="mt-4 flex flex-col items-center gap-4 sm:flex-row sm:items-start">
-          {/* eslint-disable-next-line @next/next/no-img-element -- server-generated PNG via a route handler, not an optimizable static asset */}
-          <img src="/share/og" alt="Shareable partner sign-up graphic" width={160} height={160} className="shrink-0 rounded-lg border border-slate-200" />
-          <div className="space-y-3">
-            <ShareImageActions
-              imageUrl="/share/og"
-              shareText={`Get instant home insurance quotes for your clients — sign up free: ${signupUrl}`}
-            />
-            <p className="text-xs text-slate-500">
-              On a phone, &quot;Share...&quot; opens the native share sheet so you can send it straight into Messages, Instagram, or
-              anywhere else. &quot;Download image&quot; works everywhere.
-            </p>
+      <div className="space-y-6">
+        {agentLinks.map((a) => (
+          <div key={a.id} className="rounded-lg border border-slate-200 bg-white p-6">
+            <h2 className="text-base font-semibold text-[#003049]">{a.label}</h2>
+
+            <div className="mt-4 flex flex-col items-center gap-5 text-center sm:flex-row sm:items-start sm:text-left">
+              <div
+                className="shrink-0 rounded border border-slate-200 p-2"
+                // qrSvg is generated server-side from a URL this app itself
+                // built (appBaseUrl() + a fixed path + this agent's own id) —
+                // no user input ever reaches it.
+                dangerouslySetInnerHTML={{ __html: a.qrSvg }}
+              />
+              <div className="flex-1 space-y-3">
+                <div>
+                  <div className="text-xs font-medium uppercase text-slate-400">Sign-up link</div>
+                  <div className="mt-1 break-all rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-[#003049]">{a.url}</div>
+                </div>
+                <CopyLinkButton url={a.url} />
+              </div>
+            </div>
+
+            <div className="mt-5 flex flex-col items-center gap-4 border-t border-slate-100 pt-5 sm:flex-row sm:items-start">
+              {/* eslint-disable-next-line @next/next/no-img-element -- server-generated PNG via a route handler, not an optimizable static asset */}
+              <img
+                src={`/share/og?agent=${a.id}`}
+                alt={`Shareable sign-up graphic for ${a.label}`}
+                width={110}
+                height={110}
+                className="shrink-0 rounded-lg border border-slate-200"
+              />
+              <div className="space-y-2">
+                <ShareImageActions
+                  imageUrl={`/share/og?agent=${a.id}`}
+                  shareText={`Get instant home insurance quotes for your clients — sign up free: ${a.url}`}
+                />
+                <p className="text-xs text-slate-500">A ready-made graphic with this link and QR code baked in — easy to text or post to social.</p>
+              </div>
+            </div>
           </div>
-        </div>
+        ))}
       </div>
     </div>
   );
