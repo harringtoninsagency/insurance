@@ -8,13 +8,17 @@ import { AgentPhotoForm } from "./AgentPhotoForm";
 export const metadata = { title: "Team" };
 
 export default async function TeamPage() {
-  const session = await createServerSupabase();
+  const supabase = await createServerSupabase();
+  // getSession(), not getUser() — this page only renders inside the
+  // authenticated dashboard layout, which has already done the live
+  // Supabase Auth verification for this request (see its own comment).
   const {
-    data: { user },
-  } = await session.auth.getUser();
+    data: { session: authSession },
+  } = await supabase.auth.getSession();
+  const user = authSession?.user ?? null;
   if (!user) redirect("/login");
 
-  const { data: me } = await session.from("profiles").select("agency_id, role, active").eq("id", user.id).maybeSingle();
+  const { data: me } = await supabase.from("profiles").select("agency_id, role, active").eq("id", user.id).maybeSingle();
   if (!me || !me.active || me.role !== "admin") redirect("/home");
 
   const service = createServiceSupabase();

@@ -3,9 +3,13 @@ import { ChangePasswordForm } from "./ChangePasswordForm";
 
 export default async function AccountPage() {
   const supabase = await createServerSupabase();
+  // getSession(), not getUser() — this page only renders inside the
+  // authenticated dashboard layout, which has already done the live
+  // Supabase Auth verification for this request (see its own comment).
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
+  const user = session?.user ?? null;
 
   return (
     <div className="max-w-md space-y-8">

@@ -42,10 +42,21 @@ export default async function PropertiesPage({
   const { agent: agentFilter, q: query } = await searchParams;
 
   const supabase = await createServerSupabase();
-  const { data: propertiesData, error } = await supabase
-    .from("properties")
-    .select("id, address, status, list_price, listing_agent_name, roof_year, date_quoted, assigned_agent_id, created_at")
-    .order("created_at", { ascending: false });
+  // Four independent queries — parallelized rather than four sequential
+  // round trips, since each one pays the same Vercel-function-to-Supabase
+  // network latency regardless of how small it is.
+  const [{ data: propertiesData, error }, { data: teamMembers }, { data: queued }, { data: enrichmentRows }] = await Promise.all([
+    supabase
+      .from("properties")
+      .select("id, address, status, list_price, listing_agent_name, roof_year, date_quoted, assigned_agent_id, created_at")
+      .order("created_at", { ascending: false }),
+    supabase.from("profiles").select("id, full_name, email").eq("active", true).order("full_name"),
+    // Properties with a quote already queued show "Queued" instead of a button.
+    supabase.from("quote_requests").select("property_id").in("status", ["new", "processing"]).not("property_id", "is", null),
+    // Enrichments keeps one audit row per enrichment run, newest first here —
+    // keep only the first (latest) row seen per property.
+    supabase.from("enrichments").select("property_id, flood_zone, dist_to_coast_miles").order("fetched_at", { ascending: false }),
+  ]);
   let properties = propertiesData as PropertyRow[] | null;
 
   if (agentFilter) {
@@ -56,19 +67,8 @@ export default async function PropertiesPage({
     properties = (properties ?? []).filter((p) => p.address.toLowerCase().includes(needle));
   }
 
-  const { data: teamMembers } = await supabase.from("profiles").select("id, full_name, email").eq("active", true).order("full_name");
   const agentFilterName = agentFilter === "unassigned" ? "Unassigned" : (teamMembers ?? []).find((m) => m.id === agentFilter)?.full_name;
-
-  // Properties with a quote already queued show "Queued" instead of a button.
-  const { data: queued } = await supabase.from("quote_requests").select("property_id").in("status", ["new", "processing"]).not("property_id", "is", null);
   const queuedIds = new Set((queued ?? []).map((r) => r.property_id as string));
-
-  // Enrichments keeps one audit row per enrichment run, newest first here —
-  // keep only the first (latest) row seen per property.
-  const { data: enrichmentRows } = await supabase
-    .from("enrichments")
-    .select("property_id, flood_zone, dist_to_coast_miles")
-    .order("fetched_at", { ascending: false });
   const latestEnrichmentByProperty = new Map<string, { flood_zone: string | null; dist_to_coast_miles: number | null }>();
   for (const row of enrichmentRows ?? []) {
     if (!latestEnrichmentByProperty.has(row.property_id)) {
