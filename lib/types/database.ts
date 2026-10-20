@@ -426,6 +426,23 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["contact_follow_ups"]["Row"]>;
         Relationships: [];
       };
+      property_notes: {
+        Row: {
+          id: string;
+          agency_id: string;
+          property_id: string;
+          note: string;
+          recorded_by: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["property_notes"]["Row"]> & {
+          agency_id: string;
+          property_id: string;
+          note: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["property_notes"]["Row"]>;
+        Relationships: [];
+      };
       partner_accounts: {
         Row: {
           id: string;

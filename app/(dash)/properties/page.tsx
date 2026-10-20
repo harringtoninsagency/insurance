@@ -31,15 +31,33 @@ function formatDayHeading(dayKey: string): string {
   return new Intl.DateTimeFormat("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }).format(date);
 }
 
-export default async function PropertiesPage() {
+export default async function PropertiesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ agent?: string; q?: string }>;
+}) {
+  // Set from this page's own filter form below — a specific profiles.id, or
+  // "unassigned" for assigned_agent_id is null. Same query-param shape as
+  // app/(dash)/quote-requests/page.tsx's agent filter.
+  const { agent: agentFilter, q: query } = await searchParams;
+
   const supabase = await createServerSupabase();
   const { data: propertiesData, error } = await supabase
     .from("properties")
     .select("id, address, status, list_price, listing_agent_name, roof_year, date_quoted, assigned_agent_id, created_at")
     .order("created_at", { ascending: false });
-  const properties = propertiesData as PropertyRow[] | null;
+  let properties = propertiesData as PropertyRow[] | null;
+
+  if (agentFilter) {
+    properties = (properties ?? []).filter((p) => (agentFilter === "unassigned" ? !p.assigned_agent_id : p.assigned_agent_id === agentFilter));
+  }
+  if (query?.trim()) {
+    const needle = query.trim().toLowerCase();
+    properties = (properties ?? []).filter((p) => p.address.toLowerCase().includes(needle));
+  }
 
   const { data: teamMembers } = await supabase.from("profiles").select("id, full_name, email").eq("active", true).order("full_name");
+  const agentFilterName = agentFilter === "unassigned" ? "Unassigned" : (teamMembers ?? []).find((m) => m.id === agentFilter)?.full_name;
 
   // Properties with a quote already queued show "Queued" instead of a button.
   const { data: queued } = await supabase.from("quote_requests").select("property_id").in("status", ["new", "processing"]).not("property_id", "is", null);
@@ -142,13 +160,54 @@ export default async function PropertiesPage() {
         </Link>
       </div>
 
+      <form action="/properties" method="GET" className="mb-4 flex flex-wrap items-center gap-2">
+        <input
+          type="search"
+          name="q"
+          defaultValue={query ?? ""}
+          placeholder="Search by address…"
+          className="w-64 rounded border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#003049] focus:ring-2 focus:ring-[#003049]/20"
+        />
+        <select
+          name="agent"
+          defaultValue={agentFilter ?? ""}
+          className="rounded border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#003049] focus:ring-2 focus:ring-[#003049]/20"
+        >
+          <option value="">All agents</option>
+          <option value="unassigned">Unassigned</option>
+          {(teamMembers ?? []).map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.full_name ?? m.email}
+            </option>
+          ))}
+        </select>
+        <button type="submit" className="rounded-full bg-[#003049] px-4 py-2 text-sm font-medium text-white transition-colors hover:brightness-110">
+          Filter
+        </button>
+        {(query || agentFilter) && (
+          <Link href="/properties" className="text-sm text-[#003049] hover:underline">
+            Clear
+          </Link>
+        )}
+      </form>
+
+      {agentFilter && (
+        <p className="mb-2 text-sm text-slate-600">
+          Showing only properties assigned to <span className="font-medium text-[#003049]">{agentFilterName ?? "that agent"}</span>.
+        </p>
+      )}
+
       {error && (
         <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">
           {error.message}
         </p>
       )}
 
-      {!error && days.length === 0 && (
+      {!error && days.length === 0 && (agentFilter || query) && (
+        <p className="text-sm text-slate-500">No properties match{query ? ` "${query}"` : ""}{agentFilter ? ` for ${agentFilterName ?? "that agent"}` : ""}.</p>
+      )}
+
+      {!error && days.length === 0 && !agentFilter && !query && (
         <p className="text-sm text-slate-500">
           No properties yet. Listing ingest lands in Phase 3 — for now, rows
           can be added directly in Supabase Studio to test this screen.
