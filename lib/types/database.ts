@@ -19,7 +19,7 @@ export type PropertyStatus =
   | "quoted"
   | "closed"
   | "dead";
-export type ProposalKind = "indication" | "firm" | "listing_snapshot";
+export type ProposalKind = "indication" | "firm" | "listing_snapshot" | "roof_scenario";
 export type ContactType = "realtor" | "mortgage_broker" | "roofing_company";
 export type ConsentEventType =
   | "email_opt_in"

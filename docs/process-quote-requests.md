@@ -158,6 +158,11 @@ proposal for every request — regardless of what `request_kind` asked for (cred
 automatically when the request came through the portal — see `lib/quote-requests/referral-partner.ts`) —
 and marks the request `completed` (or `failed` with a reason, if nothing priced or PDF generation errored).
 
+For a `roofing_company` referral (the same contact whose `contact_type` set `isRoofingCompanyReferral` in step
+2), the insurance-summary proposal comes back retitled "New Roof Scenario - Insurance Summary" and saved as
+`proposals.kind = "roof_scenario"` instead of `"indication"` — `finalizeQuoteRequest` detects this itself from
+`resolveReferralPartner`'s `contactType`, nothing extra to pass in here.
+
 ### 5a. Send the partner's completion email, if `pendingEmail` is set
 
 `result.pendingEmail` is non-null only for a completed, partner-submitted request with a PDF to attach —

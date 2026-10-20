@@ -72,11 +72,22 @@ function formatCurrency(value: number): string {
  * lib/quote-requests/referral-partner.ts) with a line near the top of the
  * document. Omit it (the default for every manually-run quote) and the
  * layout is exactly what it always was — this never shifts anything else.
+ *
+ * `roofScenario`, when true, renders this as the "New Roof Scenario -
+ * Insurance Summary" variant instead: same layout and data, but retitled
+ * and with a note that the premiums assume a newly installed roof — because
+ * they do. finalizeQuoteRequest (lib/quote-requests/fetch-pipeline.ts) sets
+ * this for roofing_company referral partners, whose Fetch quote items
+ * already ran under that same assumption (buildQuoteFields's
+ * roofingCompanyOverride forces roof_year to the current calendar year —
+ * see lib/adapters/fetch-quoting.ts). Saved with proposals.kind =
+ * "roof_scenario" and path prefix "roof-scenario-" instead of "indication".
  */
 export async function generateIndicationProposal(
   propertyId: string,
   referralPartner?: ReferralPartnerInfo | null,
-  quoteRequestId?: string | null
+  quoteRequestId?: string | null,
+  roofScenario = false
 ): Promise<GenerateIndicationResult> {
   const supabase = createServiceSupabase();
   const agent = await resolveProposalAgent(propertyId, quoteRequestId);
@@ -143,7 +154,8 @@ export async function generateIndicationProposal(
   page.drawImage(headerLogo, { x: MARGIN, y: y - logoHeight, width: logoWidth, height: logoHeight });
   y -= logoHeight + 18;
 
-  page.drawText("Insurance Indication Summary", { x: MARGIN, y, size: 19, font: boldFont, color: DEEP_BLUE });
+  const title = roofScenario ? "New Roof Scenario - Insurance Summary" : "Insurance Indication Summary";
+  page.drawText(title, { x: MARGIN, y, size: 19, font: boldFont, color: DEEP_BLUE });
   y -= 12;
   page.drawRectangle({ x: MARGIN, y: y - 3, width: PAGE_WIDTH - 2 * MARGIN, height: 3, color: BRIGHT_YELLOW });
   y -= 19;
@@ -158,6 +170,14 @@ export async function generateIndicationProposal(
     color: PERIWINKLE_GREY,
   });
   y -= 15;
+
+  if (roofScenario) {
+    page.drawText(
+      `Premiums below assume a newly installed roof (${todayEt().slice(0, 4)}), not the home's current roof.`,
+      { x: MARGIN, y, size: 9, font: italicFont, color: DEEP_BLUE }
+    );
+    y -= 15;
+  }
 
   if (referralPartner) {
     const referralLine = [
@@ -347,7 +367,7 @@ export async function generateIndicationProposal(
     drawFooter();
     page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
     y = PAGE_HEIGHT - MARGIN;
-    page.drawText("Insurance Indication Summary (continued)", { x: MARGIN, y: y - 12, size: 14, font: boldFont, color: DEEP_BLUE });
+    page.drawText(`${title} (continued)`, { x: MARGIN, y: y - 12, size: 14, font: boldFont, color: DEEP_BLUE });
     page.drawText(propertyAddress, { x: MARGIN, y: y - 28, size: 10, font, color: PERIWINKLE_GREY });
     page.drawRectangle({ x: MARGIN, y: y - 38, width: PAGE_WIDTH - 2 * MARGIN, height: 3, color: BRIGHT_YELLOW });
     y -= 52;
@@ -395,7 +415,8 @@ export async function generateIndicationProposal(
   drawFooter();
 
   const pdfBytes = await pdfDoc.save();
-  const path = `${property.agency_id}/${propertyId}/indication-v${version}.pdf`;
+  const kind = roofScenario ? "roof_scenario" : "indication";
+  const path = `${property.agency_id}/${propertyId}/${roofScenario ? "roof-scenario" : "indication"}-v${version}.pdf`;
 
   const { error: uploadError } = await supabase.storage
     .from("proposals")
@@ -404,7 +425,7 @@ export async function generateIndicationProposal(
 
   const { data: proposal, error: insertError } = await supabase
     .from("proposals")
-    .insert({ agency_id: property.agency_id, property_id: propertyId, kind: "indication", pdf_path: path, version })
+    .insert({ agency_id: property.agency_id, property_id: propertyId, kind, pdf_path: path, version })
     .select("id")
     .single();
   if (insertError || !proposal) {

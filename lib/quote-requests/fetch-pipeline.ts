@@ -156,6 +156,11 @@ export interface FinalizeResult {
  * (crediting the referring partner when there is one), and updates the
  * request's status. Called after the caller has already run
  * CreateBulkQuoteRequest/polled/GetQuoteStatus itself.
+ *
+ * For a roofing_company referral, the first proposal comes back as
+ * proposals.kind = "roof_scenario" ("New Roof Scenario - Insurance
+ * Summary") instead of "indication" — see generateIndicationProposal's
+ * roofScenario param.
  */
 export async function finalizeQuoteRequest(quoteRequestId: string, standardQuoteRequestId: string, mergedRates: RawFetchRate[]): Promise<FinalizeResult> {
   const supabase = createServiceSupabase();
@@ -177,6 +182,12 @@ export async function finalizeQuoteRequest(quoteRequestId: string, standardQuote
   await ingestFetchQuoteResults(request.property_id, standardQuoteRequestId, mergedRates as FetchRate[], coverages);
 
   const referralPartner = await resolveReferralPartner(quoteRequestId);
+  // A roofing_company referral already ran its Fetch quote under
+  // roofingCompanyOverride (forced current-year roof_year — see
+  // buildFetchQuoteItems/buildQuoteFields), so its "insurance summary" is
+  // the "New Roof Scenario" variant instead of the plain indication — same
+  // quotes, retitled and labeled so it's clear they assume a new roof.
+  const isRoofingCompanyReferral = referralPartner?.contactType === "roofing_company";
   const proposalIds: string[] = [];
   try {
     // Every completed request gets both documents now, regardless of which
@@ -184,7 +195,7 @@ export async function finalizeQuoteRequest(quoteRequestId: string, standardQuote
     // queue, for non-partner requests) always has the insurance summary
     // and the listing snapshot attached together.
     const [indication, listingSnapshot] = await Promise.all([
-      generateIndicationProposal(request.property_id, referralPartner, quoteRequestId),
+      generateIndicationProposal(request.property_id, referralPartner, quoteRequestId, isRoofingCompanyReferral),
       generateListingSnapshotProposal(request.property_id, referralPartner, quoteRequestId),
     ]);
     proposalIds.push(indication.proposalId, listingSnapshot.proposalId);
