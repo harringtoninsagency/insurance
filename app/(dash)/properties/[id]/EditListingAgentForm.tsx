@@ -70,7 +70,7 @@ export function EditListingAgentForm({ propertyId, name, email, phone }: Props) 
         {state?.ok && (
           <span className="text-sm text-slate-600">
             Saved.{" "}
-            {state.directory === "added" && "Added to the Realtors & Brokers directory. "}
+            {state.directory === "added" && "Added to the Referral Partners directory. "}
             {state.directory === "updated" && "Directory entry updated. "}
             {state.directory === "unchanged" && "Already in the directory. "}
             {state.contactId && (

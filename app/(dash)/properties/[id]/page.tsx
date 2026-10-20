@@ -160,7 +160,7 @@ export default async function PropertyDetailPage({
           phone={property.listing_agent_phone}
         />
         <p className="mt-1 text-xs text-slate-500">
-          Saving here also adds the agent to (or updates them in) the Realtors & Brokers directory.
+          Saving here also adds the agent to (or updates them in) the Referral Partners directory.
         </p>
       </section>
 
