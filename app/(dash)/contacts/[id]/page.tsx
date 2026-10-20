@@ -52,7 +52,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
   return (
     <div className="max-w-3xl space-y-8">
       <div>
-        <BackLink href="/contacts" label="Realtors & brokers" />
+        <BackLink href="/contacts" label="Referral Partners" />
         <h1 className="mt-2 text-xl font-semibold text-[#003049]">{contact.full_name}</h1>
         <div className="mb-2 mt-2 h-[3px] w-16 bg-[#F0FF00]" />
         <p className="text-sm text-slate-500">{TYPE_LABEL[contact.contact_type]}</p>

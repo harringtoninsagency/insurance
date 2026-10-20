@@ -67,7 +67,7 @@ export default async function ReferralActivityPage() {
 
   return (
     <div>
-      <BackLink href="/contacts" label="Realtors & Brokers" />
+      <BackLink href="/contacts" label="Referral Partners" />
       <h1 className="mt-2 text-xl font-semibold text-[#003049]">Referral partner activity</h1>
       <div className="mb-2 mt-2 h-[3px] w-16 bg-[#F0FF00]" />
       <p className="mb-6 text-sm text-slate-500">
