@@ -51,11 +51,26 @@ export default function ConfirmPage() {
     if (!params?.tokenHash || !params.type) return;
     setLoading(true);
     const { error: verifyError } = await supabase.auth.verifyOtp({ token_hash: params.tokenHash, type: params.type });
-    setLoading(false);
     if (verifyError) {
+      // A one-time token clicked a second time (e.g. re-opening the same
+      // invite/reset email, or hitting "back" and tapping Continue again)
+      // always fails here — that's correct, not a bug. But if the FIRST
+      // click already succeeded in this same browser, there's already a
+      // valid session sitting in local storage — send them on instead of
+      // showing a dead-end "expired" error, which is exactly the confusing
+      // "invalid link" complaint a second click on an already-used link
+      // produces. Only show the error when there's truly no session.
+      const { data } = await supabase.auth.getSession();
+      setLoading(false);
+      if (data.session) {
+        router.push(DESTINATION[params.type] ?? "/");
+        router.refresh();
+        return;
+      }
       setError("This link looks expired or already used. Ask for a new one.");
       return;
     }
+    setLoading(false);
     router.push(DESTINATION[params.type] ?? "/");
     router.refresh();
   }
