@@ -52,9 +52,9 @@ export default async function Home() {
             href="/partner/login"
             className="group flex flex-col items-center rounded-2xl bg-white p-8 text-center shadow-lg transition hover:shadow-xl"
           >
-            <h2 className="text-lg font-semibold text-[#003049]">Referral Partner Portal</h2>
+            <h2 className="text-lg font-semibold text-[#003049]">Welcome to our Referral Partners</h2>
             <p className="mt-2 text-sm text-slate-500">
-              For Realtors and mortgage brokers — submit and track quote requests.
+              For Realtors, mortgage brokers, and roofing companies — submit and track quote requests.
             </p>
             <span className="mt-5 rounded-full bg-[#F0FF00] px-5 py-2 text-sm font-bold text-[#003049] transition-colors group-hover:brightness-95">
               Sign in
