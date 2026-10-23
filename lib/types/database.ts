@@ -20,6 +20,7 @@ export type PropertyStatus =
   | "closed"
   | "dead";
 export type ProposalKind = "indication" | "firm" | "listing_snapshot" | "roof_scenario";
+export type PhotoSource = "onehome" | "manual" | "naip_aerial";
 export type ContactType = "realtor" | "mortgage_broker" | "roofing_company";
 export type ConsentEventType =
   | "email_opt_in"
@@ -114,6 +115,7 @@ export interface Database {
           listing_agent_email: string | null;
           listing_agent_phone: string | null;
           photo_path: string | null;
+          photo_source: PhotoSource | null;
           date_quoted: string | null;
           assigned_agent_id: string | null;
           manual_carrier_name: string | null;

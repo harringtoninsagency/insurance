@@ -214,6 +214,39 @@ export async function generateListingSnapshotProposal(
       width: drawWidth,
       height: drawHeight,
     });
+
+    // An auto-fetched NAIP aerial fallback (lib/proposals/aerial-photo.ts)
+    // reads as a straight-down aerial/map view, not a street-level "curb
+    // appeal" MLS photo — caption it as such so nobody mistakes it for one,
+    // and so a producer glancing at the PDF knows a real listing photo is
+    // still worth uploading.
+    if (property.photo_source === "naip_aerial") {
+      const captionHeight = 14;
+      const captionY = rowTop - rowHeight + offsetY;
+      page.drawRectangle({
+        x: MARGIN + offsetX,
+        y: captionY,
+        width: drawWidth,
+        height: captionHeight,
+        color: DEEP_BLUE,
+        opacity: 0.75,
+      });
+      const captionText = "Aerial view — USDA/USGS imagery";
+      const maxCaptionWidth = drawWidth - 8;
+      let captionSize = 7;
+      let captionTextWidth = font.widthOfTextAtSize(captionText, captionSize);
+      while (captionTextWidth > maxCaptionWidth && captionSize > 5) {
+        captionSize -= 0.5;
+        captionTextWidth = font.widthOfTextAtSize(captionText, captionSize);
+      }
+      page.drawText(captionText, {
+        x: MARGIN + offsetX + Math.max(4, (drawWidth - captionTextWidth) / 2),
+        y: captionY + 4,
+        size: captionSize,
+        font,
+        color: WHITE,
+      });
+    }
   } else {
     page.drawRectangle({
       x: MARGIN,

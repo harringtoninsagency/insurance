@@ -7,6 +7,7 @@ import { isBdrsCovered } from "@/lib/enrichment/building-jurisdiction";
 import { findLatestRoofPermitYear, resolveRoofYearFromPermit } from "@/lib/enrichment/roof-permits";
 import { lookupFloodZone } from "@/lib/enrichment/flood-zone";
 import { distanceToCoastMiles } from "@/lib/enrichment/coastline-distance";
+import { attachAerialPhotoFallback } from "@/lib/proposals/aerial-photo";
 
 // Placeholder for parcels with no roof permit on record, outside BDRS
 // coverage (their own building departments aren't reachable through the
@@ -171,6 +172,14 @@ export async function applyCountyEnrichment(propertyId: string): Promise<ApplyCo
     } catch (err) {
       console.warn(`Coastline distance lookup failed for ${propertyId}: ${(err as Error).message}`);
     }
+    // Coordinates were already being computed/used here but never saved —
+    // properties.lat/lng otherwise sits unused. Cheap to persist now that
+    // attachAerialPhotoFallback needs them too.
+    const { error: coordsError } = await supabase.from("properties").update({ lat: parcel.lat, lng: parcel.lon }).eq("id", propertyId);
+    if (coordsError) console.warn(`Failed to save coordinates for ${propertyId}: ${coordsError.message}`);
+    // Best-effort — never blocks enrichment, never overwrites a real photo
+    // (OneHome-extracted or manually uploaded). See its own doc comment.
+    await attachAerialPhotoFallback(propertyId, parcel.lat, parcel.lon);
   }
 
   const { error: enrichmentError } = await supabase.from("enrichments").insert({

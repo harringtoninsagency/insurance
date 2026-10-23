@@ -6,6 +6,7 @@ import { applyConsentEvent, type ConsentResult } from "@/lib/contacts/consent";
 import { upsertContact } from "@/lib/contacts/upsert-contact";
 import { importContactsCsv, type ImportSummary } from "@/lib/contacts/import-csv";
 import { invitePartner, type InviteResult } from "@/lib/partners/invite";
+import { regeneratePropertiesForContactAgentChange } from "@/lib/proposals/regenerate";
 import { createServiceSupabase } from "@/lib/supabase/server";
 import { cleanText, normalizeEmail, normalizePersonName, normalizePhone } from "@/lib/contacts/normalize";
 import type { ConsentEventType, ConsentMethod, ContactSource, ContactType } from "@/lib/types/database";
@@ -137,6 +138,10 @@ export async function updateReferralPartnerAgentAction(contactId: string, formDa
     const { supabase } = await sessionContext();
     const { error } = await supabase.from("industry_contacts").update({ referral_partner_agent_id: agentId || null }).eq("id", contactId);
     if (error) return { ok: false, error: error.message };
+    // Lowest-priority rung in resolveProposalAgent's precedence — only
+    // actually matters for this contact's properties that have no agent of
+    // their own at the property or request level; see its own doc comment.
+    await regeneratePropertiesForContactAgentChange(contactId);
     revalidatePath(`/contacts/${contactId}`);
     revalidatePath("/contacts");
     revalidatePath("/contacts/referral-activity");

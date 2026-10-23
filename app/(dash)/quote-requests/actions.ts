@@ -6,6 +6,7 @@ import { queueNewAddressQuote, queuePropertyQuote, type QueueResult, type Reques
 import { fireQuoteRoutine } from "@/lib/quote-requests/fire-routine";
 import { verifyAddress, type VerifyAddressResult } from "@/lib/geocoding/verify-address";
 import { sessionContext } from "@/lib/contacts/session";
+import { regenerateExistingProposals } from "@/lib/proposals/regenerate";
 import type { QuoteRequestKind } from "@/lib/types/database";
 
 const KINDS: QuoteRequestKind[] = ["quote_summary", "listing_snapshot", "both"];
@@ -61,8 +62,18 @@ export async function updateQuoteRequestAssignedAgentAction(requestId: string, f
   const agentId = String(formData.get("assigned_agent_id") ?? "").trim();
   try {
     const { supabase } = await sessionContext();
-    const { error } = await supabase.from("quote_requests").update({ assigned_agent_id: agentId || null }).eq("id", requestId);
+    const { data: request, error } = await supabase
+      .from("quote_requests")
+      .update({ assigned_agent_id: agentId || null })
+      .eq("id", requestId)
+      .select("property_id")
+      .single();
     if (error) return { ok: false, error: error.message };
+    // This only actually changes what a proposal shows when the property
+    // itself has no agent of its own (resolveProposalAgent's precedence) —
+    // regenerating is harmless either way, just a redundant version bump
+    // when the property-level assignment already wins.
+    if (request?.property_id) await regenerateExistingProposals(request.property_id);
     revalidatePath("/quote-requests");
     revalidatePath("/home");
     return { ok: true };
