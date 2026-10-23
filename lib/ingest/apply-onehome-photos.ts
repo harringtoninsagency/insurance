@@ -55,7 +55,7 @@ export async function applyOneHomePhotos(
         result.failed += 1;
         continue;
       }
-      await uploadListingPhoto(property.id, new Uint8Array(await res.arrayBuffer()), contentType);
+      await uploadListingPhoto(property.id, new Uint8Array(await res.arrayBuffer()), contentType, "onehome");
       result.attached += 1;
     } catch (err) {
       console.warn(`Photo for ${photo.mlsId} failed:`, (err as Error).message);
