@@ -6,8 +6,9 @@ import type { ContactType } from "@/lib/types/database";
 const NOTIFY_TO = "tim.harrington@brightway.com";
 
 /**
- * Internal heads-up to the agency when a realtor/mortgage broker self-signs-up
- * for a partner account (lib/partners/self-signup.ts already upserts them
+ * Internal heads-up to the agency when a realtor, mortgage broker, or
+ * roofing company self-signs-up for a partner account
+ * (lib/partners/self-signup.ts already upserts them
  * into industry_contacts — this is just the notification). Never throws:
  * a failed notification email must not fail the signup itself.
  */

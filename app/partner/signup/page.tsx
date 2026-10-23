@@ -33,7 +33,7 @@ export default async function PartnerSignupPage({ searchParams }: { searchParams
 
         <div>
           <h1 className="text-lg font-semibold text-[#003049]">Create your partner account</h1>
-          <p className="text-sm text-[#8291AC]">For realtors and mortgage brokers</p>
+          <p className="text-sm text-[#8291AC]">For realtors, mortgage brokers, and roofing companies</p>
         </div>
 
         <SignupForm agentId={resolvedAgent?.id ?? null} agentName={resolvedAgent?.fullName ?? null} />
