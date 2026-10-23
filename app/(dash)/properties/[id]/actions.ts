@@ -5,6 +5,7 @@ import { applyCountyEnrichment } from "@/lib/enrichment/apply-county-enrichment"
 import { describeCountyParcelMiss } from "@/lib/enrichment/county-parcels";
 import { generateIndicationProposal } from "@/lib/proposals/generate-indication";
 import { generateListingSnapshotProposal } from "@/lib/proposals/generate-listing-snapshot";
+import { regenerateExistingProposals } from "@/lib/proposals/regenerate";
 import { uploadListingPhoto } from "@/lib/proposals/listing-photo";
 import { queueOutreach } from "@/lib/outreach/queue";
 import { sessionContext } from "@/lib/contacts/session";
@@ -97,6 +98,11 @@ export async function updateAssignedAgentAction(propertyId: string, formData: Fo
     const { supabase } = await sessionContext();
     const { error } = await supabase.from("properties").update({ assigned_agent_id: agentId || null }).eq("id", propertyId);
     if (error) return { ok: false, error: error.message };
+    // Keeps any already-generated PDFs for this property in sync with the
+    // new assignment — see regenerateExistingProposals's own doc comment
+    // for why this exists (without it, a reassignment silently left every
+    // prior proposal showing the old agent forever).
+    await regenerateExistingProposals(propertyId);
     revalidatePath(`/properties/${propertyId}`);
     revalidatePath("/properties");
     return { ok: true };
