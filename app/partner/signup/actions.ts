@@ -7,8 +7,8 @@ import type { ContactType } from "@/lib/types/database";
 
 export async function signUpPartnerAction(_prev: SelfSignupResult | null, formData: FormData): Promise<SelfSignupResult> {
   const contactType = String(formData.get("contact_type") ?? "") as ContactType;
-  if (contactType !== "realtor" && contactType !== "mortgage_broker") {
-    return { ok: false, error: "Choose whether you're a realtor or a mortgage broker." };
+  if (contactType !== "realtor" && contactType !== "mortgage_broker" && contactType !== "roofing_company") {
+    return { ok: false, error: "Choose whether you're a realtor, a mortgage broker, or a roofing company." };
   }
 
   const fullName = String(formData.get("full_name") ?? "");

@@ -11,8 +11,9 @@ const PUBLIC_FORM_AGENCY_ID = "ccb0a58e-0b78-4799-b236-66d1bda42f67";
 export type SelfSignupResult = { ok: true } | { ok: false; error: string };
 
 /**
- * Self-service partner signup: a realtor/mortgage broker creates their own
- * account with name + email + a 10-digit phone number, no admin invite
+ * Self-service partner signup: a realtor, mortgage broker, or roofing
+ * company creates their own account with name + email + a 10-digit phone
+ * number, no admin invite
  * needed — unlike lib/partners/invite.ts's admin-triggered flow, which this
  * sits alongside rather than replaces (an admin can still invite someone
  * directly; this is the other door in).

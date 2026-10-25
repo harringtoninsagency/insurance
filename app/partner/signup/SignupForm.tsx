@@ -61,6 +61,7 @@ export function SignupForm({ agentId, agentName }: { agentId: string | null; age
           </option>
           <option value="realtor">Realtor</option>
           <option value="mortgage_broker">Mortgage broker</option>
+          <option value="roofing_company">Roofing company</option>
         </select>
       </div>
 
