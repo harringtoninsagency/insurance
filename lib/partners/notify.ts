@@ -19,7 +19,7 @@ export async function notifyNewPartnerAccount(input: { fullName: string; email: 
     return;
   }
 
-  const typeLabel = input.contactType === "realtor" ? "Realtor" : "Mortgage broker";
+  const typeLabel = input.contactType === "realtor" ? "Realtor" : input.contactType === "roofing_company" ? "Roofing company" : "Mortgage broker";
   const phone = `${input.phoneDigits.slice(0, 3)}-${input.phoneDigits.slice(3, 6)}-${input.phoneDigits.slice(6)}`;
 
   try {
