@@ -310,29 +310,51 @@ export function describeCountyParcelMiss(reason: CountyParcelMissReason | undefi
  * (+ zip as a confidence check). Returns a null parcel rather than guessing on
  * zero or multiple matches — ambiguity needs a human, not a silent wrong pick.
  */
+// This project's PostgREST config hard-caps any single request at 1,000
+// rows — confirmed live: requesting .range(0, 9999) still came back with
+// exactly 1,000. A common house number (e.g. "2", "100") matches thousands
+// of parcels across this table's statewide coverage (up to ~4,050 for the
+// single busiest number observed), so a one-shot query silently truncates
+// before the street-name filter below ever sees the real match (confirmed
+// live: an unambiguous Pinellas match came back "no_street_name_match" this
+// way). Paginate in 1,000-row pages instead; MAX_CANDIDATES is a sane upper
+// bound so one abnormally common house number can't page forever.
+const PARCEL_PAGE_SIZE = 1000;
+const MAX_CANDIDATES = 10000;
+
+async function fetchAllByStrNum(supabase: ReturnType<typeof createServiceSupabase>, strNum: string): Promise<CountyParcelRow[]> {
+  const rows: CountyParcelRow[] = [];
+  for (let offset = 0; offset < MAX_CANDIDATES; offset += PARCEL_PAGE_SIZE) {
+    const { data, error } = await supabase
+      .from("county_parcels")
+      .select("*")
+      .eq("str_num", strNum)
+      .range(offset, offset + PARCEL_PAGE_SIZE - 1);
+    if (error) throw new Error(`County parcel lookup failed: ${error.message}`);
+    if (!data?.length) break;
+    rows.push(...data);
+    if (data.length < PARCEL_PAGE_SIZE) break;
+  }
+  return rows;
+}
+
 export async function findCountyParcel(property: PropertyRow): Promise<CountyParcelLookup> {
   if (!property.house_number || !property.street) {
     return { parcel: null, missReason: "no_candidates_at_house_number" };
   }
 
   const supabase = createServiceSupabase();
-  let { data, error } = await supabase
-    .from("county_parcels")
-    .select("*")
-    .eq("str_num", property.house_number);
-
-  if (error) throw new Error(`County parcel lookup failed: ${error.message}`);
+  let data = await fetchAllByStrNum(supabase, property.house_number);
 
   // A letter-suffixed house number (e.g. "1121A", MLS-style for a duplex or
   // rear unit) usually shares a single base parcel in county records, which
   // carries no such suffix — retry against the bare digits before giving up.
-  if (!data?.length && /^\d+[A-Za-z]$/.test(property.house_number)) {
+  if (!data.length && /^\d+[A-Za-z]$/.test(property.house_number)) {
     const bareHouseNumber = property.house_number.slice(0, -1);
-    ({ data, error } = await supabase.from("county_parcels").select("*").eq("str_num", bareHouseNumber));
-    if (error) throw new Error(`County parcel lookup failed: ${error.message}`);
+    data = await fetchAllByStrNum(supabase, bareHouseNumber);
   }
 
-  if (!data?.length) return { parcel: null, missReason: "no_candidates_at_house_number" };
+  if (!data.length) return { parcel: null, missReason: "no_candidates_at_house_number" };
 
   const targetStreet = normalizeStreetName(property.street);
   // row.str_name is already the county's own bare base name, with no suffix
