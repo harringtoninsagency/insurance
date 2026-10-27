@@ -6,7 +6,14 @@ export const PUBLIC_FORM_AGENCY_ID = "ccb0a58e-0b78-4799-b236-66d1bda42f67";
 
 export interface SubmitQuoteRequestInput {
   requesterType: QuoteRequesterType;
-  /** Set only for a partner submission — looked up server-side from their session, never trusted from form input. */
+  /**
+   * For a partner submission, their own directory contact — looked up
+   * server-side from their session, never trusted from form input. For an
+   * internal submission, the referral-partner contact a team member
+   * deliberately chose to co-brand this request with (see
+   * app/(dash)/quote-requests/new/NewQuoteForm.tsx) — still re-validated
+   * server-side (agency + contact type) before use, never trusted bare.
+   */
   contactId?: string | null;
   requesterName: string;
   requesterEmail: string;
