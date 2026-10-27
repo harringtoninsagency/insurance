@@ -275,9 +275,6 @@ export async function generateIndicationProposal(
       borderColor: PERIWINKLE_GREY,
       borderWidth: 0.75,
     });
-    page.drawText("Carrier", { x: colCarrier, y: y - 15, size: 10, font: boldFont, color: WHITE });
-    page.drawText("Form", { x: colForm, y: y - 15, size: 10, font: boldFont, color: WHITE });
-    page.drawText("Annual Premium", { x: colPremium, y: y - 15, size: 10, font: boldFont, color: WHITE });
     y -= rowHeight;
   }
 
