@@ -6,6 +6,7 @@ import { applyConsentEvent, type ConsentResult } from "@/lib/contacts/consent";
 import { upsertContact } from "@/lib/contacts/upsert-contact";
 import { importContactsCsv, type ImportSummary } from "@/lib/contacts/import-csv";
 import { invitePartner, type InviteResult } from "@/lib/partners/invite";
+import { uploadPartnerImage, type BrandingKind } from "@/lib/partners/branding";
 import { regeneratePropertiesForContactAgentChange } from "@/lib/proposals/regenerate";
 import { createServiceSupabase } from "@/lib/supabase/server";
 import { cleanText, normalizeEmail, normalizePersonName, normalizePhone } from "@/lib/contacts/normalize";
@@ -221,6 +222,39 @@ export async function updateContactDetailsAction(contactId: string, payload: Con
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "Failed to save the contact." };
   }
+}
+
+export type ContactBrandingResult = { ok: true } | { ok: false; error: string };
+
+/**
+ * Admin-side equivalent of a partner's own uploadPartnerPhotoAction/
+ * uploadPartnerLogoAction (app/partner/(portal)/actions.ts) — lets a team
+ * member upload a referral partner's co-branding photo or company logo on
+ * their behalf (e.g. while onboarding someone who'd rather not log into
+ * their own portal), for the same industry_contacts row.
+ */
+async function uploadContactBrandingAction(kind: BrandingKind, contactId: string, formData: FormData): Promise<ContactBrandingResult> {
+  const file = formData.get(kind);
+  if (!(file instanceof File) || file.size === 0) return { ok: false, error: `Choose a ${kind === "photo" ? "photo" : "logo"} file first.` };
+
+  try {
+    const { agencyId } = await sessionContext();
+    const service = createServiceSupabase();
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    await uploadPartnerImage(kind, agencyId, contactId, bytes, file.type);
+    revalidatePath(`/contacts/${contactId}`);
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Something went wrong." };
+  }
+}
+
+export async function uploadContactPhotoAction(contactId: string, _prev: ContactBrandingResult | null, formData: FormData): Promise<ContactBrandingResult> {
+  return uploadContactBrandingAction("photo", contactId, formData);
+}
+
+export async function uploadContactLogoAction(contactId: string, _prev: ContactBrandingResult | null, formData: FormData): Promise<ContactBrandingResult> {
+  return uploadContactBrandingAction("logo", contactId, formData);
 }
 
 export async function invitePartnerAction(contactId: string): Promise<InviteResult> {
