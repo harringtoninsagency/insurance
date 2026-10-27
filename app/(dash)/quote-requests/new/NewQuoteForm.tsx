@@ -21,10 +21,18 @@ function Field({ id, label, ...props }: { id: string; label: string } & React.In
 
 type Verification = { status: "idle" | "checking" } | ({ status: "verified"; key: string } & { result: Extract<VerifyAddressResult, { ok: true }> }) | { status: "failed"; error: string };
 
-export function NewQuoteForm() {
+interface ReferralPartnerOption {
+  id: string;
+  fullName: string;
+  companyName: string | null;
+}
+
+export function NewQuoteForm({ referralPartners }: { referralPartners: ReferralPartnerOption[] }) {
   const [state, formAction, isPending] = useActionState<NewQuoteState, FormData>(runQuoteForAddressAction, null);
   const [isVerifying, startVerifying] = useTransition();
   const [verification, setVerification] = useState<Verification>({ status: "idle" });
+  const [coBrandContactId, setCoBrandContactId] = useState("");
+  const coBrandPartner = referralPartners.find((p) => p.id === coBrandContactId);
 
   const [addressLine, setAddressLine] = useState("");
   const [city, setCity] = useState("");
@@ -107,6 +115,33 @@ export function NewQuoteForm() {
         </label>
       </div>
 
+      {referralPartners.length > 0 && (
+        <div className="space-y-1 rounded border border-slate-200 p-3">
+          <label htmlFor="co_brand_contact_id" className="text-xs font-medium text-slate-600">
+            Co-brand with a referral partner (optional)
+          </label>
+          <select
+            id="co_brand_contact_id"
+            name="co_brand_contact_id"
+            className={inputClass}
+            value={coBrandContactId}
+            onChange={(e) => setCoBrandContactId(e.target.value)}
+          >
+            <option value="">— None —</option>
+            {referralPartners.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.fullName}
+                {p.companyName ? ` (${p.companyName})` : ""}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-slate-500">
+            Credits this partner on the generated PDFs — their name, phone, email and photo appear alongside the
+            Brightway agent&apos;s, same as the partner portal.
+          </p>
+        </div>
+      )}
+
       <div className="space-y-2 rounded border border-slate-200 p-3">
         <div className="flex items-center justify-between gap-3">
           <p className="text-xs text-slate-500">Verify this address with Google Maps before running a quote — catches a typo'd street, city or zip.</p>
@@ -153,7 +188,7 @@ export function NewQuoteForm() {
 
       <div className="flex flex-wrap items-center gap-4">
         <button type="submit" disabled={isPending || !isVerified} className="rounded-full bg-[#F0FF00] px-5 py-2.5 text-sm font-bold text-[#003049] transition-colors hover:brightness-95 disabled:opacity-50">
-          {isPending ? "Queuing..." : "Run quote now"}
+          {isPending ? "Queuing..." : coBrandPartner ? `Run Quote Now — Co-Branded with ${coBrandPartner.fullName}` : "Run quote now"}
         </button>
         {!isVerified && <span className="text-xs text-slate-500">Verify the address above first.</span>}
         {state && "error" in state && <span className="text-sm text-red-600">{state.error}</span>}

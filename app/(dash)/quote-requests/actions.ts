@@ -7,6 +7,7 @@ import { fireQuoteRoutine } from "@/lib/quote-requests/fire-routine";
 import { verifyAddress, type VerifyAddressResult } from "@/lib/geocoding/verify-address";
 import { sessionContext } from "@/lib/contacts/session";
 import { regenerateExistingProposals } from "@/lib/proposals/regenerate";
+import { resolveReferralPartnerContact } from "@/lib/contacts/resolve-referral-partner-contact";
 import type { QuoteRequestKind } from "@/lib/types/database";
 
 const KINDS: QuoteRequestKind[] = ["quote_summary", "listing_snapshot", "both"];
@@ -88,6 +89,9 @@ export async function runQuoteForAddressAction(_prev: NewQuoteState, formData: F
   const str = (key: string) => String(formData.get(key) ?? "").trim();
   try {
     const { supabase, requester } = await teamMember();
+    // Re-validated against this agency's own contacts — a posted contact id
+    // is never trusted on its own; see resolveReferralPartnerContact.
+    const coBrandContact = await resolveReferralPartnerContact(supabase, requester.agencyId, str("co_brand_contact_id"));
     const result = await queueNewAddressQuote(
       supabase,
       {
@@ -105,6 +109,7 @@ export async function runQuoteForAddressAction(_prev: NewQuoteState, formData: F
         dwellingA: str("dwelling_a"),
         personalPropertyPct: str("personal_property_pct"),
         roofScenario: formData.get("roof_scenario") === "true",
+        contactId: coBrandContact?.id ?? null,
       },
       requester
     );

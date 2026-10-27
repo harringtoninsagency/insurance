@@ -1,9 +1,22 @@
 import { NewQuoteForm } from "./NewQuoteForm";
 import { BackLink } from "@/app/BackLink";
+import { sessionContext } from "@/lib/contacts/session";
 
 export const metadata = { title: "Run a quote" };
 
-export default function NewQuotePage() {
+export default async function NewQuotePage() {
+  // The referral-partner co-branding picker's options — same contact
+  // types resolveReferralPartnerContact accepts. Not RLS-scoped any
+  // differently than the rest of this dashboard: the signed-in session's
+  // own "agency scoped" policy on industry_contacts already limits this.
+  const { supabase } = await sessionContext();
+  const { data: contacts } = await supabase
+    .from("industry_contacts")
+    .select("id, full_name, company_name")
+    .eq("do_not_contact", false)
+    .in("contact_type", ["realtor", "mortgage_broker", "roofing_company"])
+    .order("full_name");
+
   return (
     <div className="max-w-2xl">
       <BackLink href="/quote-requests" label="Quote requests" />
@@ -15,7 +28,7 @@ export default function NewQuotePage() {
         picks it up.
       </p>
       <div className="rounded-lg border border-slate-200 bg-white p-6">
-        <NewQuoteForm />
+        <NewQuoteForm referralPartners={(contacts ?? []).map((c) => ({ id: c.id, fullName: c.full_name, companyName: c.company_name }))} />
       </div>
     </div>
   );
