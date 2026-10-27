@@ -9,6 +9,10 @@ import { todayEt, formatDateOnly } from "@/lib/dates";
 import { titleCaseAddress } from "@/lib/address/title-case";
 
 const AGENT_SECTION_HEIGHT = 76;
+// A blank blue header bar above the agent/referral-partner box, matching the
+// carrier table's header and the insurance indication summary's equivalent
+// section, so both documents' agent/referral-partner section look the same.
+const AGENT_HEADER_HEIGHT = 20;
 // Margin above the logo specifically (1/2in) — independent of the body
 // MARGIN below, which stays as-is for left/right/bottom content.
 const LOGO_TOP_MARGIN = 36;
@@ -458,6 +462,16 @@ export async function generateListingSnapshotProposal(
   const footerY = MARGIN + 24;
   y -= 16;
   const bottomBoxHeight = AGENT_SECTION_HEIGHT;
+  page.drawRectangle({
+    x: MARGIN,
+    y: y - AGENT_HEADER_HEIGHT,
+    width: CONTENT_WIDTH,
+    height: AGENT_HEADER_HEIGHT,
+    color: DEEP_BLUE,
+    borderColor: PERIWINKLE_GREY,
+    borderWidth: 0.75,
+  });
+  y -= AGENT_HEADER_HEIGHT;
   const boxTop = y;
 
   async function embedPhoto(bucket: string, path: string) {

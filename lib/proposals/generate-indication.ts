@@ -14,6 +14,10 @@ function sniffImageKind(bytes: Uint8Array): "jpg" | "png" {
 }
 
 const AGENT_SECTION_HEIGHT = 74;
+// A blank blue header bar above the agent/referral-partner box, matching the
+// carrier table's header — drawn deliberately (not left to the accident of a
+// continuation page) so it appears the same way every time.
+const AGENT_HEADER_HEIGHT = 20;
 // The agency's one office line with its one shared extension — every agent's
 // calls route through this same number/extension, not a per-agent one.
 const AGENCY_PHONE = "727-789-2200 X.1";
@@ -330,6 +334,16 @@ export async function generateIndicationProposal(
     const col2Width = 160;
     const divider2X = col2X + col2Width + 10;
     const col3X = divider2X + 14;
+    page.drawRectangle({
+      x: MARGIN,
+      y: y - AGENT_HEADER_HEIGHT,
+      width: contentWidth,
+      height: AGENT_HEADER_HEIGHT,
+      color: DEEP_BLUE,
+      borderColor: PERIWINKLE_GREY,
+      borderWidth: 0.75,
+    });
+    y -= AGENT_HEADER_HEIGHT;
     const boxTop = y;
     page.drawRectangle({
       x: MARGIN,
@@ -392,6 +406,17 @@ export async function generateIndicationProposal(
     const dividerX = MARGIN + halfWidth;
     const rightPhotoX = dividerX + 14;
     const rightTextX = rightPhotoX + photoSize + 12;
+
+    page.drawRectangle({
+      x: MARGIN,
+      y: y - AGENT_HEADER_HEIGHT,
+      width: contentWidth,
+      height: AGENT_HEADER_HEIGHT,
+      color: DEEP_BLUE,
+      borderColor: PERIWINKLE_GREY,
+      borderWidth: 0.75,
+    });
+    y -= AGENT_HEADER_HEIGHT;
     const boxTop = y;
 
     page.drawRectangle({
@@ -457,7 +482,11 @@ export async function generateIndicationProposal(
     else await drawAgentOnlySection();
   }
 
-  function startContinuationPage() {
+  // includeTableHeader is false when the new page is only to make room for
+  // the agent/referral-partner section (no more carrier rows follow) — that
+  // section draws its own blue header bar, so repeating the table's here
+  // would double it up.
+  function startContinuationPage(includeTableHeader = true) {
     drawFooter();
     page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
     y = PAGE_HEIGHT - MARGIN;
@@ -465,7 +494,7 @@ export async function generateIndicationProposal(
     page.drawText(propertyAddress, { x: MARGIN, y: y - 28, size: 10, font, color: PERIWINKLE_GREY });
     page.drawRectangle({ x: MARGIN, y: y - 38, width: PAGE_WIDTH - 2 * MARGIN, height: 3, color: BRIGHT_YELLOW });
     y -= 52;
-    drawTableHeader();
+    if (includeTableHeader) drawTableHeader();
   }
 
   drawTableHeader();
@@ -504,7 +533,7 @@ export async function generateIndicationProposal(
     y -= rowHeight;
   });
 
-  if (y - AGENT_SECTION_HEIGHT < MARGIN + FOOTER_RESERVE) startContinuationPage();
+  if (y - (AGENT_SECTION_HEIGHT + AGENT_HEADER_HEIGHT) < MARGIN + FOOTER_RESERVE) startContinuationPage(false);
   await drawAgentSection();
   drawFooter();
 
