@@ -30,6 +30,7 @@ export async function signUpPartner(
   supabase: SupabaseClient<Database>,
   input: {
     fullName: string;
+    companyName?: string | null;
     email: string;
     phoneDigits: string;
     contactType: ContactType;
@@ -60,6 +61,7 @@ export async function signUpPartner(
   const outcome = await upsertContact(supabase, PUBLIC_FORM_AGENCY_ID, {
     contactType: input.contactType,
     fullName,
+    companyName: input.companyName,
     email,
     cellPhone: input.phoneDigits,
     referralPartnerAgentId: resolvedAgent?.id ?? null,

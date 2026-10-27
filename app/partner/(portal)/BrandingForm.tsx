@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useActionState } from "react";
-import { uploadPartnerPhotoAction, uploadPartnerLogoAction, updatePartnerAgentAction, type PartnerActionResult } from "./actions";
+import { uploadPartnerPhotoAction, uploadPartnerLogoAction, updatePartnerCompanyNameAction, updatePartnerAgentAction, type PartnerActionResult } from "./actions";
 
 // Same cap as AgentPhotoForm/PhotoUploadForm — Next.js server actions cap
 // the request body (next.config.ts raises it to 10MB), enforced before the
@@ -70,14 +70,48 @@ function ImageUploadRow({
   );
 }
 
+function CompanyNameRow({ companyName }: { companyName: string | null }) {
+  const [state, formAction, isPending] = useActionState<PartnerActionResult | null, FormData>(updatePartnerCompanyNameAction, null);
+  const [value, setValue] = useState(companyName ?? "");
+
+  return (
+    <div>
+      <label htmlFor="company_name" className="text-xs text-slate-500">
+        Your company / brokerage — appears alongside your contact info on Brightway-generated insurance summary and listing snapshot PDFs
+      </label>
+      <form action={formAction} className="mt-1 flex flex-wrap items-center gap-2">
+        <input
+          id="company_name"
+          name="company_name"
+          type="text"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          className="w-64 rounded border border-slate-300 bg-white px-2 py-1.5 text-sm focus:border-[#003049] focus:outline-none"
+        />
+        <button
+          type="submit"
+          disabled={isPending}
+          className="shrink-0 rounded border border-[#003049] px-2 py-1 text-xs font-medium text-[#003049] disabled:opacity-50"
+        >
+          {isPending ? "Saving..." : "Save"}
+        </button>
+      </form>
+      {state && !state.ok && <p className="mt-1 text-xs text-red-600">{state.error}</p>}
+      {state?.ok && <p className="mt-1 text-xs text-green-700">Saved.</p>}
+    </div>
+  );
+}
+
 export function BrandingForm({
   photoUrl,
   logoUrl,
+  companyName,
   referralPartnerAgentId,
   agents,
 }: {
   photoUrl: string | null;
   logoUrl: string | null;
+  companyName: string | null;
   referralPartnerAgentId: string | null;
   agents: Agent[];
 }) {
@@ -87,6 +121,7 @@ export function BrandingForm({
     <details className="rounded-lg border border-slate-200 bg-white p-5">
       <summary className="cursor-pointer font-medium text-[#003049]">Your co-branding &amp; Brightway agent</summary>
       <div className="mt-4 space-y-4 text-sm">
+        <CompanyNameRow companyName={companyName} />
         <ImageUploadRow
           kind="photo"
           label="Your photo — appears alongside your contact info on Brightway-generated insurance summary and listing snapshot PDFs"

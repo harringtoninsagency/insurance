@@ -49,13 +49,13 @@ export default async function PartnerPortalPage() {
   // "partner reads own" policy, so there's nothing gained by using the
   // session client here over the service client every other partner-portal
   // write already uses.
-  let branding: { photoUrl: string | null; logoUrl: string | null; referralPartnerAgentId: string | null; agents: { id: string; fullName: string | null; email: string }[] } | null = null;
+  let branding: { photoUrl: string | null; logoUrl: string | null; companyName: string | null; referralPartnerAgentId: string | null; agents: { id: string; fullName: string | null; email: string }[] } | null = null;
   if (!isAdminView && user) {
     const service = createServiceSupabase();
     const { data: account } = await service.from("partner_accounts").select("agency_id, contact_id").eq("user_id", user.id).maybeSingle();
     if (account) {
       const [{ data: contact }, { data: agentRows }] = await Promise.all([
-        service.from("industry_contacts").select("photo_path, logo_path, referral_partner_agent_id").eq("id", account.contact_id).maybeSingle(),
+        service.from("industry_contacts").select("photo_path, logo_path, company_name, referral_partner_agent_id").eq("id", account.contact_id).maybeSingle(),
         service.from("profiles").select("id, full_name, email").eq("agency_id", account.agency_id).eq("active", true).order("full_name"),
       ]);
       const [photoUrl, logoUrl] = await Promise.all([
@@ -65,6 +65,7 @@ export default async function PartnerPortalPage() {
       branding = {
         photoUrl,
         logoUrl,
+        companyName: contact?.company_name ?? null,
         referralPartnerAgentId: contact?.referral_partner_agent_id ?? null,
         agents: (agentRows ?? []).map((a) => ({ id: a.id, fullName: a.full_name, email: a.email })),
       };
@@ -174,7 +175,13 @@ export default async function PartnerPortalPage() {
           admin view is read-only here; use the internal quote-requests page
           to submit on a partner's behalf instead. */}
       {!isAdminView && branding && (
-        <BrandingForm photoUrl={branding.photoUrl} logoUrl={branding.logoUrl} referralPartnerAgentId={branding.referralPartnerAgentId} agents={branding.agents} />
+        <BrandingForm
+          photoUrl={branding.photoUrl}
+          logoUrl={branding.logoUrl}
+          companyName={branding.companyName}
+          referralPartnerAgentId={branding.referralPartnerAgentId}
+          agents={branding.agents}
+        />
       )}
       {!isAdminView && <NewRequestForm defaultEmail={user?.email ?? ""} />}
 
