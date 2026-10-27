@@ -408,9 +408,6 @@ export async function generateListingSnapshotProposal(
     borderColor: PERIWINKLE_GREY,
     borderWidth: 0.75,
   });
-  page.drawText("CARRIER", { x: colCarrier, y: y - 12, size: 9, font: boldFont, color: WHITE });
-  page.drawText("FORM", { x: colForm, y: y - 12, size: 9, font: boldFont, color: WHITE });
-  page.drawText("ANNUAL", { x: colPremium, y: y - 12, size: 9, font: boldFont, color: WHITE });
   y -= tableRowHeight;
 
   tableRows.forEach((row, i) => {
