@@ -101,6 +101,10 @@ export function NewQuoteForm() {
             <option value="listing_snapshot">Listing snapshot only</option>
           </select>
         </div>
+        <label className="flex items-center gap-2 text-sm text-slate-700 sm:col-span-2">
+          <input type="checkbox" name="roof_scenario" value="true" className="h-4 w-4 rounded border-slate-300" />
+          New Roof Scenario — assumes a newly installed roof on this property
+        </label>
       </div>
 
       <div className="space-y-2 rounded border border-slate-200 p-3">

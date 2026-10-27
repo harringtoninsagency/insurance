@@ -104,6 +104,7 @@ export async function runQuoteForAddressAction(_prev: NewQuoteState, formData: F
         listPrice: str("list_price"),
         dwellingA: str("dwelling_a"),
         personalPropertyPct: str("personal_property_pct"),
+        roofScenario: formData.get("roof_scenario") === "true",
       },
       requester
     );

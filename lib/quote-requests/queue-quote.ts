@@ -34,7 +34,7 @@ const QUEUED_DETAIL = "Queued by a team member — waiting for the next carrier-
  * one-property-per-request rule exists so partners can't see each other's
  * history through a shared row, and an internal request has no partner.
  */
-export async function queuePropertyQuote(supabase: Client, propertyId: string, requester: Requester, kind: QuoteRequestKind): Promise<QueueResult> {
+export async function queuePropertyQuote(supabase: Client, propertyId: string, requester: Requester, kind: QuoteRequestKind, roofScenario = false): Promise<QueueResult> {
   const { data: property } = await supabase.from("properties").select("*").eq("id", propertyId).maybeSingle();
   if (!property) return { ok: false, error: "Property not found." };
 
@@ -77,6 +77,7 @@ export async function queuePropertyQuote(supabase: Client, propertyId: string, r
       status: "processing",
       status_detail: QUEUED_DETAIL,
       property_id: propertyId,
+      requested_roof_scenario: roofScenario,
     })
     .select("id")
     .single();
@@ -107,7 +108,7 @@ export async function queueNewAddressQuote(supabase: Client, input: NewAddressIn
       .ilike("city", escapeLike(input.city.trim()));
     if (input.zipcode?.trim()) match = match.eq("zipcode", input.zipcode.trim());
     const { data: existing } = await match.limit(1);
-    if (existing?.[0]) return queuePropertyQuote(supabase, existing[0].id, requester, input.requestKind);
+    if (existing?.[0]) return queuePropertyQuote(supabase, existing[0].id, requester, input.requestKind, input.roofScenario);
   } catch {
     // An address with no leading house number can't be matched here; submit/prepare below reports that properly.
   }
