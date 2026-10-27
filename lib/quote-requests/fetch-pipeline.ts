@@ -186,8 +186,11 @@ export async function finalizeQuoteRequest(quoteRequestId: string, standardQuote
   // roofingCompanyOverride (forced current-year roof_year — see
   // buildFetchQuoteItems/buildQuoteFields), so its "insurance summary" is
   // the "New Roof Scenario" variant instead of the plain indication — same
-  // quotes, retitled and labeled so it's clear they assume a new roof.
-  const isRoofingCompanyReferral = referralPartner?.contactType === "roofing_company";
+  // quotes, retitled and labeled so it's clear they assume a new roof. A
+  // partner can also ask for this explicitly regardless of their contact
+  // type (the portal's "Request a Quote Now with NEW ROOF SCENARIO"
+  // button — request.requested_roof_scenario); either reason triggers it.
+  const roofScenario = referralPartner?.contactType === "roofing_company" || request.requested_roof_scenario;
   const proposalIds: string[] = [];
   try {
     // Every completed request gets both documents now, regardless of which
@@ -195,7 +198,7 @@ export async function finalizeQuoteRequest(quoteRequestId: string, standardQuote
     // queue, for non-partner requests) always has the insurance summary
     // and the listing snapshot attached together.
     const [indication, listingSnapshot] = await Promise.all([
-      generateIndicationProposal(request.property_id, referralPartner, quoteRequestId, isRoofingCompanyReferral),
+      generateIndicationProposal(request.property_id, referralPartner, quoteRequestId, roofScenario),
       generateListingSnapshotProposal(request.property_id, referralPartner, quoteRequestId),
     ]);
     proposalIds.push(indication.proposalId, listingSnapshot.proposalId);

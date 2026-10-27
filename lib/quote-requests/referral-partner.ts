@@ -11,6 +11,8 @@ export interface ReferralPartnerInfo {
   // directory record is the same source of truth the Fetch quoting override
   // already keys off of (see buildFetchQuoteItems's doc comment).
   contactType: ContactType;
+  /** Partner's own co-branding headshot (partner-photos bucket) — see lib/proposals/generate-indication.ts's co-branded block. */
+  photoPath: string | null;
 }
 
 /**
@@ -37,7 +39,7 @@ export async function resolveReferralPartner(quoteRequestId: string | null | und
 
   const { data: contact } = await supabase
     .from("industry_contacts")
-    .select("full_name, company_name, cell_phone, office_phone, email, contact_type")
+    .select("full_name, company_name, cell_phone, office_phone, email, contact_type, photo_path")
     .eq("id", request.contact_id)
     .maybeSingle();
   if (!contact) return null;
@@ -50,5 +52,6 @@ export async function resolveReferralPartner(quoteRequestId: string | null | und
     phone: contact.cell_phone ?? contact.office_phone,
     email: contact.email ?? request.requester_email,
     contactType: contact.contact_type,
+    photoPath: contact.photo_path,
   };
 }

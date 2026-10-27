@@ -96,19 +96,21 @@ const s = createServiceSupabase();
 const REQUEST_ID = "..."; // fill in
 const { data: request } = await s.from("quote_requests").select("*").eq("id", REQUEST_ID).single();
 const { data: property } = await s.from("properties").select("*").eq("id", request!.property_id!).single();
-// A roofing-company referral runs under special rules (forced roof_year,
-// fixed wind-mit credits) — see lib/adapters/fetch-quoting.ts. Check this
-// every time; it's the request's own contact, not the property's.
-let isRoofingCompanyReferral = false;
-if (request!.contact_id) {
+// A roofing-company referral, OR any partner who explicitly asked for the
+// "New Roof Scenario" button on their portal form (request.requested_roof_
+// scenario), runs under special rules (forced roof_year, fixed wind-mit
+// credits) — see lib/adapters/fetch-quoting.ts. Check both every time; the
+// contact type is the request's own contact, not the property's.
+let roofScenario = request!.requested_roof_scenario === true;
+if (!roofScenario && request!.contact_id) {
   const { data: contact } = await s.from("industry_contacts").select("contact_type").eq("id", request!.contact_id).single();
-  isRoofingCompanyReferral = contact?.contact_type === "roofing_company";
+  roofScenario = contact?.contact_type === "roofing_company";
 }
 const items = buildFetchQuoteItems(
   property!,
   { dwellingA: request!.dwelling_a, personalPropertyPct: request!.personal_property_pct },
   REQUEST_ID,
-  isRoofingCompanyReferral
+  roofScenario
 );
 console.log(JSON.stringify(items));
 ```

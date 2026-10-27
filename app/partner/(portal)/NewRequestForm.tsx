@@ -74,11 +74,23 @@ export function NewRequestForm({ defaultEmail }: { defaultEmail: string }) {
           <div className="space-y-2">
             <button
               type="submit"
+              name="intent"
+              value="standard"
               disabled={isPending}
               className="w-full rounded-full bg-[#F0FF00] px-6 py-4 text-xl font-bold text-[#003049] shadow-md transition hover:brightness-95 disabled:opacity-50 sm:text-2xl"
             >
               {isPending ? "Sending..." : "Request Property Insurance Quote Now"}
             </button>
+            <button
+              type="submit"
+              name="intent"
+              value="roof_scenario"
+              disabled={isPending}
+              className="w-full rounded-full border-2 border-[#003049] bg-white px-6 py-3 text-sm font-bold text-[#003049] shadow-sm transition hover:bg-[#003049]/5 disabled:opacity-50"
+            >
+              {isPending ? "Sending..." : "Request a Quote Now with NEW ROOF SCENARIO"}
+            </button>
+            <p className="text-center text-xs text-slate-500">New Roof Scenario assumes a newly installed roof on this property.</p>
             {state && "error" in state && <p className="text-sm text-red-600">{state.error}</p>}
           </div>
         </form>

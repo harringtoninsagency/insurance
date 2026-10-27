@@ -1,7 +1,8 @@
-import { createServerSupabase } from "@/lib/supabase/server";
+import { createServerSupabase, createServiceSupabase } from "@/lib/supabase/server";
 import { todayEt, formatDayHeading, formatDateOnlyEt } from "@/lib/dates";
 import type { Database } from "@/lib/types/database";
 import { NewRequestForm } from "./NewRequestForm";
+import { BrandingForm } from "./BrandingForm";
 
 type QuoteRequestRow = Database["public"]["Tables"]["quote_requests"]["Row"];
 
@@ -39,6 +40,36 @@ export default async function PartnerPortalPage() {
   // scoped" RLS policy instead, the same one the internal dashboard uses.
   const { data: profile } = await supabase.from("profiles").select("role, active").eq("id", user?.id ?? "").maybeSingle();
   const isAdminView = profile?.role === "admin" && profile.active;
+
+  // Branding card data (own co-brand photo/logo, own agent assignment, and
+  // the agency's agent list to pick from) — service-role, same reasoning as
+  // app/partner/signup/page.tsx's resolvePublicAgent: a partner's own
+  // session has no RLS access to `profiles` at all (current_agency_id()
+  // never resolves for them), and industry_contacts only as of the new
+  // "partner reads own" policy, so there's nothing gained by using the
+  // session client here over the service client every other partner-portal
+  // write already uses.
+  let branding: { photoUrl: string | null; logoUrl: string | null; referralPartnerAgentId: string | null; agents: { id: string; fullName: string | null; email: string }[] } | null = null;
+  if (!isAdminView && user) {
+    const service = createServiceSupabase();
+    const { data: account } = await service.from("partner_accounts").select("agency_id, contact_id").eq("user_id", user.id).maybeSingle();
+    if (account) {
+      const [{ data: contact }, { data: agentRows }] = await Promise.all([
+        service.from("industry_contacts").select("photo_path, logo_path, referral_partner_agent_id").eq("id", account.contact_id).maybeSingle(),
+        service.from("profiles").select("id, full_name, email").eq("agency_id", account.agency_id).eq("active", true).order("full_name"),
+      ]);
+      const [photoUrl, logoUrl] = await Promise.all([
+        contact?.photo_path ? service.storage.from("partner-photos").createSignedUrl(contact.photo_path, 3600).then((r) => r.data?.signedUrl ?? null) : null,
+        contact?.logo_path ? service.storage.from("partner-logos").createSignedUrl(contact.logo_path, 3600).then((r) => r.data?.signedUrl ?? null) : null,
+      ]);
+      branding = {
+        photoUrl,
+        logoUrl,
+        referralPartnerAgentId: contact?.referral_partner_agent_id ?? null,
+        agents: (agentRows ?? []).map((a) => ({ id: a.id, fullName: a.full_name, email: a.email })),
+      };
+    }
+  }
 
   // RLS (quote_requests: partner reads own, or quote_requests: agency
   // scoped for an admin) already limits this to the right rows — no extra
@@ -142,6 +173,9 @@ export default async function PartnerPortalPage() {
           submitPartnerQuoteRequestAction), which an admin doesn't have —
           admin view is read-only here; use the internal quote-requests page
           to submit on a partner's behalf instead. */}
+      {!isAdminView && branding && (
+        <BrandingForm photoUrl={branding.photoUrl} logoUrl={branding.logoUrl} referralPartnerAgentId={branding.referralPartnerAgentId} agents={branding.agents} />
+      )}
       {!isAdminView && <NewRequestForm defaultEmail={user?.email ?? ""} />}
 
       {error && <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">{error.message}</p>}

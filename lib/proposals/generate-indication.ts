@@ -300,11 +300,28 @@ export async function generateIndicationProposal(
     });
   }
 
-  // 3 columns: a reserved photo area (blank until an agent headshot is
-  // uploaded on the Team page), the agent's info stacked vertically, and
-  // "Have an interested buyer?" — no agency contact info in that last
-  // column, just the call to action.
-  async function drawAgentSection() {
+  async function embedPhoto(bucket: string, path: string): Promise<PDFImage | null> {
+    const { data: blob } = await supabase.storage.from(bucket).download(path);
+    if (!blob) return null;
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    return sniffImageKind(bytes) === "png" ? await pdfDoc.embedPng(bytes) : await pdfDoc.embedJpg(bytes);
+  }
+
+  // The co-branded section's columns are narrower than the agent-only
+  // layout's ever were — a long referral-partner email (or just a longer
+  // one than the agency's own short @brightway.com addresses) can run past
+  // the column's edge at a fixed size. Same shrink-to-fit idea as the
+  // aerial-photo caption in generate-listing-snapshot.ts, just reusable here.
+  function fitSize(f: typeof font, text: string, maxWidth: number, size: number, minSize = 6): number {
+    let s = size;
+    while (f.widthOfTextAtSize(text, s) > maxWidth && s > minSize) s -= 0.5;
+    return s;
+  }
+
+  // No referral partner (every manually-run or public-form quote): the
+  // original 3-column layout, unchanged — a reserved photo area, the
+  // agent's info stacked vertically, and "Have an interested buyer?".
+  async function drawAgentOnlySection() {
     const contentWidth = PAGE_WIDTH - 2 * MARGIN;
     const boxHeight = AGENT_SECTION_HEIGHT;
     const photoSize = 50;
@@ -332,12 +349,8 @@ export async function generateIndicationProposal(
     const photoY = boxTop - boxHeight + (boxHeight - photoSize) / 2;
     page.drawRectangle({ x: photoX, y: photoY, width: photoSize, height: photoSize, color: WHITE, borderColor: PERIWINKLE_GREY, borderWidth: 0.75 });
     if (agent?.photoPath) {
-      const { data: photoBlob } = await supabase.storage.from("agent-photos").download(agent.photoPath);
-      if (photoBlob) {
-        const photoBytes = new Uint8Array(await photoBlob.arrayBuffer());
-        const photoImage = sniffImageKind(photoBytes) === "png" ? await pdfDoc.embedPng(photoBytes) : await pdfDoc.embedJpg(photoBytes);
-        page.drawImage(photoImage, { x: photoX, y: photoY, width: photoSize, height: photoSize });
-      }
+      const photoImage = await embedPhoto("agent-photos", agent.photoPath);
+      if (photoImage) page.drawImage(photoImage, { x: photoX, y: photoY, width: photoSize, height: photoSize });
     }
 
     // Column 2: your agent, one line each.
@@ -361,6 +374,85 @@ export async function generateIndicationProposal(
     page.drawText("and email for a personalized quote.", { x: col3X, y: col3Y, size: 8, font, color: PERIWINKLE_GREY });
 
     y -= boxHeight + 14;
+  }
+
+  // A referral partner credited this proposal: split the box in half
+  // instead — Brightway agent (left) and the co-branded referral partner's
+  // own name/phone/email/photo (right), same shape mirrored. Drops the
+  // "interested buyer?" callout (no room once halved) and moves the
+  // yellow accent below the box instead of bordering it, matching the
+  // listing-snapshot sibling document's equivalent change.
+  async function drawCoBrandedSection(partner: ReferralPartnerInfo) {
+    const contentWidth = PAGE_WIDTH - 2 * MARGIN;
+    const boxHeight = AGENT_SECTION_HEIGHT;
+    const halfWidth = contentWidth / 2;
+    const photoSize = 44;
+    const leftPhotoX = MARGIN + 10;
+    const leftTextX = leftPhotoX + photoSize + 12;
+    const dividerX = MARGIN + halfWidth;
+    const rightPhotoX = dividerX + 14;
+    const rightTextX = rightPhotoX + photoSize + 12;
+    const boxTop = y;
+
+    page.drawRectangle({
+      x: MARGIN,
+      y: boxTop - boxHeight,
+      width: contentWidth,
+      height: boxHeight,
+      color: CREAM,
+      borderColor: PERIWINKLE_GREY,
+      borderWidth: 0.75,
+    });
+    const dividerY = boxTop - boxHeight + 12;
+    const dividerHeight = boxHeight - 24;
+    page.drawRectangle({ x: dividerX, y: dividerY, width: 0.75, height: dividerHeight, color: PERIWINKLE_GREY });
+
+    const photoY = boxTop - boxHeight + (boxHeight - photoSize) / 2;
+
+    // Left: Brightway agent.
+    page.drawRectangle({ x: leftPhotoX, y: photoY, width: photoSize, height: photoSize, color: WHITE, borderColor: PERIWINKLE_GREY, borderWidth: 0.75 });
+    if (agent?.photoPath) {
+      const photoImage = await embedPhoto("agent-photos", agent.photoPath);
+      if (photoImage) page.drawImage(photoImage, { x: leftPhotoX, y: photoY, width: photoSize, height: photoSize });
+    }
+    const leftMaxWidth = dividerX - leftTextX - 6;
+    if (agent) {
+      let textY = boxTop - 18;
+      page.drawText("YOUR AGENT", { x: leftTextX, y: textY, size: 8, font: boldFont, color: PERIWINKLE_GREY });
+      textY -= 15;
+      page.drawText(agent.name, { x: leftTextX, y: textY, size: fitSize(boldFont, agent.name, leftMaxWidth, 11), font: boldFont, color: DEEP_BLUE });
+      textY -= 14;
+      page.drawText(AGENCY_PHONE, { x: leftTextX, y: textY, size: 9, font, color: BLACK });
+      textY -= 13;
+      page.drawText(agent.email, { x: leftTextX, y: textY, size: fitSize(font, agent.email, leftMaxWidth, 9), font, color: BLACK });
+    }
+
+    // Right: co-branded referral partner.
+    page.drawRectangle({ x: rightPhotoX, y: photoY, width: photoSize, height: photoSize, color: WHITE, borderColor: PERIWINKLE_GREY, borderWidth: 0.75 });
+    if (partner.photoPath) {
+      const photoImage = await embedPhoto("partner-photos", partner.photoPath);
+      if (photoImage) page.drawImage(photoImage, { x: rightPhotoX, y: photoY, width: photoSize, height: photoSize });
+    }
+    const rightMaxWidth = MARGIN + contentWidth - rightTextX - 6;
+    let rightTextY = boxTop - 18;
+    page.drawText("YOUR REFERRAL PARTNER", { x: rightTextX, y: rightTextY, size: 8, font: boldFont, color: PERIWINKLE_GREY });
+    rightTextY -= 15;
+    page.drawText(partner.name, { x: rightTextX, y: rightTextY, size: fitSize(boldFont, partner.name, rightMaxWidth, 11), font: boldFont, color: DEEP_BLUE });
+    rightTextY -= 14;
+    if (partner.phone) {
+      page.drawText(partner.phone, { x: rightTextX, y: rightTextY, size: 9, font, color: BLACK });
+      rightTextY -= 13;
+    }
+    page.drawText(partner.email, { x: rightTextX, y: rightTextY, size: fitSize(font, partner.email, rightMaxWidth, 9), font, color: BLACK });
+
+    const yellowY = boxTop - boxHeight - 3;
+    page.drawRectangle({ x: MARGIN, y: yellowY, width: contentWidth, height: 3, color: BRIGHT_YELLOW });
+    y = yellowY - 14;
+  }
+
+  async function drawAgentSection() {
+    if (referralPartner) await drawCoBrandedSection(referralPartner);
+    else await drawAgentOnlySection();
   }
 
   function startContinuationPage() {

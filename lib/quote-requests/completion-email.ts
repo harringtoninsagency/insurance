@@ -3,6 +3,7 @@ import { loadEmailConfig } from "@/lib/email/config";
 import { escapeHtml } from "@/lib/email/escape-html";
 import { brandedEmailShell, brandedSignatureHtml } from "@/lib/email/brand-template";
 import { CONTACT_EMAIL, CONTACT_PHONE } from "@/lib/contacts/consent-text";
+import { resolveProposalAgent } from "@/lib/quote-requests/proposal-agent";
 
 // Every outbound email to a referral partner gets the agency CC'd, by
 // explicit instruction — separate from OUTREACH_FROM (the agency's own
@@ -93,12 +94,22 @@ export async function buildQuoteCompletionEmail(quoteRequestId: string, proposal
     if (!attachments.length) return null;
 
     const name = request.requester_name ?? "there";
-    // If the partner asked for results at a different inbox than their
-    // account's email of record, honor that too — as an added recipient,
-    // never a replacement for the guaranteed one above.
+    // Depending on which Brightway agent the partner picked (or was
+    // defaulted to — resolveProposalAgent's own precedence), CC that agent
+    // too, so they see every result for a property credited to them, same
+    // way the agency itself always gets a copy (PARTNER_CC). If the partner
+    // asked for results at a different inbox than their account's email of
+    // record, honor that too — both as added recipients, never a
+    // replacement for the guaranteed one above.
+    const agent = await resolveProposalAgent(request.property_id, quoteRequestId);
+    const seen = new Set([contact.email.toLowerCase()]);
     const cc = [PARTNER_CC];
-    if (request.requester_email && request.requester_email.toLowerCase() !== contact.email.toLowerCase()) {
-      cc.push(request.requester_email);
+    seen.add(PARTNER_CC.toLowerCase());
+    for (const candidate of [agent?.email, request.requester_email]) {
+      if (candidate && !seen.has(candidate.toLowerCase())) {
+        cc.push(candidate);
+        seen.add(candidate.toLowerCase());
+      }
     }
     const text = [
       `Hi ${name},`,
