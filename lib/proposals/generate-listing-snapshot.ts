@@ -9,10 +9,6 @@ import { todayEt, formatDateOnly } from "@/lib/dates";
 import { titleCaseAddress } from "@/lib/address/title-case";
 
 const AGENT_SECTION_HEIGHT = 76;
-// Taller variant for the co-branded split box — a 5th line (company name)
-// on both sides needs the extra room; the agent-only 3-column layout
-// keeps the original, unchanged height.
-const CO_BRANDED_SECTION_HEIGHT = AGENT_SECTION_HEIGHT + 14;
 // Margin above the logo specifically (1/2in) — independent of the body
 // MARGIN below, which stays as-is for left/right/bottom content.
 const LOGO_TOP_MARGIN = 36;
@@ -464,7 +460,7 @@ export async function generateListingSnapshotProposal(
   // whitespace between the table and this box.
   const footerY = MARGIN + 24;
   y -= 16;
-  const bottomBoxHeight = referralPartner ? CO_BRANDED_SECTION_HEIGHT : AGENT_SECTION_HEIGHT;
+  const bottomBoxHeight = AGENT_SECTION_HEIGHT;
   const boxTop = y;
 
   async function embedPhoto(bucket: string, path: string) {
@@ -520,11 +516,9 @@ export async function generateListingSnapshotProposal(
     }
     const leftMaxWidth = dividerX - leftTextX - 6;
     if (agent) {
-      let agentTextY = boxTop - 18;
-      page.drawText("YOUR AGENT", { x: leftTextX, y: agentTextY, size: 8.5, font: boldFont, color: PERIWINKLE_GREY });
-      agentTextY -= 16;
+      let agentTextY = boxTop - 20;
       page.drawText(agent.name, { x: leftTextX, y: agentTextY, size: fitSize(boldFont, agent.name, leftMaxWidth, 12), font: boldFont, color: DEEP_BLUE });
-      agentTextY -= 14;
+      agentTextY -= 15;
       page.drawText(AGENCY_NAME, { x: leftTextX, y: agentTextY, size: fitSize(font, AGENCY_NAME, leftMaxWidth, 9.5), font, color: BLACK });
       agentTextY -= 14;
       page.drawText(AGENT_PHONE, { x: leftTextX, y: agentTextY, size: 9.5, font, color: BLACK });
@@ -538,11 +532,9 @@ export async function generateListingSnapshotProposal(
       if (photoImage) page.drawImage(photoImage, { x: rightPhotoX, y: photoY, width: photoSize, height: photoSize });
     }
     const rightMaxWidth = MARGIN + CONTENT_WIDTH - rightTextX - 6;
-    let partnerTextY = boxTop - 18;
-    page.drawText("YOUR REFERRAL PARTNER", { x: rightTextX, y: partnerTextY, size: 8.5, font: boldFont, color: PERIWINKLE_GREY });
-    partnerTextY -= 16;
+    let partnerTextY = boxTop - 20;
     page.drawText(referralPartner.name, { x: rightTextX, y: partnerTextY, size: fitSize(boldFont, referralPartner.name, rightMaxWidth, 12), font: boldFont, color: DEEP_BLUE });
-    partnerTextY -= 14;
+    partnerTextY -= 15;
     if (referralPartner.companyName) {
       page.drawText(referralPartner.companyName, { x: rightTextX, y: partnerTextY, size: fitSize(font, referralPartner.companyName, rightMaxWidth, 9.5), font, color: BLACK });
       partnerTextY -= 14;
