@@ -9,6 +9,10 @@ import { todayEt, formatDateOnly } from "@/lib/dates";
 import { titleCaseAddress } from "@/lib/address/title-case";
 
 const AGENT_SECTION_HEIGHT = 76;
+// Taller variant for the co-branded split box — a 5th line (company name)
+// on both sides needs the extra room; the agent-only 3-column layout
+// keeps the original, unchanged height.
+const CO_BRANDED_SECTION_HEIGHT = AGENT_SECTION_HEIGHT + 14;
 // Margin above the logo specifically (1/2in) — independent of the body
 // MARGIN below, which stays as-is for left/right/bottom content.
 const LOGO_TOP_MARGIN = 36;
@@ -37,6 +41,9 @@ const WHITE = rgb(1, 1, 1);
 // The agency's one office line with its one shared extension — every agent's
 // calls route through this same number/extension, not a per-agent one.
 const AGENT_PHONE = "727-789-2200 X.1";
+// Every in-house agent's "company" for the co-branded section's matching
+// name/company/phone/email shape — there's one agency, not a per-agent one.
+const AGENCY_NAME = "Brightway Insurance | The Harrington Agency";
 
 const BRANDING_DIR = join(process.cwd(), "assets", "branding");
 const CARRIER_LOGOS_DIR = join(BRANDING_DIR, "carriers");
@@ -457,7 +464,7 @@ export async function generateListingSnapshotProposal(
   // whitespace between the table and this box.
   const footerY = MARGIN + 24;
   y -= 16;
-  const bottomBoxHeight = AGENT_SECTION_HEIGHT;
+  const bottomBoxHeight = referralPartner ? CO_BRANDED_SECTION_HEIGHT : AGENT_SECTION_HEIGHT;
   const boxTop = y;
 
   async function embedPhoto(bucket: string, path: string) {
@@ -517,7 +524,9 @@ export async function generateListingSnapshotProposal(
       page.drawText("YOUR AGENT", { x: leftTextX, y: agentTextY, size: 8.5, font: boldFont, color: PERIWINKLE_GREY });
       agentTextY -= 16;
       page.drawText(agent.name, { x: leftTextX, y: agentTextY, size: fitSize(boldFont, agent.name, leftMaxWidth, 12), font: boldFont, color: DEEP_BLUE });
-      agentTextY -= 15;
+      agentTextY -= 14;
+      page.drawText(AGENCY_NAME, { x: leftTextX, y: agentTextY, size: fitSize(font, AGENCY_NAME, leftMaxWidth, 9.5), font, color: BLACK });
+      agentTextY -= 14;
       page.drawText(AGENT_PHONE, { x: leftTextX, y: agentTextY, size: 9.5, font, color: BLACK });
       agentTextY -= 14;
       page.drawText(agent.email, { x: leftTextX, y: agentTextY, size: fitSize(font, agent.email, leftMaxWidth, 9.5), font, color: BLACK });
@@ -533,7 +542,11 @@ export async function generateListingSnapshotProposal(
     page.drawText("YOUR REFERRAL PARTNER", { x: rightTextX, y: partnerTextY, size: 8.5, font: boldFont, color: PERIWINKLE_GREY });
     partnerTextY -= 16;
     page.drawText(referralPartner.name, { x: rightTextX, y: partnerTextY, size: fitSize(boldFont, referralPartner.name, rightMaxWidth, 12), font: boldFont, color: DEEP_BLUE });
-    partnerTextY -= 15;
+    partnerTextY -= 14;
+    if (referralPartner.companyName) {
+      page.drawText(referralPartner.companyName, { x: rightTextX, y: partnerTextY, size: fitSize(font, referralPartner.companyName, rightMaxWidth, 9.5), font, color: BLACK });
+      partnerTextY -= 14;
+    }
     if (referralPartner.phone) {
       page.drawText(referralPartner.phone, { x: rightTextX, y: partnerTextY, size: 9.5, font, color: BLACK });
       partnerTextY -= 14;
