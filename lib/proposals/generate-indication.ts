@@ -14,11 +14,6 @@ function sniffImageKind(bytes: Uint8Array): "jpg" | "png" {
 }
 
 const AGENT_SECTION_HEIGHT = 74;
-// Taller variant for the co-branded split box (lib/quote-requests/
-// referral-partner.ts's ReferralPartnerInfo) — a 5th line (company name)
-// on both sides needs the extra room; the agent-only 3-column layout
-// keeps the original, unchanged height.
-const CO_BRANDED_SECTION_HEIGHT = AGENT_SECTION_HEIGHT + 14;
 // The agency's one office line with its one shared extension — every agent's
 // calls route through this same number/extension, not a per-agent one.
 const AGENCY_PHONE = "727-789-2200 X.1";
@@ -392,7 +387,7 @@ export async function generateIndicationProposal(
   // listing-snapshot sibling document's equivalent change.
   async function drawCoBrandedSection(partner: ReferralPartnerInfo) {
     const contentWidth = PAGE_WIDTH - 2 * MARGIN;
-    const boxHeight = CO_BRANDED_SECTION_HEIGHT;
+    const boxHeight = AGENT_SECTION_HEIGHT;
     const halfWidth = contentWidth / 2;
     const photoSize = 44;
     const leftPhotoX = MARGIN + 10;
@@ -425,11 +420,9 @@ export async function generateIndicationProposal(
     }
     const leftMaxWidth = dividerX - leftTextX - 6;
     if (agent) {
-      let textY = boxTop - 18;
-      page.drawText("YOUR AGENT", { x: leftTextX, y: textY, size: 8, font: boldFont, color: PERIWINKLE_GREY });
-      textY -= 15;
+      let textY = boxTop - 20;
       page.drawText(agent.name, { x: leftTextX, y: textY, size: fitSize(boldFont, agent.name, leftMaxWidth, 11), font: boldFont, color: DEEP_BLUE });
-      textY -= 13;
+      textY -= 14;
       page.drawText(AGENCY_NAME, { x: leftTextX, y: textY, size: fitSize(font, AGENCY_NAME, leftMaxWidth, 9), font, color: BLACK });
       textY -= 13;
       page.drawText(AGENCY_PHONE, { x: leftTextX, y: textY, size: 9, font, color: BLACK });
@@ -444,11 +437,9 @@ export async function generateIndicationProposal(
       if (photoImage) page.drawImage(photoImage, { x: rightPhotoX, y: photoY, width: photoSize, height: photoSize });
     }
     const rightMaxWidth = MARGIN + contentWidth - rightTextX - 6;
-    let rightTextY = boxTop - 18;
-    page.drawText("YOUR REFERRAL PARTNER", { x: rightTextX, y: rightTextY, size: 8, font: boldFont, color: PERIWINKLE_GREY });
-    rightTextY -= 15;
+    let rightTextY = boxTop - 20;
     page.drawText(partner.name, { x: rightTextX, y: rightTextY, size: fitSize(boldFont, partner.name, rightMaxWidth, 11), font: boldFont, color: DEEP_BLUE });
-    rightTextY -= 13;
+    rightTextY -= 14;
     if (partner.companyName) {
       page.drawText(partner.companyName, { x: rightTextX, y: rightTextY, size: fitSize(font, partner.companyName, rightMaxWidth, 9), font, color: BLACK });
       rightTextY -= 13;
@@ -516,8 +507,7 @@ export async function generateIndicationProposal(
     y -= rowHeight;
   });
 
-  const bottomSectionHeight = referralPartner ? CO_BRANDED_SECTION_HEIGHT : AGENT_SECTION_HEIGHT;
-  if (y - bottomSectionHeight < MARGIN + FOOTER_RESERVE) startContinuationPage();
+  if (y - AGENT_SECTION_HEIGHT < MARGIN + FOOTER_RESERVE) startContinuationPage();
   await drawAgentSection();
   drawFooter();
 
