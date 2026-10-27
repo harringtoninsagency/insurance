@@ -1,11 +1,12 @@
 import { notFound } from "next/navigation";
-import { createServerSupabase } from "@/lib/supabase/server";
+import { createServerSupabase, createServiceSupabase } from "@/lib/supabase/server";
 import { BackLink } from "@/app/BackLink";
 import { EVENT_LABEL, METHOD_LABEL } from "@/lib/contacts/consent";
 import { formatDateOnly, formatDateOnlyEt } from "@/lib/dates";
 import { ConsentForm } from "./ConsentForm";
 import { InvitePartnerButton } from "./InvitePartnerButton";
 import { ReferralPartnerAgentSelect } from "./ReferralPartnerAgentSelect";
+import { ContactBrandingForm } from "./ContactBrandingForm";
 import { FollowUpForm } from "./FollowUpForm";
 import { EditContactDetailsForm } from "./EditContactDetailsForm";
 
@@ -29,6 +30,17 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
 
   const { data: contact } = await supabase.from("industry_contacts").select("*").eq("id", id).single();
   if (!contact) notFound();
+
+  // Signed URLs for the co-branding photo/logo — service-role, same
+  // reasoning as the partner portal's own page.tsx: these buckets have no
+  // client-facing storage RLS policy (every upload already goes through a
+  // service-role server action), so there's nothing gained by trying the
+  // admin's own RLS-scoped session here.
+  const service = createServiceSupabase();
+  const [photoUrl, logoUrl] = await Promise.all([
+    contact.photo_path ? service.storage.from("partner-photos").createSignedUrl(contact.photo_path, 3600).then((r) => r.data?.signedUrl ?? null) : null,
+    contact.logo_path ? service.storage.from("partner-logos").createSignedUrl(contact.logo_path, 3600).then((r) => r.data?.signedUrl ?? null) : null,
+  ]);
 
   const { data: partnerAccount } = await supabase.from("partner_accounts").select("status, invited_at, activated_at").eq("contact_id", id).maybeSingle();
 
@@ -58,7 +70,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
         <p className="text-sm text-slate-500">{TYPE_LABEL[contact.contact_type]}</p>
       </div>
 
-      <section className="grid grid-cols-1 gap-x-6 gap-y-3 rounded-lg border border-slate-200 bg-white p-5 text-sm sm:grid-cols-3">
+      <section className="rounded-lg border border-slate-200 bg-white p-5 text-sm">
         <EditContactDetailsForm
           contact={{
             id: contact.id,
@@ -71,8 +83,16 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
             city: contact.city,
           }}
         />
-        <div>
-          <div className="text-xs text-slate-500">Referral partner agent</div>
+      </section>
+
+      <section className="space-y-4 rounded-lg border border-slate-200 bg-white p-5">
+        <h2 className="font-medium text-[#003049]">Co-branding &amp; Brightway agent</h2>
+        <p className="text-xs text-slate-500">
+          Manage this on their behalf — the same photo/logo upload and agent picker they have in their own portal.
+        </p>
+        <ContactBrandingForm contactId={contact.id} photoUrl={photoUrl} logoUrl={logoUrl} />
+        <div className="border-t border-slate-200 pt-4">
+          <div className="text-xs text-slate-500">Brightway agent — shown alongside their info on every proposal, and who gets CC&apos;d on their results</div>
           <ReferralPartnerAgentSelect
             contactId={contact.id}
             referralPartnerAgentId={contact.referral_partner_agent_id}
