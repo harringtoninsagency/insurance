@@ -86,7 +86,7 @@ export function NewRequestForm({ defaultEmail }: { defaultEmail: string }) {
               name="intent"
               value="roof_scenario"
               disabled={isPending}
-              className="w-full rounded-full border-2 border-[#003049] bg-white px-6 py-3 text-sm font-bold text-[#003049] shadow-sm transition hover:bg-[#003049]/5 disabled:opacity-50"
+              className="w-full rounded-full border-2 border-[#003049] bg-white px-6 py-4 text-xl font-bold text-[#003049] shadow-md transition hover:bg-[#003049]/5 disabled:opacity-50 sm:text-2xl"
             >
               {isPending ? "Sending..." : "Request a Quote Now with NEW ROOF SCENARIO"}
             </button>
