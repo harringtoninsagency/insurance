@@ -387,6 +387,10 @@ export interface Database {
           license_state: string;
           city: string | null;
           referral_partner_agent_id: string | null;
+          /** Partner's own headshot for the co-branded block on generated proposal PDFs — see lib/partners/branding.ts. */
+          photo_path: string | null;
+          /** Partner's company logo, shown in their own portal only — never printed on a Brightway-generated PDF. */
+          logo_path: string | null;
           source: ContactSource;
           source_detail: string | null;
           email_consent: "unknown" | "opted_in" | "opted_out";
@@ -491,6 +495,8 @@ export interface Database {
           property_id: string | null;
           requested_by: string | null;
           assigned_agent_id: string | null;
+          /** Explicit ask from the partner-portal form's second CTA — see lib/quote-requests/fetch-pipeline.ts's roofScenario resolution. */
+          requested_roof_scenario: boolean;
           claimed_at: string | null;
           routine_fired_at: string | null;
           routine_fire_failed_at: string | null;

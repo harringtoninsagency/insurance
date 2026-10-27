@@ -33,17 +33,17 @@ export async function regenerateExistingProposals(propertyId: string): Promise<v
 
     const { data: latestRequest } = await supabase
       .from("quote_requests")
-      .select("id, contact_id")
+      .select("id, contact_id, requested_roof_scenario")
       .eq("property_id", propertyId)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
     const quoteRequestId = latestRequest?.id ?? null;
     const referralPartner = await resolveReferralPartner(quoteRequestId);
-    const isRoofingCompanyReferral = referralPartner?.contactType === "roofing_company";
+    const roofScenario = referralPartner?.contactType === "roofing_company" || latestRequest?.requested_roof_scenario === true;
 
     if (kinds.has("indication") || kinds.has("roof_scenario")) {
-      await generateIndicationProposal(propertyId, referralPartner, quoteRequestId, isRoofingCompanyReferral).catch((err) =>
+      await generateIndicationProposal(propertyId, referralPartner, quoteRequestId, roofScenario).catch((err) =>
         console.error(`regenerateExistingProposals: indication/roof_scenario failed for property ${propertyId}: ${err instanceof Error ? err.message : err}`)
       );
     }

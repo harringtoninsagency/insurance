@@ -35,6 +35,14 @@ export interface SubmitQuoteRequestInput {
    * generated.
    */
   assignedAgentId?: string | null;
+  /**
+   * Explicit "Request a Quote Now with NEW ROOF SCENARIO" ask from the
+   * partner-portal form — independent of, and additive with, the automatic
+   * roofing_company-contact-type detection in
+   * lib/quote-requests/fetch-pipeline.ts (either can trigger the "New Roof
+   * Scenario" proposal variant; see finalizeQuoteRequest).
+   */
+  roofScenario?: boolean;
 }
 
 export type SubmitResult = { ok: true; id: string } | { ok: false; error: string };
@@ -131,6 +139,7 @@ export async function submitQuoteRequest(
       dwelling_a: parsed.dwellingA ?? null,
       personal_property_pct: parsed.personalPropertyPct ?? null,
       assigned_agent_id: input.assignedAgentId ?? null,
+      requested_roof_scenario: input.roofScenario ?? false,
       status: "new",
     })
     .select("id")

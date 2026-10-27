@@ -450,68 +450,150 @@ export async function generateListingSnapshotProposal(
     y -= tableRowHeight;
   });
 
-  // --- Bottom section, 3 columns: a reserved photo area (blank until an
-  // agent headshot is uploaded on the Team page), the agent's info stacked
-  // vertically, and "Have an interested buyer?" — resolved by
-  // lib/quote-requests/proposal-agent.ts. Follows directly on from the
-  // carrier table (now the last content section, since Insurance Readiness
-  // was removed) rather than being pinned to the footer, which otherwise
-  // left a wide gap of empty whitespace between the table and this box.
+  // --- Bottom section: resolved by lib/quote-requests/proposal-agent.ts.
+  // Follows directly on from the carrier table (now the last content
+  // section, since Insurance Readiness was removed) rather than being
+  // pinned to the footer, which otherwise left a wide gap of empty
+  // whitespace between the table and this box.
   const footerY = MARGIN + 24;
   y -= 16;
   const bottomBoxHeight = AGENT_SECTION_HEIGHT;
-  const photoSize = 54;
-  const photoX = MARGIN + 10;
-  const col2X = photoX + photoSize + 12;
-  const col2Width = 150;
-  const divider2X = col2X + col2Width + 10;
-  const col3X = divider2X + 14;
   const boxTop = y;
-  page.drawRectangle({
-    x: MARGIN,
-    y: boxTop - bottomBoxHeight,
-    width: CONTENT_WIDTH,
-    height: bottomBoxHeight,
-    color: CREAM,
-    borderColor: BRIGHT_YELLOW,
-    borderWidth: 1.5,
-  });
-  const dividerY = boxTop - bottomBoxHeight + 10;
-  const dividerHeight = bottomBoxHeight - 20;
-  page.drawRectangle({ x: divider2X, y: dividerY, width: 0.75, height: dividerHeight, color: PERIWINKLE_GREY });
 
-  // Column 1: agent photo — a reserved, bordered area whether or not one's
-  // been uploaded yet, so the layout doesn't shift once it is.
-  const photoY = boxTop - bottomBoxHeight + (bottomBoxHeight - photoSize) / 2;
-  page.drawRectangle({ x: photoX, y: photoY, width: photoSize, height: photoSize, color: WHITE, borderColor: PERIWINKLE_GREY, borderWidth: 0.75 });
-  if (agent?.photoPath) {
-    const { data: photoBlob } = await supabase.storage.from("agent-photos").download(agent.photoPath);
-    if (photoBlob) {
-      const photoBytes = new Uint8Array(await photoBlob.arrayBuffer());
-      const photoImage = sniffImageKind(photoBytes) === "png" ? await pdfDoc.embedPng(photoBytes) : await pdfDoc.embedJpg(photoBytes);
-      page.drawImage(photoImage, { x: photoX, y: photoY, width: photoSize, height: photoSize });
+  async function embedPhoto(bucket: string, path: string) {
+    const { data: blob } = await supabase.storage.from(bucket).download(path);
+    if (!blob) return null;
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    return sniffImageKind(bytes) === "png" ? await pdfDoc.embedPng(bytes) : await pdfDoc.embedJpg(bytes);
+  }
+
+  // Same shrink-to-fit idea as the aerial-photo caption above — the
+  // co-branded section's columns are narrower than the agent-only layout's
+  // ever were, and a long referral-partner email can otherwise run past
+  // the column's edge at a fixed size.
+  function fitSize(f: typeof font, text: string, maxWidth: number, size: number, minSize = 6): number {
+    let s = size;
+    while (f.widthOfTextAtSize(text, s) > maxWidth && s > minSize) s -= 0.5;
+    return s;
+  }
+
+  if (referralPartner) {
+    // A referral partner credited this proposal: split the box in half —
+    // Brightway agent (left) and the co-branded referral partner's own
+    // name/phone/email/photo (right). Drops the "interested buyer?"
+    // callout (no room once halved) and moves the yellow accent below the
+    // box instead of bordering it.
+    const halfWidth = CONTENT_WIDTH / 2;
+    const photoSize = 48;
+    const leftPhotoX = MARGIN + 10;
+    const leftTextX = leftPhotoX + photoSize + 10;
+    const dividerX = MARGIN + halfWidth;
+    const rightPhotoX = dividerX + 14;
+    const rightTextX = rightPhotoX + photoSize + 10;
+
+    page.drawRectangle({
+      x: MARGIN,
+      y: boxTop - bottomBoxHeight,
+      width: CONTENT_WIDTH,
+      height: bottomBoxHeight,
+      color: CREAM,
+      borderColor: PERIWINKLE_GREY,
+      borderWidth: 0.75,
+    });
+    const dividerY = boxTop - bottomBoxHeight + 10;
+    const dividerHeight = bottomBoxHeight - 20;
+    page.drawRectangle({ x: dividerX, y: dividerY, width: 0.75, height: dividerHeight, color: PERIWINKLE_GREY });
+
+    const photoY = boxTop - bottomBoxHeight + (bottomBoxHeight - photoSize) / 2;
+
+    page.drawRectangle({ x: leftPhotoX, y: photoY, width: photoSize, height: photoSize, color: WHITE, borderColor: PERIWINKLE_GREY, borderWidth: 0.75 });
+    if (agent?.photoPath) {
+      const photoImage = await embedPhoto("agent-photos", agent.photoPath);
+      if (photoImage) page.drawImage(photoImage, { x: leftPhotoX, y: photoY, width: photoSize, height: photoSize });
     }
-  }
+    const leftMaxWidth = dividerX - leftTextX - 6;
+    if (agent) {
+      let agentTextY = boxTop - 18;
+      page.drawText("YOUR AGENT", { x: leftTextX, y: agentTextY, size: 8.5, font: boldFont, color: PERIWINKLE_GREY });
+      agentTextY -= 16;
+      page.drawText(agent.name, { x: leftTextX, y: agentTextY, size: fitSize(boldFont, agent.name, leftMaxWidth, 12), font: boldFont, color: DEEP_BLUE });
+      agentTextY -= 15;
+      page.drawText(AGENT_PHONE, { x: leftTextX, y: agentTextY, size: 9.5, font, color: BLACK });
+      agentTextY -= 14;
+      page.drawText(agent.email, { x: leftTextX, y: agentTextY, size: fitSize(font, agent.email, leftMaxWidth, 9.5), font, color: BLACK });
+    }
 
-  // Column 2: your agent, one line each.
-  if (agent) {
-    let agentTextY = boxTop - 18;
-    page.drawText("YOUR AGENT", { x: col2X, y: agentTextY, size: 8.5, font: boldFont, color: PERIWINKLE_GREY });
-    agentTextY -= 16;
-    page.drawText(agent.name, { x: col2X, y: agentTextY, size: 12, font: boldFont, color: DEEP_BLUE });
-    agentTextY -= 15;
-    page.drawText(AGENT_PHONE, { x: col2X, y: agentTextY, size: 9.5, font, color: BLACK });
-    agentTextY -= 14;
-    page.drawText(agent.email, { x: col2X, y: agentTextY, size: 9.5, font, color: BLACK });
-  }
+    page.drawRectangle({ x: rightPhotoX, y: photoY, width: photoSize, height: photoSize, color: WHITE, borderColor: PERIWINKLE_GREY, borderWidth: 0.75 });
+    if (referralPartner.photoPath) {
+      const photoImage = await embedPhoto("partner-photos", referralPartner.photoPath);
+      if (photoImage) page.drawImage(photoImage, { x: rightPhotoX, y: photoY, width: photoSize, height: photoSize });
+    }
+    const rightMaxWidth = MARGIN + CONTENT_WIDTH - rightTextX - 6;
+    let partnerTextY = boxTop - 18;
+    page.drawText("YOUR REFERRAL PARTNER", { x: rightTextX, y: partnerTextY, size: 8.5, font: boldFont, color: PERIWINKLE_GREY });
+    partnerTextY -= 16;
+    page.drawText(referralPartner.name, { x: rightTextX, y: partnerTextY, size: fitSize(boldFont, referralPartner.name, rightMaxWidth, 12), font: boldFont, color: DEEP_BLUE });
+    partnerTextY -= 15;
+    if (referralPartner.phone) {
+      page.drawText(referralPartner.phone, { x: rightTextX, y: partnerTextY, size: 9.5, font, color: BLACK });
+      partnerTextY -= 14;
+    }
+    page.drawText(referralPartner.email, { x: rightTextX, y: partnerTextY, size: fitSize(font, referralPartner.email, rightMaxWidth, 9.5), font, color: BLACK });
 
-  // Column 3: "Have an interested buyer?" callout.
-  let col3TextY = boxTop - 17;
-  page.drawText("HAVE AN INTERESTED BUYER?", { x: col3X, y: col3TextY, size: 9.5, font: boldFont, color: DEEP_BLUE });
-  col3TextY -= 13;
-  page.drawText("Email us the buyer's name, phone number and email", { x: col3X, y: col3TextY, size: 8.5, font, color: rgb(0.3, 0.35, 0.4) });
-  col3TextY -= 11;
-  page.drawText("for a personalized quote.", { x: col3X, y: col3TextY, size: 8.5, font, color: rgb(0.3, 0.35, 0.4) });
+    const yellowY = boxTop - bottomBoxHeight - 3;
+    page.drawRectangle({ x: MARGIN, y: yellowY, width: CONTENT_WIDTH, height: 3, color: BRIGHT_YELLOW });
+  } else {
+    // No referral partner (every manually-run or public-form quote): the
+    // original 3-column layout, unchanged — a reserved photo area, the
+    // agent's info stacked vertically, and "Have an interested buyer?".
+    const photoSize = 54;
+    const photoX = MARGIN + 10;
+    const col2X = photoX + photoSize + 12;
+    const col2Width = 150;
+    const divider2X = col2X + col2Width + 10;
+    const col3X = divider2X + 14;
+    page.drawRectangle({
+      x: MARGIN,
+      y: boxTop - bottomBoxHeight,
+      width: CONTENT_WIDTH,
+      height: bottomBoxHeight,
+      color: CREAM,
+      borderColor: BRIGHT_YELLOW,
+      borderWidth: 1.5,
+    });
+    const dividerY = boxTop - bottomBoxHeight + 10;
+    const dividerHeight = bottomBoxHeight - 20;
+    page.drawRectangle({ x: divider2X, y: dividerY, width: 0.75, height: dividerHeight, color: PERIWINKLE_GREY });
+
+    // Column 1: agent photo — a reserved, bordered area whether or not one's
+    // been uploaded yet, so the layout doesn't shift once it is.
+    const photoY = boxTop - bottomBoxHeight + (bottomBoxHeight - photoSize) / 2;
+    page.drawRectangle({ x: photoX, y: photoY, width: photoSize, height: photoSize, color: WHITE, borderColor: PERIWINKLE_GREY, borderWidth: 0.75 });
+    if (agent?.photoPath) {
+      const photoImage = await embedPhoto("agent-photos", agent.photoPath);
+      if (photoImage) page.drawImage(photoImage, { x: photoX, y: photoY, width: photoSize, height: photoSize });
+    }
+
+    // Column 2: your agent, one line each.
+    if (agent) {
+      let agentTextY = boxTop - 18;
+      page.drawText("YOUR AGENT", { x: col2X, y: agentTextY, size: 8.5, font: boldFont, color: PERIWINKLE_GREY });
+      agentTextY -= 16;
+      page.drawText(agent.name, { x: col2X, y: agentTextY, size: 12, font: boldFont, color: DEEP_BLUE });
+      agentTextY -= 15;
+      page.drawText(AGENT_PHONE, { x: col2X, y: agentTextY, size: 9.5, font, color: BLACK });
+      agentTextY -= 14;
+      page.drawText(agent.email, { x: col2X, y: agentTextY, size: 9.5, font, color: BLACK });
+    }
+
+    // Column 3: "Have an interested buyer?" callout.
+    let col3TextY = boxTop - 17;
+    page.drawText("HAVE AN INTERESTED BUYER?", { x: col3X, y: col3TextY, size: 9.5, font: boldFont, color: DEEP_BLUE });
+    col3TextY -= 13;
+    page.drawText("Email us the buyer's name, phone number and email", { x: col3X, y: col3TextY, size: 8.5, font, color: rgb(0.3, 0.35, 0.4) });
+    col3TextY -= 11;
+    page.drawText("for a personalized quote.", { x: col3X, y: col3TextY, size: 8.5, font, color: rgb(0.3, 0.35, 0.4) });
+  }
 
   // --- Footer ---
   page.drawRectangle({ x: MARGIN, y: footerY, width: CONTENT_WIDTH, height: 0.75, color: PERIWINKLE_GREY });
