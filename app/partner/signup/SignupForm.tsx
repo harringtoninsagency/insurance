@@ -66,6 +66,14 @@ export function SignupForm({ agentId, agentName }: { agentId: string | null; age
       </div>
 
       <div className="space-y-1">
+        <label htmlFor="company_name" className="text-sm font-medium text-[#003049]">
+          Company / brokerage <span className="font-normal text-slate-400">(optional)</span>
+        </label>
+        <input id="company_name" name="company_name" type="text" className={inputClass} />
+        <p className="text-xs text-slate-500">Shown alongside your name on Brightway-generated proposals.</p>
+      </div>
+
+      <div className="space-y-1">
         <label htmlFor="email" className="text-sm font-medium text-[#003049]">
           Email
         </label>

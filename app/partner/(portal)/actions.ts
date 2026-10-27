@@ -56,6 +56,20 @@ export async function uploadPartnerLogoAction(_prev: PartnerActionResult | null,
   return uploadPartnerBrandingAction("logo", formData);
 }
 
+/** Lets a partner set/update their own company name — shown alongside their name on every Brightway-generated proposal. Same field an admin edits via EditContactDetailsForm, just self-service. */
+export async function updatePartnerCompanyNameAction(_prev: PartnerActionResult | null, formData: FormData): Promise<PartnerActionResult> {
+  const account = await requirePartnerAccount();
+  if ("error" in account) return { ok: false, error: account.error };
+
+  const companyName = String(formData.get("company_name") ?? "").trim() || null;
+  const service = createServiceSupabase();
+  const { error } = await service.from("industry_contacts").update({ company_name: companyName }).eq("id", account.contactId);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/partner");
+  return { ok: true };
+}
+
 /** Lets a partner pick/change their own linked Brightway agent — same effect as an admin's ReferralPartnerAgentSelect on /contacts, just self-service. */
 export async function updatePartnerAgentAction(_prev: PartnerActionResult | null, formData: FormData): Promise<PartnerActionResult> {
   const account = await requirePartnerAccount();
