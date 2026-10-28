@@ -9,6 +9,7 @@ import { ReferralPartnerAgentSelect } from "./ReferralPartnerAgentSelect";
 import { ContactBrandingForm } from "./ContactBrandingForm";
 import { FollowUpForm } from "./FollowUpForm";
 import { EditContactDetailsForm } from "./EditContactDetailsForm";
+import { DeleteReferralPartnerButton } from "./DeleteReferralPartnerButton";
 
 const TYPE_LABEL = { realtor: "Realtor", mortgage_broker: "Mortgage broker", roofing_company: "Roofing company" } as const;
 
@@ -201,6 +202,15 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
             ))}
           </ul>
         )}
+      </section>
+
+      <section className="space-y-3 rounded-lg border border-red-200 bg-red-50 p-5">
+        <h2 className="font-medium text-red-800">Danger zone</h2>
+        <p className="text-xs text-red-700">
+          Permanently removes this referral partner from the directory, along with their portal access. Past outreach
+          and consent history is kept but no longer linked to them.
+        </p>
+        <DeleteReferralPartnerButton contactId={contact.id} fullName={contact.full_name} />
       </section>
     </div>
   );
