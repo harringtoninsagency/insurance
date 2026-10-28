@@ -257,6 +257,40 @@ export async function uploadContactLogoAction(contactId: string, _prev: ContactB
   return uploadContactBrandingAction("logo", contactId, formData);
 }
 
+export type DeleteContactResult = { ok: true } | { ok: false; error: string };
+
+/**
+ * Permanently removes a referral partner from the directory. Cascades to
+ * their partner-portal account and follow-up notes (contact_follow_ups,
+ * partner_accounts — see migrations' FK delete rules); past outreach sends
+ * and consent/opt-out events are kept but unlinked (SET NULL) rather than
+ * deleted, since those are this agency's own compliance record, not the
+ * partner's. Irreversible — the confirm step lives in the button itself.
+ */
+export async function deleteContactAction(contactId: string): Promise<DeleteContactResult> {
+  try {
+    const { supabase } = await sessionContext();
+    const { data: contact } = await supabase
+      .from("industry_contacts")
+      .select("photo_path, logo_path")
+      .eq("id", contactId)
+      .single();
+
+    const service = createServiceSupabase();
+    if (contact?.photo_path) await service.storage.from("partner-photos").remove([contact.photo_path]);
+    if (contact?.logo_path) await service.storage.from("partner-logos").remove([contact.logo_path]);
+
+    const { error } = await supabase.from("industry_contacts").delete().eq("id", contactId);
+    if (error) return { ok: false, error: error.message };
+
+    revalidatePath("/contacts");
+    revalidatePath("/contacts/referral-activity");
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Failed to delete this referral partner." };
+  }
+}
+
 export async function invitePartnerAction(contactId: string): Promise<InviteResult> {
   try {
     const { agencyId, userEmail } = await sessionContext();
