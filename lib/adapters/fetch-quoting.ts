@@ -61,25 +61,29 @@ export function defaultDwellingA(sqft: number): number {
 // Fetch's own default for HO3 Coverage C (personal property) when not set.
 export const DEFAULT_PERSONAL_PROPERTY_PCT = 50;
 
-// Year a roof-to-wall clip retrofit became the practical construction
-// standard — pre-1980 Florida homes were typically toe-nailed, not clipped,
-// and a Roofing Company referral's quote shouldn't claim a retrofit that
-// almost certainly never happened. See buildQuoteFields' roofingCompanyOverride.
-const HURRICANE_CLIP_MIN_YEAR_BUILT = 1980;
+// Year roof-to-wall clips became the default credit this agency quotes —
+// applies to every quote, not just Roofing Company referrals (see
+// buildQuoteFields and roofingCompanyWindMitFields below, both of which use
+// this same cutoff).
+const HURRICANE_CLIP_MIN_YEAR_BUILT = 1970;
+
+/** Default roof-to-wall attachment credit for a home of this build year. */
+function defaultRoofToWallAttachment(yearBuilt: number): FetchQuoteFields["roof_to_wall_attachment"] {
+  return yearBuilt >= HURRICANE_CLIP_MIN_YEAR_BUILT ? "Clips" : "Toe nails";
+}
 
 /**
  * Wind-mitigation credits a Roofing Company referral's quote always claims,
  * regardless of what this property's own enrichment data says: FBC/Class C
  * roof deck attachment and secondary water resistance are assumed done as
- * part of that company's own re-roof work, and roof-to-wall clips are
- * credited only when the home is new enough (built 1980+) that a clip
- * retrofit is plausible.
+ * part of that company's own re-roof work. Roof-to-wall attachment uses the
+ * same year-built default as every other quote (defaultRoofToWallAttachment).
  */
 function roofingCompanyWindMitFields(yearBuilt: number): Pick<FetchQuoteFields, "roof_deck_attachment" | "secondary_water_resistance" | "roof_to_wall_attachment"> {
   return {
     roof_deck_attachment: "Type C (8d @ 6/6)",
     secondary_water_resistance: "Yes",
-    roof_to_wall_attachment: yearBuilt >= HURRICANE_CLIP_MIN_YEAR_BUILT ? "Clips" : "Toe nails",
+    roof_to_wall_attachment: defaultRoofToWallAttachment(yearBuilt),
   };
 }
 
@@ -152,6 +156,11 @@ export const fetchQuotingAdapter: CarrierQuoteAdapter<FetchQuoteFields, FetchRat
       protection_class: "8 or less",
       dwelling_type: "Single Family",
       usage: "Primary",
+      // Default wind-mitigation credit for every quote — see
+      // defaultRoofToWallAttachment. Overridden below for a Roofing Company
+      // referral, which has its own full wind-mit credit set, but uses this
+      // same year-built cutoff.
+      roof_to_wall_attachment: defaultRoofToWallAttachment(Number(property.year_built)),
       // Not listed in GetApplicationSchema's catalog (a hidden field, same as
       // county was before it started rejecting blanks) — confirmed live that
       // Frontline declines every quote outright with "Fortified Home is
