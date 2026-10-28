@@ -145,13 +145,20 @@ export const fetchQuotingAdapter: CarrierQuoteAdapter<FetchQuoteFields, FetchRat
       dwelling_a: String(dwellingA),
       roof_year: String(property.roof_year ?? property.year_built),
       roof_option: "Architectural",
-      roof_shape: "Hip",
+      roof_shape: "Gable",
       square_feet: String(property.sqft),
       year_built: String(property.year_built),
       construction_type_options: mapConstructionType(property.construction),
       protection_class: "8 or less",
       dwelling_type: "Single Family",
       usage: "Primary",
+      // Not listed in GetApplicationSchema's catalog (a hidden field, same as
+      // county was before it started rejecting blanks) — confirmed live that
+      // Frontline declines every quote outright with "Fortified Home is
+      // required and cannot be left blank" when this is omitted. None of
+      // this agency's properties carry IBHS FORTIFIED Home certification, so
+      // "No" is the correct answer for every quote, not just Frontline's.
+      fortified_home: "No",
       // No dedicated water heater field exists in Fetch's schema — this is
       // the closest available (general plumbing, YYYY format). Not left at
       // Fetch's own default since some carrier integrations behind Fetch
