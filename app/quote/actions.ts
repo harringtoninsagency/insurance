@@ -5,6 +5,7 @@ import { submitQuoteRequest, type SubmitQuoteRequestInput } from "@/lib/quote-re
 import { prepareQuoteRequest } from "@/lib/quote-requests/prepare";
 import { fireQuoteRoutine } from "@/lib/quote-requests/fire-routine";
 import { checkConsumerPropertyLimit } from "@/lib/quote-requests/rate-limit";
+import { notifyConsumerQuoteSubmission } from "@/lib/quote-requests/consumer-submission-notify";
 import { normalizeEmail } from "@/lib/contacts/normalize";
 
 export type ConsumerQuoteValues = Record<string, string>;
@@ -81,6 +82,18 @@ export async function submitConsumerQuoteAction(_prev: ConsumerQuoteState, formD
     const values = Object.fromEntries(FIELDS.map((f) => [f, str(formData, f)]));
     return { error: result.error, values };
   }
+
+  await notifyConsumerQuoteSubmission({
+    firstName,
+    lastName,
+    email,
+    phone: str(formData, "phone"),
+    formattedAddress: str(formData, "formattedAddress"),
+    addressLine,
+    city,
+    state: str(formData, "state") || "FL",
+    zipcode,
+  });
 
   // The property-matching/enrichment step needs no Fetch/agent session, so
   // it runs immediately; only the actual carrier quote after this has to
