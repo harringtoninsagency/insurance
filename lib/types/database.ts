@@ -48,7 +48,7 @@ export type QuoteAdapterName =
   | "fetch_quoting";
 export type ListingSourceName = "bridge" | "trestle" | "mlsgrid" | "county" | "onehome" | "quote_request";
 export type PartnerAccountStatus = "invited" | "active" | "disabled";
-export type QuoteRequesterType = "partner" | "public" | "internal";
+export type QuoteRequesterType = "partner" | "public" | "internal" | "consumer";
 export type QuoteRequestKind = "quote_summary" | "listing_snapshot" | "both";
 export type QuoteRequestStatus = "new" | "processing" | "completed" | "failed" | "needs_review";
 export type PartnerAccessRequestStatus = "pending" | "approved" | "denied";
