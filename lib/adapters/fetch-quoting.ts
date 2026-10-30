@@ -42,7 +42,7 @@ const PLACEHOLDER_INSURED = {
 // Coverage A (dwelling replacement value) reasoning for indicative quotes:
 // $/sqft rebuild cost, not list price (land value skews list price and isn't
 // insurable). Revisit once Phase 4 has real replacement-cost modeling.
-const DWELLING_A_PER_SQFT = 200;
+const DWELLING_A_PER_SQFT = 225;
 
 // Dwelling (Coverage A) floor applied across all carriers: confirmed live
 // that Frontline silently zeroes quotes below $350k with no error message,
