@@ -61,10 +61,9 @@ export function defaultDwellingA(sqft: number): number {
 // Fetch's own default for HO3 Coverage C (personal property) when not set.
 export const DEFAULT_PERSONAL_PROPERTY_PCT = 50;
 
-// Year roof-to-wall clips became the default credit this agency quotes —
-// applies to every quote, not just Roofing Company referrals (see
-// buildQuoteFields and roofingCompanyWindMitFields below, both of which use
-// this same cutoff).
+// Year roof-to-wall clips became the default credit this agency quotes on
+// every ordinary quote (see buildQuoteFields below). A Roofing Company
+// referral uses its own, later cutoff — see ROOFING_COMPANY_CLIP_MIN_YEAR_BUILT.
 const HURRICANE_CLIP_MIN_YEAR_BUILT = 1970;
 
 /** Default roof-to-wall attachment credit for a home of this build year. */
@@ -72,18 +71,28 @@ function defaultRoofToWallAttachment(yearBuilt: number): FetchQuoteFields["roof_
   return yearBuilt >= HURRICANE_CLIP_MIN_YEAR_BUILT ? "Clips" : "Toe nails";
 }
 
+// Roofing Company referral's own roof-to-wall cutoff — explicitly set apart
+// from the agency-wide HURRICANE_CLIP_MIN_YEAR_BUILT (1970) per instruction.
+const ROOFING_COMPANY_CLIP_MIN_YEAR_BUILT = 1980;
+
 /**
  * Wind-mitigation credits a Roofing Company referral's quote always claims,
  * regardless of what this property's own enrichment data says: FBC/Class C
  * roof deck attachment and secondary water resistance are assumed done as
- * part of that company's own re-roof work. Roof-to-wall attachment uses the
- * same year-built default as every other quote (defaultRoofToWallAttachment).
+ * part of that company's own re-roof work, the roof shape is assumed Gable,
+ * and no impact-rated opening protection is assumed. Roof-to-wall attachment
+ * uses this referral type's own cutoff (ROOFING_COMPANY_CLIP_MIN_YEAR_BUILT),
+ * not the agency-wide default's.
  */
-function roofingCompanyWindMitFields(yearBuilt: number): Pick<FetchQuoteFields, "roof_deck_attachment" | "secondary_water_resistance" | "roof_to_wall_attachment"> {
+function roofingCompanyWindMitFields(
+  yearBuilt: number
+): Pick<FetchQuoteFields, "roof_deck_attachment" | "secondary_water_resistance" | "roof_to_wall_attachment" | "roof_shape" | "opening_protection"> {
   return {
     roof_deck_attachment: "Type C (8d @ 6/6)",
     secondary_water_resistance: "Yes",
-    roof_to_wall_attachment: defaultRoofToWallAttachment(yearBuilt),
+    roof_to_wall_attachment: yearBuilt >= ROOFING_COMPANY_CLIP_MIN_YEAR_BUILT ? "Clips" : "Toe nails",
+    roof_shape: "Gable",
+    opening_protection: "None",
   };
 }
 
@@ -158,8 +167,8 @@ export const fetchQuotingAdapter: CarrierQuoteAdapter<FetchQuoteFields, FetchRat
       usage: "Primary",
       // Default wind-mitigation credit for every quote — see
       // defaultRoofToWallAttachment. Overridden below for a Roofing Company
-      // referral, which has its own full wind-mit credit set, but uses this
-      // same year-built cutoff.
+      // referral, which has its own full wind-mit credit set on its own
+      // year-built cutoff (roofingCompanyWindMitFields).
       roof_to_wall_attachment: defaultRoofToWallAttachment(Number(property.year_built)),
       // Not listed in GetApplicationSchema's catalog (a hidden field, same as
       // county was before it started rejecting blanks) — confirmed live that
