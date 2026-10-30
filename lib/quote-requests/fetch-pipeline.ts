@@ -1,5 +1,5 @@
 import { createServiceSupabase } from "@/lib/supabase/server";
-import { fetchQuotingAdapter, type FetchRate } from "@/lib/adapters/fetch-quoting";
+import { fetchQuotingAdapter, frontlineDwellingA, type FetchRate } from "@/lib/adapters/fetch-quoting";
 import { ingestFetchQuoteResults } from "@/lib/quotes/ingest";
 import { generateIndicationProposal } from "@/lib/proposals/generate-indication";
 import { generateListingSnapshotProposal } from "@/lib/proposals/generate-listing-snapshot";
@@ -41,13 +41,25 @@ function nearestCoverageCOption(pct: number): "0%" | "25%" | "50%" {
   return `${nearest}%`;
 }
 
+// Fetch's own carrier_keys value for Frontline (confirmed against
+// ListQuotableCarriers) — see buildFetchQuoteItems's own Frontline-only item.
+const FRONTLINE_CARRIER_KEY = "frontline";
+
 /**
- * Builds the single-item CreateBulkQuoteRequest payload for a property: every
- * appointed carrier, every form Fetch still quotes. DP3 is a standing
- * exclusion (see EXCLUDED_FORMS below) across every carrier, so there's no
- * longer a separate DP3-only override item to build — Universal P&C's old
- * DP3 occupancy override (lib/adapters/fetch-quoting.ts) is gone with it,
- * since no DP3 rate is ever saved or shown regardless of how it was quoted.
+ * Builds the CreateBulkQuoteRequest payload for a property: one item for
+ * every appointed carrier, every form Fetch still quotes, at the property's
+ * true rebuild-cost Coverage A — PLUS, only when that figure falls below
+ * Frontline's own $350k floor (frontlineDwellingA), a second item scoped to
+ * Frontline alone at the floored amount. Frontline silently zeroes any quote
+ * below that floor rather than erroring, so without the second item it would
+ * just come back as an unusable $0 rate from the first (filtered out by
+ * mergeFetchRates) and never quote at all. Every other carrier is quoted —
+ * and the proposal's displayed Coverage A is stated — at the true rebuild
+ * cost, not Frontline's floor. DP3 is a standing exclusion (see
+ * EXCLUDED_FORMS below) across every carrier, so there's no longer a
+ * separate DP3-only override item to build — Universal P&C's old DP3
+ * occupancy override (lib/adapters/fetch-quoting.ts) is gone with it, since
+ * no DP3 rate is ever saved or shown regardless of how it was quoted.
  *
  * `runSuffix` must be unique per run (e.g. the quote_request id, or that plus
  * a retry counter) — Fetch dedupes on client_item_id and silently returns the
@@ -89,7 +101,18 @@ export function buildFetchQuoteItems(
     standardFields.ho_3_coverage_c = nearestCoverageCOption(coverage.personalPropertyPct);
   }
 
-  return [{ client_item_id: `${property.id}-${runSuffix}`, fields: standardFields }];
+  const items: FetchQuoteItemSpec[] = [{ client_item_id: `${property.id}-${runSuffix}`, fields: standardFields }];
+
+  const floored = frontlineDwellingA(Number(standardFields.dwelling_a));
+  if (floored !== Number(standardFields.dwelling_a)) {
+    items.push({
+      client_item_id: `${property.id}-${runSuffix}-frontline`,
+      fields: { ...standardFields, dwelling_a: String(floored) },
+      carrier_keys: [FRONTLINE_CARRIER_KEY],
+    });
+  }
+
+  return items;
 }
 
 export interface RawFetchRate {

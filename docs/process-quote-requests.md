@@ -128,25 +128,32 @@ client_item_id dedupe (a repeated id silently returns OLD results instead of re-
 
 ### 3. Submit to Fetch
 
-Call `CreateBulkQuoteRequest` (`product_code: "home"`) with the one item from step 2. Poll
+Call `CreateBulkQuoteRequest` (`product_code: "home"`) with **every item** `items` returned from step 2 —
+usually just the one, but a property whose rebuild-cost Coverage A falls below Frontline's $350k floor gets a
+second, Frontline-only item at the floored amount (see `buildFetchQuoteItems`'s own doc comment). Poll
 `GetBulkQuoteStatus` (with `include_items: true, item_status: "submitted"`) every ~15-20 seconds until
-`rates_done: true` — this typically takes 30-90 seconds. Note the `quote_request_id` Fetch returns.
+`rates_done: true` — this typically takes 30-90 seconds. Note the `quote_request_id` Fetch returns **for each
+item** (two items means two distinct quote_request_ids, one per item, not one for the whole bulk request).
 
 ### 4. Get full rates and filter
 
-Call `GetQuoteStatus(quote_request_id, include_rates: true)` for that Fetch quote_request_id. Then:
+Call `GetQuoteStatus(quote_request_id, include_rates: true)` for **each** item's Fetch quote_request_id from
+step 3 (one call per item), and concatenate every item's `rates` array into one list before merging:
 
 ```ts
 // scripts/_merge.mts (scratch; .mts, not .ts)
 import { mergeFetchRates, type RawFetchRate } from "@/lib/quote-requests/fetch-pipeline";
-const rates: RawFetchRate[] = [...]; // paste from GetQuoteStatus's `rates` array — keep id, carrier, form_type, status, premium, carrier_response_messages
+const rates: RawFetchRate[] = [...]; // paste from EVERY item's GetQuoteStatus `rates` array, concatenated — keep id, carrier, form_type, status, premium, carrier_response_messages
 console.log(JSON.stringify(mergeFetchRates(rates)));
 ```
 
 `mergeFetchRates` already handles everything that used to be manual judgment calls: drops declined/errored
 rates, excluded forms (HO8, DP1, and — standing decision, not a data-quality fix — DP3 from every carrier;
-Fetch still quotes DP3 as part of the one item submitted, there's no per-carrier-per-form exclusion at
-submission time, it's just never saved or shown), $0 or null-premium "success" rows, and any rate carrying a
+Fetch still quotes DP3 as part of every item submitted, there's no per-carrier-per-form exclusion at
+submission time, it's just never saved or shown), $0 or null-premium "success" rows (this is also what quietly
+discards the first item's own Frontline attempt, when a second, Frontline-only item above was needed — the
+first item's Frontline rate comes back $0 and is dropped here, leaving only the floored item's real one), and
+any rate carrying a
 real underwriting warning in `carrier_response_messages` even alongside a priced premium (e.g. "Year of
 construction is ineligible", "Property age exceeds maximum"). There's no longer a separate DP3-only override
 item or carrier to special-case (Universal P&C's old DP3 occupancy override is gone — see
