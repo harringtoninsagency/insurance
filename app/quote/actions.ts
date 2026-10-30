@@ -4,6 +4,8 @@ import { createServiceSupabase } from "@/lib/supabase/server";
 import { submitQuoteRequest, type SubmitQuoteRequestInput } from "@/lib/quote-requests/submit";
 import { prepareQuoteRequest } from "@/lib/quote-requests/prepare";
 import { fireQuoteRoutine } from "@/lib/quote-requests/fire-routine";
+import { checkConsumerPropertyLimit } from "@/lib/quote-requests/rate-limit";
+import { normalizeEmail } from "@/lib/contacts/normalize";
 
 export type ConsumerQuoteValues = Record<string, string>;
 export type ConsumerQuoteState = { done: true } | { error: string; values: ConsumerQuoteValues } | null;
@@ -47,20 +49,33 @@ export async function submitConsumerQuoteAction(_prev: ConsumerQuoteState, formD
     return { error: "Choose your address from the suggestions list.", values };
   }
 
+  const email = normalizeEmail(str(formData, "email"));
+  if (!email) {
+    const values = Object.fromEntries(FIELDS.map((f) => [f, str(formData, f)]));
+    return { error: "Please enter a valid email address.", values };
+  }
+
+  const zipcode = str(formData, "zipcode");
+  const supabase = createServiceSupabase();
+  const limit = await checkConsumerPropertyLimit(supabase, email, addressLine, city, zipcode || null);
+  if (!limit.ok) {
+    const values = Object.fromEntries(FIELDS.map((f) => [f, str(formData, f)]));
+    return { error: limit.error, values };
+  }
+
   const input: SubmitQuoteRequestInput = {
     requesterType: "consumer",
     requesterName: `${firstName} ${lastName}`.trim(),
-    requesterEmail: str(formData, "email"),
+    requesterEmail: email,
     requesterPhone: str(formData, "phone"),
     requestKind: "quote_summary",
     addressLine,
     city,
     state: str(formData, "state") || "FL",
-    zipcode: str(formData, "zipcode"),
+    zipcode,
     assignedAgentId: AGENCY_OWNER_AGENT_ID,
   };
 
-  const supabase = createServiceSupabase();
   const result = await submitQuoteRequest(supabase, input);
   if (!result.ok) {
     const values = Object.fromEntries(FIELDS.map((f) => [f, str(formData, f)]));
