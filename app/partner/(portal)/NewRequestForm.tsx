@@ -91,6 +91,10 @@ export function NewRequestForm({ defaultEmail }: { defaultEmail: string }) {
               {isPending ? "Sending..." : "Request a Quote Now with NEW ROOF SCENARIO"}
             </button>
             <p className="text-center text-xs text-slate-500">New Roof Scenario assumes a newly installed roof on this property.</p>
+            <p className="text-center text-xs text-slate-500">
+              Rates shown are estimates based on assumed wind-mitigation credits and property details on file; a four
+              point or wind mitigation inspection may be required to verify eligibility and finalize actual premiums.
+            </p>
             {state && "error" in state && <p className="text-sm text-red-600">{state.error}</p>}
           </div>
         </form>
