@@ -4,8 +4,10 @@ import { NextResponse, type NextRequest } from "next/server";
 // Public by design: the login page, the realtor / mortgage broker opt-in page,
 // the unsubscribe page + one-click endpoint (must work for anyone holding a
 // signed link), the email provider's webhook (verified by signature), the
-// public quote-request landing page, and the partner portal's own login and
-// invite-acceptance pages (a partner has no session yet at either of those).
+// public quote-request landing pages (both /request-quote, the direct-link
+// form, and /quote, the homeowner re-shop page), and the partner portal's
+// own login and invite-acceptance pages (a partner has no session yet at
+// either of those).
 // The home page ("/") is also public (it's the portal picker) but is checked
 // by exact match below, not listed here — a prefix match on "/" would make
 // every path public.
@@ -16,6 +18,7 @@ const PUBLIC_PATHS = [
   "/api/unsubscribe",
   "/api/webhooks/resend",
   "/request-quote",
+  "/quote",
   "/partner/login",
   "/partner/signup",
   "/partner/accept-invite",
