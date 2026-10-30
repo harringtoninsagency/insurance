@@ -78,6 +78,6 @@ export async function checkConsumerPropertyLimit(
 
   return {
     ok: false,
-    error: `We can only quote up to ${MAX_CONSUMER_PROPERTIES} properties per email address online. Email us or call for help with additional properties.`,
+    error: `We can only quote up to ${MAX_CONSUMER_PROPERTIES} properties per email address online. Call us at 727-789-2200 x.1 or email harringtonagency@brightway.com for help with additional properties.`,
   };
 }
