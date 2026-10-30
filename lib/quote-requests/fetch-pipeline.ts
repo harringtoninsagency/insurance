@@ -5,7 +5,7 @@ import { generateIndicationProposal } from "@/lib/proposals/generate-indication"
 import { generateListingSnapshotProposal } from "@/lib/proposals/generate-listing-snapshot";
 import { resolveReferralPartner } from "@/lib/quote-requests/referral-partner";
 import { buildQuoteCompletionEmail, buildConsumerQuoteCompletionEmail, type QuoteCompletionEmail } from "@/lib/quote-requests/completion-email";
-import type { Database } from "@/lib/types/database";
+import type { ContactType, Database } from "@/lib/types/database";
 
 type PropertyRow = Database["public"]["Tables"]["properties"]["Row"];
 
@@ -54,20 +54,30 @@ function nearestCoverageCOption(pct: number): "0%" | "25%" | "50%" {
  * OLD results for a repeat id instead of re-quoting, confirmed earlier this
  * project.
  *
- * `roofingCompanyOverride: true` applies that referral type's special quoting
- * rules (forces roof_year to the current calendar year, and sets the
- * wind-mitigation credits described in
- * lib/adapters/fetch-quoting.ts's roofingCompanyWindMitFields) — set it when
- * the request's referring contact (industry_contacts, via quote_requests.contact_id)
- * has contact_type = 'roofing_company'. See docs/process-quote-requests.md.
+ * `roofingCompanyOverride: true` applies that referral type's own EXTRA
+ * quoting rules (forces roof_year to the current calendar year, and sets the
+ * extra wind-mitigation credits described in
+ * lib/adapters/fetch-quoting.ts's roofingCompanyExtraWindMitFields) — set it
+ * when the request's referring contact (industry_contacts, via
+ * quote_requests.contact_id) has contact_type = 'roofing_company', or the
+ * partner explicitly asked for "New Roof Scenario"
+ * (quote_requests.requested_roof_scenario). See docs/process-quote-requests.md.
+ *
+ * `referralPartnerType`, when given (realtor, mortgage_broker, or
+ * roofing_company — the request's referring contact's own contact_type),
+ * applies that shared wind-mit trio to every referral-partner quote
+ * (referralPartnerWindMitFields) — independent of roofingCompanyOverride,
+ * which only a roofing_company referral or an explicit roof-scenario request
+ * triggers.
  */
 export function buildFetchQuoteItems(
   property: PropertyRow,
   coverage: CoverageOverride,
   runSuffix: string,
-  roofingCompanyOverride = false
+  roofingCompanyOverride = false,
+  referralPartnerType: ContactType | null = null
 ): FetchQuoteItemSpec[] {
-  const standardFields = fetchQuotingAdapter.buildQuoteFields(property, roofingCompanyOverride);
+  const standardFields = fetchQuotingAdapter.buildQuoteFields(property, roofingCompanyOverride, referralPartnerType);
 
   if (coverage.dwellingA != null) {
     standardFields.dwelling_a = String(Math.round(coverage.dwellingA));
