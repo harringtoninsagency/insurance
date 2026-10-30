@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   description:
     "Florida home insurance rates are dropping. See your options from multiple top-rated carriers in under a minute — no obligation.",
   openGraph: {
-    title: "Is Your Florida Home Insurance Renewal Beatable?",
+    title: "Is Your Florida Home Insurance Renewal Outrageous?",
     description: "See your options from multiple top-rated Florida carriers in under a minute.",
     type: "website",
   },
@@ -30,7 +30,7 @@ export default function ConsumerQuotePage() {
 
       <main className="mx-auto max-w-2xl px-5 py-10">
         <div className="text-center">
-          <h1 className="text-3xl font-bold leading-tight text-[#003049] sm:text-4xl">Is Your Florida Home Insurance Renewal Beatable?</h1>
+          <h1 className="text-4xl font-bold leading-tight text-[#003049] sm:text-5xl">Is Your Florida Home Insurance Renewal Outrageous?</h1>
           <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-slate-600">
             Rates are dropping across Florida as new carriers compete for your business. See your options from
             multiple top-rated carriers in under a minute — free, no obligation.
