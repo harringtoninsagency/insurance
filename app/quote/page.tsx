@@ -56,7 +56,12 @@ export default function ConsumerQuotePage() {
           </div>
         </div>
 
-        <p className="mt-10 text-center text-xs text-slate-400">Brightway Insurance | The Harrington Agency</p>
+        <p className="mx-auto mt-10 max-w-xl text-center text-xs leading-5 text-slate-400">
+          Rates shown are estimates based on assumed wind-mitigation credits and property details on file; a home
+          inspection will be required to verify eligibility and finalize actual premiums.
+        </p>
+
+        <p className="mt-4 text-center text-xs text-slate-400">Brightway Insurance | The Harrington Agency</p>
       </main>
     </div>
   );
