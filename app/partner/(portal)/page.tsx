@@ -43,8 +43,8 @@ export default async function PartnerPortalPage() {
 
   // Branding card data (own co-brand photo/logo, own agent assignment, and
   // the agency's agent list to pick from) — service-role, same reasoning as
-  // app/partner/signup/page.tsx's resolvePublicAgent: a partner's own
-  // session has no RLS access to `profiles` at all (current_agency_id()
+  // app/partner/(portal)/actions.ts's updatePartnerAgentAction: a partner's
+  // own session has no RLS access to `profiles` at all (current_agency_id()
   // never resolves for them), and industry_contacts only as of the new
   // "partner reads own" policy, so there's nothing gained by using the
   // session client here over the service client every other partner-portal

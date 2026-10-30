@@ -547,6 +547,23 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["partner_access_requests"]["Row"]>;
         Relationships: [];
       };
+      agent_share_tokens: {
+        Row: {
+          id: string;
+          agency_id: string;
+          agent_id: string;
+          token: string;
+          revoked_at: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["agent_share_tokens"]["Row"]> & {
+          agency_id: string;
+          agent_id: string;
+          token: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["agent_share_tokens"]["Row"]>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
