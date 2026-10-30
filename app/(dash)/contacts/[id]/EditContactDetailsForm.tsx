@@ -14,6 +14,7 @@ interface ContactDetails {
   email: string | null;
   licenseNumber: string | null;
   city: string | null;
+  dailyRequestLimit: number;
 }
 
 const FIELDS: Array<{ key: keyof ContactDetailsPayload; label: string; type: string }> = [
@@ -24,6 +25,7 @@ const FIELDS: Array<{ key: keyof ContactDetailsPayload; label: string; type: str
   { key: "email", label: "Email", type: "email" },
   { key: "licenseNumber", label: "License #", type: "text" },
   { key: "city", label: "City", type: "text" },
+  { key: "dailyRequestLimit", label: "Daily quote-request limit", type: "number" },
 ];
 
 function toPayload(c: ContactDetails): ContactDetailsPayload {
@@ -35,6 +37,7 @@ function toPayload(c: ContactDetails): ContactDetailsPayload {
     email: c.email ?? "",
     licenseNumber: c.licenseNumber ?? "",
     city: c.city ?? "",
+    dailyRequestLimit: String(c.dailyRequestLimit),
   };
 }
 
@@ -77,6 +80,7 @@ export function EditContactDetailsForm({ contact }: { contact: ContactDetails })
       ["Email", contact.email],
       ["License #", contact.licenseNumber],
       ["City", contact.city],
+      ["Daily quote-request limit", String(contact.dailyRequestLimit)],
     ];
     return (
       <>
@@ -109,6 +113,7 @@ export function EditContactDetailsForm({ contact }: { contact: ContactDetails })
           <input
             id={`edit_${f.key}`}
             type={f.type}
+            min={f.type === "number" ? 1 : undefined}
             value={values[f.key]}
             onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
             className={inputClass}

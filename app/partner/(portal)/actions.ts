@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createServerSupabase, createServiceSupabase } from "@/lib/supabase/server";
 import { submitQuoteRequest, type SubmitQuoteRequestInput } from "@/lib/quote-requests/submit";
+import { checkPartnerRateLimit } from "@/lib/quote-requests/rate-limit";
 import { prepareQuoteRequest } from "@/lib/quote-requests/prepare";
 import { fireQuoteRoutine } from "@/lib/quote-requests/fire-routine";
 import { notifyReferralPartnerSubmission } from "@/lib/quote-requests/submission-notify";
@@ -111,6 +112,9 @@ export async function submitPartnerQuoteRequestAction(_prev: PartnerRequestState
   const service = createServiceSupabase();
   const { data: account } = await service.from("partner_accounts").select("agency_id, contact_id, status").eq("user_id", user.id).maybeSingle();
   if (!account || account.status !== "active") return { error: "Your partner account isn't active. Contact your Brightway representative.", values: {} };
+
+  const rateLimit = await checkPartnerRateLimit(service, account.contact_id);
+  if (!rateLimit.ok) return { error: rateLimit.error, values: {} };
 
   const { data: contact } = await service
     .from("industry_contacts")

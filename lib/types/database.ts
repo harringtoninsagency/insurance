@@ -388,6 +388,8 @@ export interface Database {
           license_state: string;
           city: string | null;
           referral_partner_agent_id: string | null;
+          /** Per-partner quote-request cap (rolling 24h) — see lib/quote-requests/rate-limit.ts. Defaults to 10, bumpable per contact. */
+          daily_request_limit: number;
           /** Partner's own headshot for the co-branded block on generated proposal PDFs — see lib/partners/branding.ts. */
           photo_path: string | null;
           /** Partner's company logo, shown in their own portal only — never printed on a Brightway-generated PDF. */

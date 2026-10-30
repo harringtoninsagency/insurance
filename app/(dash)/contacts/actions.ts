@@ -188,6 +188,7 @@ export interface ContactDetailsPayload {
   email: string;
   licenseNumber: string;
   city: string;
+  dailyRequestLimit: string;
 }
 
 export type ContactDetailsResult = { ok: true } | { ok: false; error: string };
@@ -200,6 +201,9 @@ export async function updateContactDetailsAction(contactId: string, payload: Con
     const email = normalizeEmail(payload.email);
     if (payload.email.trim() && !email) return { ok: false, error: `Invalid email "${payload.email.trim()}"` };
 
+    const dailyRequestLimit = Number(payload.dailyRequestLimit);
+    if (!Number.isInteger(dailyRequestLimit) || dailyRequestLimit <= 0) return { ok: false, error: "Daily request limit must be a whole number greater than 0." };
+
     const { supabase } = await sessionContext();
     const { error } = await supabase
       .from("industry_contacts")
@@ -211,6 +215,7 @@ export async function updateContactDetailsAction(contactId: string, payload: Con
         email,
         license_number: cleanText(payload.licenseNumber)?.toUpperCase() ?? null,
         city: cleanText(payload.city),
+        daily_request_limit: dailyRequestLimit,
         updated_at: new Date().toISOString(),
       })
       .eq("id", contactId);
