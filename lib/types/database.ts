@@ -51,6 +51,7 @@ export type PartnerAccountStatus = "invited" | "active" | "disabled";
 export type QuoteRequesterType = "partner" | "public" | "internal";
 export type QuoteRequestKind = "quote_summary" | "listing_snapshot" | "both";
 export type QuoteRequestStatus = "new" | "processing" | "completed" | "failed" | "needs_review";
+export type PartnerAccessRequestStatus = "pending" | "approved" | "denied";
 
 export interface Database {
   public: {
@@ -513,6 +514,35 @@ export interface Database {
           city: string;
         };
         Update: Partial<Database["public"]["Tables"]["quote_requests"]["Row"]>;
+        Relationships: [];
+      };
+      partner_access_requests: {
+        Row: {
+          id: string;
+          agency_id: string;
+          contact_type: ContactType;
+          full_name: string;
+          company_name: string | null;
+          email: string;
+          cell_phone: string | null;
+          license_number: string;
+          buyers_per_month: string | null;
+          referral_partner_agent_id: string | null;
+          status: PartnerAccessRequestStatus;
+          status_detail: string | null;
+          contact_id: string | null;
+          reviewed_by: string | null;
+          reviewed_at: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["partner_access_requests"]["Row"]> & {
+          agency_id: string;
+          contact_type: ContactType;
+          full_name: string;
+          email: string;
+          license_number: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["partner_access_requests"]["Row"]>;
         Relationships: [];
       };
     };

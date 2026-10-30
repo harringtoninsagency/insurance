@@ -1,39 +1,22 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { createBrowserSupabase } from "@/lib/supabase/client";
-import { signUpPartnerAction } from "./actions";
-import type { SelfSignupResult } from "@/lib/partners/self-signup";
+import { useActionState } from "react";
+import { requestAccessAction } from "./actions";
+import type { AccessRequestResult } from "@/lib/partners/request-access";
 
 const inputClass = "w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-[#003049] focus:outline-none";
 
 export function SignupForm({ agentId, agentName }: { agentId: string | null; agentName: string | null }) {
-  const router = useRouter();
-  const supabase = createBrowserSupabase();
-  const [state, formAction, isPending] = useActionState<SelfSignupResult | null, FormData>(signUpPartnerAction, null);
+  const [state, formAction, isPending] = useActionState<AccessRequestResult | null, FormData>(requestAccessAction, null);
 
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [signingIn, setSigningIn] = useState(false);
-  const [signInError, setSignInError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!state?.ok) return;
-    setSigningIn(true);
-    const phoneDigits = phone.replace(/\D/g, "");
-    supabase.auth.signInWithPassword({ email, password: phoneDigits }).then(({ error }) => {
-      if (error) {
-        setSignInError("Account created, but signing you in automatically failed — try logging in with your email and 10-digit phone number.");
-        setSigningIn(false);
-        return;
-      }
-      router.push("/partner");
-      router.refresh();
-    });
-    // Only re-run if a fresh successful submission comes in.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state]);
+  if (state?.ok) {
+    return (
+      <div className="space-y-2 rounded bg-green-50 px-4 py-3 text-sm text-green-800">
+        <p className="font-medium">Request submitted.</p>
+        <p>We verify your license and follow up within one business day with your login.</p>
+      </div>
+    );
+  }
 
   return (
     <form action={formAction} className="space-y-5">
@@ -67,26 +50,27 @@ export function SignupForm({ agentId, agentName }: { agentId: string | null; age
 
       <div className="space-y-1">
         <label htmlFor="company_name" className="text-sm font-medium text-[#003049]">
-          Company / brokerage <span className="font-normal text-slate-400">(optional)</span>
+          Brokerage / company
         </label>
-        <input id="company_name" name="company_name" type="text" className={inputClass} />
-        <p className="text-xs text-slate-500">Shown alongside your name on Brightway-generated proposals.</p>
+        <input id="company_name" name="company_name" type="text" required className={inputClass} />
+      </div>
+
+      <div className="space-y-1">
+        <label htmlFor="license_number" className="text-sm font-medium text-[#003049]">
+          License number
+        </label>
+        <input id="license_number" name="license_number" type="text" required className={inputClass} />
+        <p className="text-xs text-slate-500">
+          Your active Florida real estate, mortgage originator (NMLS), or contractor license — we verify this before approving access.
+        </p>
       </div>
 
       <div className="space-y-1">
         <label htmlFor="email" className="text-sm font-medium text-[#003049]">
           Email
         </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className={inputClass}
-        />
-        <p className="text-xs text-slate-500">This is your login ID.</p>
+        <input id="email" name="email" type="email" required className={inputClass} />
+        <p className="text-xs text-slate-500">This becomes your login once approved.</p>
       </div>
 
       <div className="space-y-1">
@@ -102,22 +86,26 @@ export function SignupForm({ agentId, agentName }: { agentId: string | null; age
           placeholder="10 digits, e.g. 7275551234"
           pattern="^\D*\d(?:\D*\d){9}\D*$"
           title="Enter a 10-digit phone number"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
           className={inputClass}
         />
-        <p className="text-xs text-slate-500">Your 10-digit phone number is your password — write it down.</p>
+      </div>
+
+      <div className="space-y-1">
+        <label htmlFor="buyers_per_month" className="text-sm font-medium text-[#003049]">
+          Buyers per month <span className="font-normal text-slate-400">(optional)</span>
+        </label>
+        <input id="buyers_per_month" name="buyers_per_month" type="text" placeholder="e.g. 3-5" className={inputClass} />
+        <p className="text-xs text-slate-500">Helps us size your access — not a requirement for approval.</p>
       </div>
 
       {state && !state.ok && <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">{state.error}</p>}
-      {signInError && <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">{signInError}</p>}
 
       <button
         type="submit"
-        disabled={isPending || signingIn}
+        disabled={isPending}
         className="w-full rounded-full bg-[#F0FF00] px-4 py-2.5 text-sm font-bold text-[#003049] transition-colors hover:brightness-95 disabled:opacity-50"
       >
-        {isPending ? "Creating account..." : signingIn ? "Signing you in..." : "Create account"}
+        {isPending ? "Submitting..." : "Request access"}
       </button>
     </form>
   );

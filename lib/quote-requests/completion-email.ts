@@ -35,7 +35,7 @@ export interface QuoteCompletionEmail {
  * an otherwise-completed quote request into a failure.
  *
  * Deliberately returns data instead of sending it directly: unlike
- * notifyNewPartnerAccount and sendApprovedOutreach (both called from Vercel
+ * notifyNewAccessRequest and sendApprovedOutreach (both called from Vercel
  * server actions, where a plain Resend HTTP call works fine),
  * finalizeQuoteRequest only ever runs inside a Claude Code agent session
  * (see docs/process-quote-requests.md — Fetch's carrier-quoting tools are
@@ -59,7 +59,8 @@ export async function buildQuoteCompletionEmail(quoteRequestId: string, proposal
     if (!request || request.requester_type !== "partner" || !request.contact_id || !request.property_id) return null;
 
     // The account's actual email of record — the same address the partner
-    // signed up or was invited with (lib/partners/invite.ts, lib/partners/self-signup.ts)
+    // was invited with (lib/partners/invite.ts), whether invited directly or
+    // via an approved access request (app/(dash)/contacts/access-requests/actions.ts)
     // — rather than whatever the partner typed into the form's editable
     // "Send results to" field, so results always reach the designated account
     // regardless of what that field says.

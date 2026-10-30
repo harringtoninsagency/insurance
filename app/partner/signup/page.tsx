@@ -13,7 +13,7 @@ export default async function PartnerSignupPage({ searchParams }: { searchParams
   const { agent } = await searchParams;
   // Only used to show the friendly "you'll be connected with X" note below —
   // the value that actually gets persisted is re-validated server-side in
-  // signUpPartner, not trusted from this page render.
+  // submitAccessRequest, not trusted from this page render.
   const resolvedAgent = await resolvePublicAgent(createServiceSupabase(), PUBLIC_FORM_AGENCY_ID, agent);
 
   return (
@@ -32,8 +32,8 @@ export default async function PartnerSignupPage({ searchParams }: { searchParams
         </div>
 
         <div>
-          <h1 className="text-lg font-semibold text-[#003049]">Create your partner account</h1>
-          <p className="text-sm text-[#8291AC]">For realtors, mortgage brokers, and roofing companies</p>
+          <h1 className="text-lg font-semibold text-[#003049]">Request partner access</h1>
+          <p className="text-sm text-[#8291AC]">For licensed realtors, mortgage brokers, and roofing companies — we verify your license before granting access.</p>
         </div>
 
         <SignupForm agentId={resolvedAgent?.id ?? null} agentName={resolvedAgent?.fullName ?? null} />

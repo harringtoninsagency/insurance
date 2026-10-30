@@ -176,7 +176,7 @@ signed `url` Resend can fetch directly — don't re-download or re-upload), and 
 This step exists only because `finalizeQuoteRequest` cannot send the email itself: this routine runs inside
 an agent session's own egress proxy, which has been confirmed (live) to reject raw outbound HTTPS calls to
 `api.resend.com` even with a valid key — while the already-connected Resend MCP tool is not subject to that
-block. The two *other* places this app sends email (`notifyNewPartnerAccount`, `sendApprovedOutreach`) run
+block. The two *other* places this app sends email (`notifyNewAccessRequest`, `sendApprovedOutreach`) run
 from Vercel server actions instead, with no such proxy, so they still call Resend directly and need no change.
 
 Use exactly these values for the fields the Resend tool asks you to confirm rather than fill in yourself —

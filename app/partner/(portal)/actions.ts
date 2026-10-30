@@ -121,7 +121,7 @@ export async function submitPartnerQuoteRequestAction(_prev: PartnerRequestState
   const input: SubmitQuoteRequestInput = {
     requesterType: "partner",
     contactId: account.contact_id,
-    // Set once at signup (self-signup via an agent's share link, or an
+    // Set once at signup (an access request via an agent's share link, or an
     // admin's /contacts edit) and carried onto every request this partner
     // submits from here on — see lib/team/team.ts's resolvePublicAgent.
     assignedAgentId: contact?.referral_partner_agent_id ?? null,

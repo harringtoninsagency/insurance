@@ -271,9 +271,10 @@ export type DeleteContactResult = { ok: true } | { ok: false; error: string };
  * linked one — the FK cascade above only removes OUR row, not the
  * auth.users one Supabase Auth owns. Left behind, that auth user keeps the
  * email "already registered" forever: confirmed live that a later re-invite
- * or self-signup for the same email then fails inside signUpPartner/
- * invitePartner's own auth.admin.createUser/inviteUserByEmail call, with no
- * new partner_accounts row ever created — so the person can authenticate
+ * (direct, or via an approved access request — see
+ * app/(dash)/contacts/access-requests/actions.ts) for the same email then
+ * fails inside invitePartner's own auth.admin.inviteUserByEmail call, with
+ * no new partner_accounts row ever created — so the person can authenticate
  * (the orphaned auth user still works) but the portal layout finds no
  * active partner_accounts row for them and immediately signs them back out,
  * which looks like "signed up but can't log in" from their side.

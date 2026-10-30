@@ -33,8 +33,9 @@ export interface SubmitQuoteRequestInput {
   personalPropertyPct?: string;
   /**
    * Set when the referring partner's directory contact already has an
-   * in-house agent linked (e.g. they signed up via that agent's share link —
-   * see lib/team/team.ts's resolvePublicAgent and lib/partners/self-signup.ts).
+   * in-house agent linked (e.g. they requested access via that agent's share
+   * link — see lib/team/team.ts's resolvePublicAgent and
+   * lib/partners/request-access.ts).
    * Written straight onto quote_requests.assigned_agent_id so it shows up
    * immediately in the home dashboard's workload tracker
    * (app/(dash)/home/page.tsx), rather than waiting on resolveProposalAgent's
