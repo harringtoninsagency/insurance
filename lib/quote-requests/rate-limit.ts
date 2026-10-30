@@ -43,3 +43,41 @@ export async function checkPartnerRateLimit(service: Client, contactId: string):
 
   return { ok: false, error: `You've reached your daily limit of ${limit} quote requests. Contact your Brightway representative if you need more.` };
 }
+
+const MAX_CONSUMER_PROPERTIES = 2;
+
+const addressKey = (addressLine: string, city: string, zipcode: string | null) =>
+  `${addressLine.trim().toLowerCase()}|${city.trim().toLowerCase()}|${(zipcode ?? "").trim().toLowerCase()}`;
+
+/**
+ * Caps the public re-shop page (app/quote) at 2 properties per email —
+ * unlike the partner link above, there's no account behind this submitter
+ * to put a per-account limit on, so the email itself is the identity being
+ * capped. Counts distinct addresses rather than requests, so resubmitting
+ * the same property (a double-click, or someone re-shopping the same home
+ * later) never counts against the cap.
+ */
+export async function checkConsumerPropertyLimit(
+  service: Client,
+  email: string,
+  addressLine: string,
+  city: string,
+  zipcode: string | null
+): Promise<RateLimitResult> {
+  const { data: existing } = await service
+    .from("quote_requests")
+    .select("address_line, city, zipcode")
+    .eq("requester_type", "consumer")
+    .eq("requester_email", email);
+
+  const key = addressKey(addressLine, city, zipcode);
+  const otherKeys = new Set((existing ?? []).map((r) => addressKey(r.address_line, r.city, r.zipcode)));
+  otherKeys.delete(key);
+
+  if (otherKeys.size < MAX_CONSUMER_PROPERTIES) return { ok: true };
+
+  return {
+    ok: false,
+    error: `We can only quote up to ${MAX_CONSUMER_PROPERTIES} properties per email address online. Call us at 727-789-2200 x.1 or email harringtonagency@brightway.com for help with additional properties.`,
+  };
+}

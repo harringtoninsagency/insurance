@@ -1,4 +1,4 @@
-import type { Database, Json } from "@/lib/types/database";
+import type { ContactType, Database, Json } from "@/lib/types/database";
 
 type PropertyRow = Database["public"]["Tables"]["properties"]["Row"];
 type QuoteInsert = Database["public"]["Tables"]["quotes"]["Insert"];
@@ -9,7 +9,7 @@ type QuoteInsert = Database["public"]["Tables"]["quotes"]["Insert"];
  * shape; `normalizeRate` maps one of its result rows back to a `quotes` insert.
  */
 export interface CarrierQuoteAdapter<TFields, TRate> {
-  buildQuoteFields(property: PropertyRow, roofingCompanyOverride?: boolean): TFields;
+  buildQuoteFields(property: PropertyRow, roofingCompanyOverride?: boolean, referralPartnerType?: ContactType | null): TFields;
   normalizeRate(rate: TRate, ctx: NormalizeContext): QuoteInsert;
 }
 
@@ -61,10 +61,10 @@ export function defaultDwellingA(sqft: number): number {
 // Fetch's own default for HO3 Coverage C (personal property) when not set.
 export const DEFAULT_PERSONAL_PROPERTY_PCT = 50;
 
-// Year roof-to-wall clips became the default credit this agency quotes —
-// applies to every quote, not just Roofing Company referrals (see
-// buildQuoteFields and roofingCompanyWindMitFields below, both of which use
-// this same cutoff).
+// Year roof-to-wall clips became the default credit this agency quotes on
+// an ordinary (non-referral-partner) quote (see buildQuoteFields below).
+// Any referral partner (realtor, mortgage broker, or roofing company) uses
+// its own, later cutoff — see REFERRAL_PARTNER_CLIP_MIN_YEAR_BUILT.
 const HURRICANE_CLIP_MIN_YEAR_BUILT = 1970;
 
 /** Default roof-to-wall attachment credit for a home of this build year. */
@@ -72,18 +72,38 @@ function defaultRoofToWallAttachment(yearBuilt: number): FetchQuoteFields["roof_
   return yearBuilt >= HURRICANE_CLIP_MIN_YEAR_BUILT ? "Clips" : "Toe nails";
 }
 
+// Every referral partner's (realtor, mortgage broker, or roofing company)
+// own roof-to-wall cutoff — explicitly set apart from the agency-wide
+// HURRICANE_CLIP_MIN_YEAR_BUILT (1970) per instruction.
+const REFERRAL_PARTNER_CLIP_MIN_YEAR_BUILT = 1980;
+
 /**
- * Wind-mitigation credits a Roofing Company referral's quote always claims,
- * regardless of what this property's own enrichment data says: FBC/Class C
- * roof deck attachment and secondary water resistance are assumed done as
- * part of that company's own re-roof work. Roof-to-wall attachment uses the
- * same year-built default as every other quote (defaultRoofToWallAttachment).
+ * Wind-mitigation defaults applied to every referral-partner quote
+ * (realtor, mortgage broker, or roofing company), regardless of what this
+ * property's own enrichment data says: hurricane clips for homes built
+ * 1980+ (toe-nailed before — REFERRAL_PARTNER_CLIP_MIN_YEAR_BUILT), a Gable
+ * roof shape, and no impact-rated opening protection assumed.
  */
-function roofingCompanyWindMitFields(yearBuilt: number): Pick<FetchQuoteFields, "roof_deck_attachment" | "secondary_water_resistance" | "roof_to_wall_attachment"> {
+function referralPartnerWindMitFields(yearBuilt: number): Pick<FetchQuoteFields, "roof_to_wall_attachment" | "roof_shape" | "opening_protection"> {
+  return {
+    roof_to_wall_attachment: yearBuilt >= REFERRAL_PARTNER_CLIP_MIN_YEAR_BUILT ? "Clips" : "Toe nails",
+    roof_shape: "Gable",
+    opening_protection: "None",
+  };
+}
+
+/**
+ * The EXTRA wind-mitigation credits a Roofing Company referral's quote
+ * claims on top of referralPartnerWindMitFields above: FBC/Class C roof
+ * deck attachment and secondary water resistance, assumed done as part of
+ * that company's own re-roof work. Only a roofing_company referral (or an
+ * explicit "New Roof Scenario" request) gets these — a realtor or mortgage
+ * broker referral gets the wind-mit trio above but never these.
+ */
+function roofingCompanyExtraWindMitFields(): Pick<FetchQuoteFields, "roof_deck_attachment" | "secondary_water_resistance"> {
   return {
     roof_deck_attachment: "Type C (8d @ 6/6)",
     secondary_water_resistance: "Yes",
-    roof_to_wall_attachment: defaultRoofToWallAttachment(yearBuilt),
   };
 }
 
@@ -118,7 +138,7 @@ export interface FetchRate {
 }
 
 export const fetchQuotingAdapter: CarrierQuoteAdapter<FetchQuoteFields, FetchRate> = {
-  buildQuoteFields(property, roofingCompanyOverride) {
+  buildQuoteFields(property, roofingCompanyOverride, referralPartnerType) {
     if (!property.house_number || !property.street || !property.city || !property.zipcode) {
       throw new Error(
         `Property ${property.id} is missing structured address fields (house_number/street/city/zipcode) required by Fetch's quote API`
@@ -156,10 +176,10 @@ export const fetchQuotingAdapter: CarrierQuoteAdapter<FetchQuoteFields, FetchRat
       protection_class: "8 or less",
       dwelling_type: "Single Family",
       usage: "Primary",
-      // Default wind-mitigation credit for every quote — see
-      // defaultRoofToWallAttachment. Overridden below for a Roofing Company
-      // referral, which has its own full wind-mit credit set, but uses this
-      // same year-built cutoff.
+      // Default wind-mitigation credit for a non-referral-partner quote —
+      // see defaultRoofToWallAttachment. Overridden below for any referral
+      // partner (realtor, mortgage broker, or roofing company), each of
+      // which shares referralPartnerWindMitFields's own, later cutoff.
       roof_to_wall_attachment: defaultRoofToWallAttachment(Number(property.year_built)),
       // Not listed in GetApplicationSchema's catalog (a hidden field, same as
       // county was before it started rejecting blanks) — confirmed live that
@@ -174,14 +194,15 @@ export const fetchQuotingAdapter: CarrierQuoteAdapter<FetchQuoteFields, FetchRat
       // silently fail on blank optionals rather than surfacing an error.
       // Never earlier than the build year — plumbing can't predate the house.
       plumbing_updated: String(Math.max(2020, Number(property.year_built))),
-      // A Roofing Company referral's special quoting rules — see
+      // Any referral partner (realtor, mortgage broker, or roofing company)
+      // gets the shared wind-mit trio — see referralPartnerWindMitFields.
+      ...(referralPartnerType ? referralPartnerWindMitFields(Number(property.year_built)) : {}),
+      // A Roofing Company referral's own EXTRA special quoting rules — see
       // lib/quote-requests/fetch-pipeline.ts's buildFetchQuoteItems, which is
       // the only caller that ever sets this flag. Spread last: it overrides
       // roof_year above regardless of what county-enrichment or any other
       // programming computed, per that referral type's explicit requirement.
-      ...(roofingCompanyOverride
-        ? { roof_year: String(new Date().getFullYear()), ...roofingCompanyWindMitFields(Number(property.year_built)) }
-        : {}),
+      ...(roofingCompanyOverride ? { roof_year: String(new Date().getFullYear()), ...roofingCompanyExtraWindMitFields() } : {}),
     };
   },
 
