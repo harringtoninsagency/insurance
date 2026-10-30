@@ -100,6 +100,8 @@ const STREET_SUFFIXES = [
   "forge",
   "frg",
   "pike",
+  "landing",
+  "lndg",
 ];
 
 // Strips a trailing unit/apartment/suite designator (e.g. "#1", "Unit 2",
@@ -213,6 +215,8 @@ export const SUFFIX_ABBREVIATIONS: Record<string, string> = {
   forge: "frg",
   frg: "frg",
   pike: "pike",
+  landing: "lndg",
+  lndg: "lndg",
 };
 
 function extractSuffixAbbreviation(street: string): string | null {
