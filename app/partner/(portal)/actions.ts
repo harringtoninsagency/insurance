@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createServerSupabase, createServiceSupabase } from "@/lib/supabase/server";
 import { submitQuoteRequest, type SubmitQuoteRequestInput } from "@/lib/quote-requests/submit";
+import { checkPartnerRateLimit } from "@/lib/quote-requests/rate-limit";
 import { prepareQuoteRequest } from "@/lib/quote-requests/prepare";
 import { fireQuoteRoutine } from "@/lib/quote-requests/fire-routine";
 import { notifyReferralPartnerSubmission } from "@/lib/quote-requests/submission-notify";
@@ -112,6 +113,9 @@ export async function submitPartnerQuoteRequestAction(_prev: PartnerRequestState
   const { data: account } = await service.from("partner_accounts").select("agency_id, contact_id, status").eq("user_id", user.id).maybeSingle();
   if (!account || account.status !== "active") return { error: "Your partner account isn't active. Contact your Brightway representative.", values: {} };
 
+  const rateLimit = await checkPartnerRateLimit(service, account.contact_id);
+  if (!rateLimit.ok) return { error: rateLimit.error, values: {} };
+
   const { data: contact } = await service
     .from("industry_contacts")
     .select("full_name, email, referral_partner_agent_id")
@@ -121,7 +125,7 @@ export async function submitPartnerQuoteRequestAction(_prev: PartnerRequestState
   const input: SubmitQuoteRequestInput = {
     requesterType: "partner",
     contactId: account.contact_id,
-    // Set once at signup (self-signup via an agent's share link, or an
+    // Set once at signup (an access request via an agent's share link, or an
     // admin's /contacts edit) and carried onto every request this partner
     // submits from here on — see lib/team/team.ts's resolvePublicAgent.
     assignedAgentId: contact?.referral_partner_agent_id ?? null,

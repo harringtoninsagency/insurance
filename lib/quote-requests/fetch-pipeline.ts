@@ -4,7 +4,7 @@ import { ingestFetchQuoteResults } from "@/lib/quotes/ingest";
 import { generateIndicationProposal } from "@/lib/proposals/generate-indication";
 import { generateListingSnapshotProposal } from "@/lib/proposals/generate-listing-snapshot";
 import { resolveReferralPartner } from "@/lib/quote-requests/referral-partner";
-import { buildQuoteCompletionEmail, type QuoteCompletionEmail } from "@/lib/quote-requests/completion-email";
+import { buildQuoteCompletionEmail, buildConsumerQuoteCompletionEmail, type QuoteCompletionEmail } from "@/lib/quote-requests/completion-email";
 import type { Database } from "@/lib/types/database";
 
 type PropertyRow = Database["public"]["Tables"]["properties"]["Row"];
@@ -213,8 +213,14 @@ export async function finalizeQuoteRequest(quoteRequestId: string, standardQuote
 
   const detail = `Completed with ${mergedRates.length} carrier rate(s).`;
   await supabase.from("quote_requests").update({ status: "completed", status_detail: detail, processed_at: new Date().toISOString() }).eq("id", quoteRequestId);
-  // Partner-submitted requests get their results emailed — the caller sends
-  // this via the Resend MCP tool (see pendingEmail's doc comment for why).
-  const pendingEmail = await buildQuoteCompletionEmail(quoteRequestId, proposalIds);
+  // Partner-submitted and consumer (app/quote) requests get their results
+  // emailed automatically — the caller sends this via the Resend MCP tool
+  // (see pendingEmail's doc comment for why). Every other requester_type
+  // (public, internal) stays null here and goes through the
+  // producer-reviewed outreach queue on /review instead, unchanged.
+  const pendingEmail =
+    request.requester_type === "consumer"
+      ? await buildConsumerQuoteCompletionEmail(quoteRequestId, proposalIds)
+      : await buildQuoteCompletionEmail(quoteRequestId, proposalIds);
   return { status: "completed", proposalIds, detail, pendingEmail };
 }

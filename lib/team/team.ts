@@ -73,7 +73,7 @@ export async function listTeam(service: Service, agencyId: string): Promise<Team
  * Validates a candidate profiles.id came off a public per-agent share link
  * (`?agent=<id>` on /partner/signup) — active, in this agency, nothing more.
  * Used both to show a friendly "you'll be connected with X" note at signup
- * (app/partner/signup/page.tsx) and, in signUpPartner, as the actual
+ * (app/partner/signup/page.tsx) and, in submitAccessRequest, as the actual
  * authorization check before persisting referral_partner_agent_id — a query
  * param or hidden form field is never trusted on its own.
  */

@@ -53,7 +53,7 @@ export default async function ContactsPage({
     return supabase.from("industry_contacts").select("id", { count: "exact", head: true });
   }
 
-  const [{ data: contacts, error }, realtors, brokers, roofingCompanies, withEmail, withCell, { data: teamMembers }] = await Promise.all([
+  const [{ data: contacts, error }, realtors, brokers, roofingCompanies, withEmail, withCell, { data: teamMembers }, { count: pendingRequests }] = await Promise.all([
     query,
     count((b) => b.eq("contact_type", "realtor")),
     count((b) => b.eq("contact_type", "mortgage_broker")),
@@ -61,6 +61,7 @@ export default async function ContactsPage({
     count((b) => b.not("email", "is", null)),
     count((b) => b.not("cell_phone", "is", null)),
     supabase.from("profiles").select("id, full_name, email").eq("active", true).order("full_name"),
+    supabase.from("partner_access_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
   ]);
 
   const agentNameById = new Map((teamMembers ?? []).map((m) => [m.id, m.full_name ?? m.email]));
@@ -84,9 +85,19 @@ export default async function ContactsPage({
             receive — texting a cell number requires written consent, so &quot;SMS consent&quot; stays blank until it&apos;s documented.
           </p>
         </div>
-        <Link href="/contacts/referral-activity" className="shrink-0 rounded border border-[#003049] px-3 py-1.5 text-sm font-medium text-[#003049]">
-          Referral partner activity
-        </Link>
+        <div className="flex shrink-0 gap-2">
+          <Link href="/contacts/access-requests" className="relative rounded border border-[#003049] px-3 py-1.5 text-sm font-medium text-[#003049]">
+            Access requests
+            {!!pendingRequests && (
+              <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-xs font-bold text-white">
+                {pendingRequests}
+              </span>
+            )}
+          </Link>
+          <Link href="/contacts/referral-activity" className="rounded border border-[#003049] px-3 py-1.5 text-sm font-medium text-[#003049]">
+            Referral partner activity
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">

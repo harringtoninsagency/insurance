@@ -48,9 +48,10 @@ export type QuoteAdapterName =
   | "fetch_quoting";
 export type ListingSourceName = "bridge" | "trestle" | "mlsgrid" | "county" | "onehome" | "quote_request";
 export type PartnerAccountStatus = "invited" | "active" | "disabled";
-export type QuoteRequesterType = "partner" | "public" | "internal";
+export type QuoteRequesterType = "partner" | "public" | "internal" | "consumer";
 export type QuoteRequestKind = "quote_summary" | "listing_snapshot" | "both";
 export type QuoteRequestStatus = "new" | "processing" | "completed" | "failed" | "needs_review";
+export type PartnerAccessRequestStatus = "pending" | "approved" | "denied";
 
 export interface Database {
   public: {
@@ -387,6 +388,8 @@ export interface Database {
           license_state: string;
           city: string | null;
           referral_partner_agent_id: string | null;
+          /** Per-partner quote-request cap (rolling 24h) — see lib/quote-requests/rate-limit.ts. Defaults to 10, bumpable per contact. */
+          daily_request_limit: number;
           /** Partner's own headshot for the co-branded block on generated proposal PDFs — see lib/partners/branding.ts. */
           photo_path: string | null;
           /** Partner's company logo, shown in their own portal only — never printed on a Brightway-generated PDF. */
@@ -513,6 +516,52 @@ export interface Database {
           city: string;
         };
         Update: Partial<Database["public"]["Tables"]["quote_requests"]["Row"]>;
+        Relationships: [];
+      };
+      partner_access_requests: {
+        Row: {
+          id: string;
+          agency_id: string;
+          contact_type: ContactType;
+          full_name: string;
+          company_name: string | null;
+          email: string;
+          cell_phone: string | null;
+          license_number: string;
+          buyers_per_month: string | null;
+          referral_partner_agent_id: string | null;
+          status: PartnerAccessRequestStatus;
+          status_detail: string | null;
+          contact_id: string | null;
+          reviewed_by: string | null;
+          reviewed_at: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["partner_access_requests"]["Row"]> & {
+          agency_id: string;
+          contact_type: ContactType;
+          full_name: string;
+          email: string;
+          license_number: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["partner_access_requests"]["Row"]>;
+        Relationships: [];
+      };
+      agent_share_tokens: {
+        Row: {
+          id: string;
+          agency_id: string;
+          agent_id: string;
+          token: string;
+          revoked_at: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["agent_share_tokens"]["Row"]> & {
+          agency_id: string;
+          agent_id: string;
+          token: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["agent_share_tokens"]["Row"]>;
         Relationships: [];
       };
     };

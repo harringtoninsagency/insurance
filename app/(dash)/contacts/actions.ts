@@ -188,6 +188,7 @@ export interface ContactDetailsPayload {
   email: string;
   licenseNumber: string;
   city: string;
+  dailyRequestLimit: string;
 }
 
 export type ContactDetailsResult = { ok: true } | { ok: false; error: string };
@@ -200,6 +201,9 @@ export async function updateContactDetailsAction(contactId: string, payload: Con
     const email = normalizeEmail(payload.email);
     if (payload.email.trim() && !email) return { ok: false, error: `Invalid email "${payload.email.trim()}"` };
 
+    const dailyRequestLimit = Number(payload.dailyRequestLimit);
+    if (!Number.isInteger(dailyRequestLimit) || dailyRequestLimit <= 0) return { ok: false, error: "Daily request limit must be a whole number greater than 0." };
+
     const { supabase } = await sessionContext();
     const { error } = await supabase
       .from("industry_contacts")
@@ -211,6 +215,7 @@ export async function updateContactDetailsAction(contactId: string, payload: Con
         email,
         license_number: cleanText(payload.licenseNumber)?.toUpperCase() ?? null,
         city: cleanText(payload.city),
+        daily_request_limit: dailyRequestLimit,
         updated_at: new Date().toISOString(),
       })
       .eq("id", contactId);
@@ -266,6 +271,18 @@ export type DeleteContactResult = { ok: true } | { ok: false; error: string };
  * and consent/opt-out events are kept but unlinked (SET NULL) rather than
  * deleted, since those are this agency's own compliance record, not the
  * partner's. Irreversible — the confirm step lives in the button itself.
+ *
+ * Also deletes their Supabase Auth user, if a partner_accounts row ever
+ * linked one — the FK cascade above only removes OUR row, not the
+ * auth.users one Supabase Auth owns. Left behind, that auth user keeps the
+ * email "already registered" forever: confirmed live that a later re-invite
+ * (direct, or via an approved access request — see
+ * app/(dash)/contacts/access-requests/actions.ts) for the same email then
+ * fails inside invitePartner's own auth.admin.inviteUserByEmail call, with
+ * no new partner_accounts row ever created — so the person can authenticate
+ * (the orphaned auth user still works) but the portal layout finds no
+ * active partner_accounts row for them and immediately signs them back out,
+ * which looks like "signed up but can't log in" from their side.
  */
 export async function deleteContactAction(contactId: string): Promise<DeleteContactResult> {
   try {
@@ -277,11 +294,15 @@ export async function deleteContactAction(contactId: string): Promise<DeleteCont
       .single();
 
     const service = createServiceSupabase();
+    const { data: account } = await service.from("partner_accounts").select("user_id").eq("contact_id", contactId).maybeSingle();
+
     if (contact?.photo_path) await service.storage.from("partner-photos").remove([contact.photo_path]);
     if (contact?.logo_path) await service.storage.from("partner-logos").remove([contact.logo_path]);
 
     const { error } = await supabase.from("industry_contacts").delete().eq("id", contactId);
     if (error) return { ok: false, error: error.message };
+
+    if (account?.user_id) await service.auth.admin.deleteUser(account.user_id);
 
     revalidatePath("/contacts");
     revalidatePath("/contacts/referral-activity");

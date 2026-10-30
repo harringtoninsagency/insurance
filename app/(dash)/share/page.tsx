@@ -1,8 +1,10 @@
 import QRCode from "qrcode";
 import { appBaseUrl } from "@/lib/base-url";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { getOrCreateAgentShareToken } from "@/lib/team/share-tokens";
 import { CopyLinkButton } from "./CopyLinkButton";
 import { ShareImageActions } from "./ShareImageActions";
+import { ReissueLinkButton } from "./ReissueLinkButton";
 
 export const metadata = { title: "Share with a partner" };
 
@@ -10,17 +12,22 @@ interface AgentLink {
   id: string;
   label: string;
   url: string;
+  token: string;
   qrSvg: string;
 }
 
 export default async function SharePage() {
   const supabase = await createServerSupabase();
-  const { data: teamMembers } = await supabase.from("profiles").select("id, full_name, email").eq("active", true).order("full_name");
+  const { data: teamMembers } = await supabase.from("profiles").select("id, agency_id, full_name, email").eq("active", true).order("full_name");
 
   const base = appBaseUrl();
   const agentLinks: AgentLink[] = await Promise.all(
     (teamMembers ?? []).map(async (m) => {
-      const url = `${base}/partner/signup?agent=${m.id}`;
+      // An opaque, revocable token — never this agent's own profiles.id — so
+      // the team can kill a leaked or publicly-reposted link without
+      // touching the agent's account. See lib/team/share-tokens.ts.
+      const token = await getOrCreateAgentShareToken(supabase, m.agency_id, m.id);
+      const url = `${base}/partner/signup?agent=${token}`;
       // Deep blue instead of pure black to match the brand, but still dark
       // enough for a phone camera to read reliably.
       const qrSvg = await QRCode.toString(url, {
@@ -29,7 +36,7 @@ export default async function SharePage() {
         margin: 1,
         width: 180,
       });
-      return { id: m.id, label: m.full_name ?? m.email, url, qrSvg };
+      return { id: m.id, label: m.full_name ?? m.email, url, token, qrSvg };
     })
   );
 
@@ -57,14 +64,17 @@ export default async function SharePage() {
       <div className="space-y-6">
         {agentLinks.map((a) => (
           <div key={a.id} className="rounded-lg border border-slate-200 bg-white p-6">
-            <h2 className="text-base font-semibold text-[#003049]">{a.label}</h2>
+            <div className="flex items-start justify-between gap-3">
+              <h2 className="text-base font-semibold text-[#003049]">{a.label}</h2>
+              <ReissueLinkButton agentId={a.id} />
+            </div>
 
             <div className="mt-4 flex flex-col items-center gap-5 text-center sm:flex-row sm:items-start sm:text-left">
               <div
                 className="shrink-0 rounded border border-slate-200 p-2"
                 // qrSvg is generated server-side from a URL this app itself
-                // built (appBaseUrl() + a fixed path + this agent's own id) —
-                // no user input ever reaches it.
+                // built (appBaseUrl() + a fixed path + this agent's own
+                // revocable share token) — no user input ever reaches it.
                 dangerouslySetInnerHTML={{ __html: a.qrSvg }}
               />
               <div className="flex-1 space-y-3">
@@ -79,7 +89,7 @@ export default async function SharePage() {
             <div className="mt-5 flex flex-col items-center gap-4 border-t border-slate-100 pt-5 sm:flex-row sm:items-start">
               {/* eslint-disable-next-line @next/next/no-img-element -- server-generated PNG via a route handler, not an optimizable static asset */}
               <img
-                src={`/share/og?agent=${a.id}`}
+                src={`/share/og?agent=${a.token}`}
                 alt={`Shareable sign-up graphic for ${a.label}`}
                 width={110}
                 height={110}
@@ -87,7 +97,7 @@ export default async function SharePage() {
               />
               <div className="space-y-2">
                 <ShareImageActions
-                  imageUrl={`/share/og?agent=${a.id}`}
+                  imageUrl={`/share/og?agent=${a.token}`}
                   shareText={`Get instant home insurance quotes for your clients — sign up free: ${a.url}`}
                 />
                 <p className="text-xs text-slate-500">A ready-made graphic with this link and QR code baked in — easy to text or post to social.</p>

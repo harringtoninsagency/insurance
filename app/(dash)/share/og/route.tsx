@@ -4,7 +4,7 @@ import { join } from "node:path";
 import QRCode from "qrcode";
 import { appBaseUrl } from "@/lib/base-url";
 import { createServiceSupabase } from "@/lib/supabase/server";
-import { resolvePublicAgent } from "@/lib/team/team";
+import { resolveAgentShareToken } from "@/lib/team/share-tokens";
 
 export const runtime = "nodejs";
 
@@ -15,9 +15,12 @@ const markBytes = readFileSync(join(process.cwd(), "assets", "branding", "bright
 const markDataUrl = `data:image/png;base64,${markBytes.toString("base64")}`;
 
 export async function GET(request: Request) {
-  const agentParam = new URL(request.url).searchParams.get("agent");
-  const agent = await resolvePublicAgent(createServiceSupabase(), PUBLIC_FORM_AGENCY_ID, agentParam);
-  const signupUrl = agent ? `${appBaseUrl()}/partner/signup?agent=${agent.id}` : `${appBaseUrl()}/partner/signup`;
+  // ?agent= here is the agent's opaque share token (see
+  // lib/team/share-tokens.ts) — the same one embedded in the signup link
+  // itself, so a revoked token also breaks this share graphic's own URL.
+  const token = new URL(request.url).searchParams.get("agent");
+  const agent = await resolveAgentShareToken(createServiceSupabase(), PUBLIC_FORM_AGENCY_ID, token);
+  const signupUrl = agent && token ? `${appBaseUrl()}/partner/signup?agent=${token}` : `${appBaseUrl()}/partner/signup`;
   const qrDataUrl = await QRCode.toDataURL(signupUrl, {
     type: "image/png",
     color: { dark: "#003049", light: "#FFFFFF" },

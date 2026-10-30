@@ -82,6 +82,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
             email: contact.email,
             licenseNumber: contact.license_number,
             city: contact.city,
+            dailyRequestLimit: contact.daily_request_limit,
           }}
         />
       </section>

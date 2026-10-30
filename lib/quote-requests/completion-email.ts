@@ -5,10 +5,11 @@ import { brandedEmailShell, brandedSignatureHtml } from "@/lib/email/brand-templ
 import { CONTACT_EMAIL, CONTACT_PHONE } from "@/lib/contacts/consent-text";
 import { resolveProposalAgent } from "@/lib/quote-requests/proposal-agent";
 
-// Every outbound email to a referral partner gets the agency CC'd, by
-// explicit instruction — separate from OUTREACH_FROM (the agency's own
-// sending address), which is already on every email as the sender.
-const PARTNER_CC = "harringtonagency@brightway.com";
+// Every completion email — to a referral partner or a consumer — gets the
+// agency CC'd, by explicit instruction. Separate from OUTREACH_FROM (the
+// agency's own sending address), which is already on every email as the
+// sender.
+const AGENCY_CC = "harringtonagency@brightway.com";
 
 // How long the signed PDF URLs stay valid for the agent to hand to the send
 // tool — generous, since finalizeQuoteRequest's caller sends immediately
@@ -35,7 +36,7 @@ export interface QuoteCompletionEmail {
  * an otherwise-completed quote request into a failure.
  *
  * Deliberately returns data instead of sending it directly: unlike
- * notifyNewPartnerAccount and sendApprovedOutreach (both called from Vercel
+ * notifyNewAccessRequest and sendApprovedOutreach (both called from Vercel
  * server actions, where a plain Resend HTTP call works fine),
  * finalizeQuoteRequest only ever runs inside a Claude Code agent session
  * (see docs/process-quote-requests.md — Fetch's carrier-quoting tools are
@@ -59,7 +60,8 @@ export async function buildQuoteCompletionEmail(quoteRequestId: string, proposal
     if (!request || request.requester_type !== "partner" || !request.contact_id || !request.property_id) return null;
 
     // The account's actual email of record — the same address the partner
-    // signed up or was invited with (lib/partners/invite.ts, lib/partners/self-signup.ts)
+    // was invited with (lib/partners/invite.ts), whether invited directly or
+    // via an approved access request (app/(dash)/contacts/access-requests/actions.ts)
     // — rather than whatever the partner typed into the form's editable
     // "Send results to" field, so results always reach the designated account
     // regardless of what that field says.
@@ -103,8 +105,8 @@ export async function buildQuoteCompletionEmail(quoteRequestId: string, proposal
     // replacement for the guaranteed one above.
     const agent = await resolveProposalAgent(request.property_id, quoteRequestId);
     const seen = new Set([contact.email.toLowerCase()]);
-    const cc = [PARTNER_CC];
-    seen.add(PARTNER_CC.toLowerCase());
+    const cc = [AGENCY_CC];
+    seen.add(AGENCY_CC.toLowerCase());
     for (const candidate of [agent?.email, request.requester_email]) {
       if (candidate && !seen.has(candidate.toLowerCase())) {
         cc.push(candidate);
@@ -143,6 +145,90 @@ export async function buildQuoteCompletionEmail(quoteRequestId: string, proposal
     };
   } catch (err) {
     console.error(`Failed to build quote-completion email for ${quoteRequestId}: ${err instanceof Error ? err.message : String(err)}`);
+    return null;
+  }
+}
+
+/**
+ * Builds (but does not send) a homeowner's copy of their completed quote
+ * request from the consumer re-shop page (app/quote) — requester_type
+ * "consumer" only, by explicit instruction. Unlike the partner email above,
+ * this attaches ONLY the insurance summary, never the listing snapshot
+ * (that's a realtor-marketing document this homeowner never asked for), and
+ * always sends straight to the address they typed in — there's no directory
+ * contact behind a consumer submission to resolve an "account of record"
+ * from. Called from finalizeQuoteRequest the same way; see its doc comment
+ * for why this returns data instead of sending it directly.
+ */
+export async function buildConsumerQuoteCompletionEmail(quoteRequestId: string, proposalIds: string[]): Promise<QuoteCompletionEmail | null> {
+  if (!proposalIds.length) return null;
+
+  try {
+    const supabase = createServiceSupabase();
+    const { data: request } = await supabase
+      .from("quote_requests")
+      .select("requester_type, requester_email, requester_name, property_id")
+      .eq("id", quoteRequestId)
+      .single();
+    if (!request || request.requester_type !== "consumer" || !request.requester_email || !request.property_id) return null;
+
+    const cfg = loadEmailConfig();
+    if (!cfg.ok) {
+      console.error(`Skipped consumer quote-completion email for ${quoteRequestId}: missing ${cfg.missing.join(", ")}`);
+      return null;
+    }
+
+    const [{ data: property }, { data: proposals }] = await Promise.all([
+      supabase.from("properties").select("address").eq("id", request.property_id).single(),
+      // "indication" (or "roof_scenario", though that variant only ever
+      // applies to a roofing-company referral, which a consumer submission
+      // never is) — never "listing_snapshot".
+      supabase.from("proposals").select("id, kind, pdf_path").in("id", proposalIds).in("kind", ["indication", "roof_scenario"]),
+    ]);
+    if (!property) return null;
+
+    const indication = (proposals ?? []).find((p) => !!p.pdf_path);
+    if (!indication?.pdf_path) return null;
+
+    const addressSlug = property.address.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "");
+    const { data: signed } = await supabase.storage.from("proposals").createSignedUrl(indication.pdf_path, ATTACHMENT_URL_TTL_SECONDS);
+    if (!signed) return null;
+
+    const name = request.requester_name?.trim() || "there";
+    const text = [
+      `Hi ${name},`,
+      "",
+      "Thank you for requesting a home insurance quote from Brightway Insurance | The Harrington Agency!",
+      "",
+      `Your estimated quote for ${property.address} is attached.`,
+      "A licensed Florida agent will follow up shortly to answer any questions and help you move forward.",
+      "",
+      "Brightway Insurance | The Harrington Agency",
+      `${CONTACT_EMAIL} | ${CONTACT_PHONE}`,
+    ].join("\n");
+
+    const html = brandedEmailShell(
+      [
+        `<p style="margin:0 0 16px;">Hi ${escapeHtml(name)},</p>`,
+        `<p style="margin:0 0 16px;">Thank you for requesting a home insurance quote from Brightway Insurance | The Harrington Agency!</p>`,
+        `<p style="margin:0 0 16px;">Your estimated quote for <strong>${escapeHtml(property.address)}</strong> is attached.</p>`,
+        `<p style="margin:0 0 24px;">A licensed Florida agent will follow up shortly to answer any questions and help you move forward.</p>`,
+        brandedSignatureHtml(escapeHtml(CONTACT_EMAIL), escapeHtml(CONTACT_PHONE)),
+      ].join("")
+    );
+
+    return {
+      to: request.requester_email,
+      cc: [AGENCY_CC],
+      replyTo: cfg.config.replyTo,
+      subject: `Your Florida home insurance quote — ${property.address}`,
+      text,
+      html,
+      attachments: [{ filename: `insurance-quote-${addressSlug}.pdf`, url: signed.signedUrl }],
+      idempotencyKey: `consumer-quote-completion-${quoteRequestId}`,
+    };
+  } catch (err) {
+    console.error(`Failed to build consumer quote-completion email for ${quoteRequestId}: ${err instanceof Error ? err.message : String(err)}`);
     return null;
   }
 }

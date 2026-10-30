@@ -165,18 +165,21 @@ For a `roofing_company` referral (the same contact whose `contact_type` set `isR
 `proposals.kind = "roof_scenario"` instead of `"indication"` — `finalizeQuoteRequest` detects this itself from
 `resolveReferralPartner`'s `contactType`, nothing extra to pass in here.
 
-### 5a. Send the partner's completion email, if `pendingEmail` is set
+### 5a. Send the completion email, if `pendingEmail` is set
 
-`result.pendingEmail` is non-null only for a completed, partner-submitted request with a PDF to attach —
-`null` means there's nothing to send (not a partner request, no usable proposal, or email isn't configured)
-and this step is skipped. When it's set, send it yourself with the Resend MCP `send-email` tool, using
-`pendingEmail`'s fields as given: `to`, `cc`, `subject`, `text`, `html`, `attachments` (each already has a
-signed `url` Resend can fetch directly — don't re-download or re-upload), and `idempotencyKey`.
+`result.pendingEmail` is non-null for a completed, partner-submitted request (attaches the insurance summary
+and the listing snapshot) or a completed `requester_type = 'consumer'` request from the homeowner re-shop
+page, app/quote (attaches only the insurance summary, straight to the address they typed in, CC'd to
+harringtonagency@brightway.com) — either way there's a PDF to attach. `null` means there's nothing to send
+(any other requester_type, no usable proposal, or email isn't configured) and this step is skipped. When
+it's set, send it yourself with the Resend MCP `send-email` tool, using `pendingEmail`'s fields as given:
+`to`, `cc`, `subject`, `text`, `html`, `attachments` (each already has a signed `url` Resend can fetch
+directly — don't re-download or re-upload), and `idempotencyKey`.
 
 This step exists only because `finalizeQuoteRequest` cannot send the email itself: this routine runs inside
 an agent session's own egress proxy, which has been confirmed (live) to reject raw outbound HTTPS calls to
 `api.resend.com` even with a valid key — while the already-connected Resend MCP tool is not subject to that
-block. The two *other* places this app sends email (`notifyNewPartnerAccount`, `sendApprovedOutreach`) run
+block. The two *other* places this app sends email (`notifyNewAccessRequest`, `sendApprovedOutreach`) run
 from Vercel server actions instead, with no such proxy, so they still call Resend directly and need no change.
 
 Use exactly these values for the fields the Resend tool asks you to confirm rather than fill in yourself —

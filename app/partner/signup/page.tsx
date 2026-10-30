@@ -3,7 +3,7 @@ import Image from "next/image";
 import brightwayLogo from "@/assets/branding/brightway-harrington-horizontal-deep-blue.png";
 import brightwayMarkYellow from "@/assets/branding/brightway-mark-bright-yellow.png";
 import { createServiceSupabase } from "@/lib/supabase/server";
-import { resolvePublicAgent } from "@/lib/team/team";
+import { resolveAgentShareToken } from "@/lib/team/share-tokens";
 import { SignupForm } from "./SignupForm";
 
 // Matches lib/quote-requests/submit.ts's PUBLIC_FORM_AGENCY_ID — this app's one agency.
@@ -11,10 +11,14 @@ const PUBLIC_FORM_AGENCY_ID = "ccb0a58e-0b78-4799-b236-66d1bda42f67";
 
 export default async function PartnerSignupPage({ searchParams }: { searchParams: Promise<{ agent?: string }> }) {
   const { agent } = await searchParams;
-  // Only used to show the friendly "you'll be connected with X" note below —
-  // the value that actually gets persisted is re-validated server-side in
-  // signUpPartner, not trusted from this page render.
-  const resolvedAgent = await resolvePublicAgent(createServiceSupabase(), PUBLIC_FORM_AGENCY_ID, agent);
+  // `agent` is the agent's opaque, revocable share token (see
+  // lib/team/share-tokens.ts), never their real profiles.id — resolving it
+  // here also means a revoked/reposted link stops connecting new visitors
+  // to that agent immediately. Only used to show the friendly "you'll be
+  // connected with X" note below; the real profiles.id this resolves to is
+  // what's actually persisted (via the hidden agent_id field), re-validated
+  // server-side in submitAccessRequest, not trusted from this page render.
+  const resolvedAgent = await resolveAgentShareToken(createServiceSupabase(), PUBLIC_FORM_AGENCY_ID, agent);
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#003049] px-4 py-8">
@@ -32,8 +36,8 @@ export default async function PartnerSignupPage({ searchParams }: { searchParams
         </div>
 
         <div>
-          <h1 className="text-lg font-semibold text-[#003049]">Create your partner account</h1>
-          <p className="text-sm text-[#8291AC]">For realtors, mortgage brokers, and roofing companies</p>
+          <h1 className="text-lg font-semibold text-[#003049]">Request partner access</h1>
+          <p className="text-sm text-[#8291AC]">For licensed realtors, mortgage brokers, and roofing companies — we verify your license before granting access.</p>
         </div>
 
         <SignupForm agentId={resolvedAgent?.id ?? null} agentName={resolvedAgent?.fullName ?? null} />

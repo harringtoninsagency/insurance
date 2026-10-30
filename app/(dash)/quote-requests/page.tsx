@@ -88,6 +88,8 @@ export default async function QuoteRequestsPage({
               </>
             ) : r.requester_type === "internal" ? (
               "Team"
+            ) : r.requester_type === "consumer" ? (
+              "Consumer (homeowner re-shop)"
             ) : (
               "Public"
             )}{" "}
