@@ -41,21 +41,30 @@ const PLACEHOLDER_INSURED = {
 
 // Coverage A (dwelling replacement value) reasoning for indicative quotes:
 // $/sqft rebuild cost, not list price (land value skews list price and isn't
-// insurable). Revisit once Phase 4 has real replacement-cost modeling.
+// insurable). Revisit once Phase 4 has real replacement-cost modeling. This
+// is the actual rebuild-cost estimate shown on a proposal and sent to every
+// carrier EXCEPT Frontline — see FRONTLINE_DWELLING_A_MINIMUM below for why
+// Frontline's own quote item can carry a different, higher number.
 const DWELLING_A_PER_SQFT = 225;
 
-// Dwelling (Coverage A) floor applied across all carriers: confirmed live
-// that Frontline silently zeroes quotes below $350k with no error message,
-// and separately, American Traditions/Olympus/Patriot Select all explicitly
-// cite a $250k Coverage A minimum in their response messages for a smaller
-// (1,107 sqft) property. $350k covers both — a blanket floor generalizes
-// better than tracking each carrier's own minimum individually, and no
-// carrier has shown a problem being quoted *above* its actual minimum.
-const DWELLING_A_MINIMUM = 350_000;
-
-/** Coverage A the adapter quotes by default for a home of this size. */
+/** Coverage A the adapter quotes by default for a home of this size — no carrier-specific floor applied. */
 export function defaultDwellingA(sqft: number): number {
-  return Math.max(Math.round(Number(sqft) * DWELLING_A_PER_SQFT), DWELLING_A_MINIMUM);
+  return Math.round(Number(sqft) * DWELLING_A_PER_SQFT);
+}
+
+// Frontline-only floor: confirmed live that Frontline silently zeroes
+// quotes below $350k with no error message. Applied only to Frontline's own
+// quote item (see buildFetchQuoteItems) — every other carrier is quoted at
+// the true rebuild-cost estimate above, which is also what a proposal
+// states as the Coverage A assumption. (American Traditions/Olympus/Patriot
+// Select separately cite their own $250k Coverage A minimum in their
+// response messages; unlike Frontline's hard, silent zero, those aren't
+// floored here.)
+export const FRONTLINE_DWELLING_A_MINIMUM = 350_000;
+
+/** Frontline's own Coverage A for its quote item: never below FRONTLINE_DWELLING_A_MINIMUM. */
+export function frontlineDwellingA(dwellingA: number): number {
+  return Math.max(Math.round(dwellingA), FRONTLINE_DWELLING_A_MINIMUM);
 }
 
 // Fetch's own default for HO3 Coverage C (personal property) when not set.
