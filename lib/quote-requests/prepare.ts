@@ -4,6 +4,7 @@ import { describeCountyParcelMiss } from "@/lib/enrichment/county-parcels";
 import { splitStreetAddress } from "@/lib/ingest/onehome-email";
 import { todayEt } from "@/lib/dates";
 import { notifyNeedsReview } from "@/lib/quote-requests/needs-review-notify";
+import { attachOneHomePhotoIfListed } from "@/lib/proposals/onehome-photo-match";
 
 export interface PrepareResult {
   status: "processing" | "needs_review";
@@ -76,6 +77,12 @@ export async function prepareQuoteRequest(requestId: string): Promise<PrepareRes
   if (insertError || !property) throw new Error(`Failed to create a property for request ${requestId}: ${insertError.message}`);
 
   await supabase.from("quote_requests").update({ property_id: property.id }).eq("id", requestId);
+
+  // If this home is currently listed, the OneHome ingest already has its MLS
+  // front photo on a sibling property — copy it over now, before enrichment,
+  // so the NAIP aerial fallback inside applyCountyEnrichment sees a photo and
+  // stays out of the way. Best-effort; a miss just means the aerial is used.
+  await attachOneHomePhotoIfListed(property.id);
 
   const enrichment = await applyCountyEnrichment(property.id);
 
