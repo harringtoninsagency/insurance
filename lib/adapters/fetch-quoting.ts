@@ -80,12 +80,19 @@ const REFERRAL_PARTNER_CLIP_MIN_YEAR_BUILT = 1980;
 /**
  * Wind-mitigation defaults applied to every referral-partner quote
  * (realtor, mortgage broker, or roofing company), regardless of what this
- * property's own enrichment data says: hurricane clips for homes built
- * 1980+ (toe-nailed before — REFERRAL_PARTNER_CLIP_MIN_YEAR_BUILT), a Gable
- * roof shape, and no impact-rated opening protection assumed.
+ * property's own enrichment data says: FBC/Class C roof deck attachment,
+ * hurricane clips for homes built 1980+ (toe-nailed before —
+ * REFERRAL_PARTNER_CLIP_MIN_YEAR_BUILT), a Gable roof shape, and no
+ * impact-rated opening protection assumed. roof_deck_attachment is set
+ * explicitly here (not left to Fetch's own matching default) for the same
+ * reason plumbing_updated above is: some carrier integrations behind Fetch
+ * silently fail on a blank optional rather than surfacing an error.
  */
-function referralPartnerWindMitFields(yearBuilt: number): Pick<FetchQuoteFields, "roof_to_wall_attachment" | "roof_shape" | "opening_protection"> {
+function referralPartnerWindMitFields(
+  yearBuilt: number
+): Pick<FetchQuoteFields, "roof_deck_attachment" | "roof_to_wall_attachment" | "roof_shape" | "opening_protection"> {
   return {
+    roof_deck_attachment: "Type C (8d @ 6/6)",
     roof_to_wall_attachment: yearBuilt >= REFERRAL_PARTNER_CLIP_MIN_YEAR_BUILT ? "Clips" : "Toe nails",
     roof_shape: "Gable",
     opening_protection: "None",
@@ -93,16 +100,15 @@ function referralPartnerWindMitFields(yearBuilt: number): Pick<FetchQuoteFields,
 }
 
 /**
- * The EXTRA wind-mitigation credits a Roofing Company referral's quote
- * claims on top of referralPartnerWindMitFields above: FBC/Class C roof
- * deck attachment and secondary water resistance, assumed done as part of
- * that company's own re-roof work. Only a roofing_company referral (or an
- * explicit "New Roof Scenario" request) gets these — a realtor or mortgage
- * broker referral gets the wind-mit trio above but never these.
+ * The EXTRA wind-mitigation credit a Roofing Company referral's quote
+ * claims on top of referralPartnerWindMitFields above: secondary water
+ * resistance, assumed done as part of that company's own re-roof work.
+ * Only a roofing_company referral (or an explicit "New Roof Scenario"
+ * request) gets this — a realtor or mortgage broker referral gets the
+ * wind-mit set above but never this.
  */
-function roofingCompanyExtraWindMitFields(): Pick<FetchQuoteFields, "roof_deck_attachment" | "secondary_water_resistance"> {
+function roofingCompanyExtraWindMitFields(): Pick<FetchQuoteFields, "secondary_water_resistance"> {
   return {
-    roof_deck_attachment: "Type C (8d @ 6/6)",
     secondary_water_resistance: "Yes",
   };
 }
