@@ -6,6 +6,7 @@ import brightwayLogo from "@/assets/branding/brightway-harrington-horizontal-dee
 import brightwayMark from "@/assets/branding/brightway-mark-deep-blue.png";
 import { SignOutButton } from "./SignOutButton";
 import { MobileNav } from "./MobileNav";
+import { BackButton } from "./BackButton";
 
 const NAV_LINKS = [
   { href: "/home", label: "Home" },
@@ -68,6 +69,7 @@ export default async function DashLayout({
       <div className="mx-auto overflow-hidden rounded-lg bg-white shadow-lg md:flex md:h-[calc(100vh-2rem)] md:max-w-[1600px]">
       <MobileNav navLinks={navLinks} name={profile.full_name ?? profile.email} roleLabel={profile.role === "admin" ? "Admin" : "Agent"} />
       <nav className="hidden w-56 shrink-0 overflow-y-auto border-r border-slate-200 bg-white p-4 md:block">
+        <BackButton className="mb-3 block" />
         <Image src={brightwayMark} alt="Brightway Insurance | The Harrington Agency" className="h-12 w-12" priority />
         <div className="mb-2 mt-3 h-[3px] w-full bg-[#F0FF00]" />
         <div className="mb-4 text-xs text-[#8291AC]">Brightway Insurance | The Harrington Agency</div>
