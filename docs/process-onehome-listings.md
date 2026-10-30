@@ -153,6 +153,16 @@ console.log(JSON.stringify({ listingCount: allListings.length, photoCount: allPh
 
 ### 1b. Also pull the full portal backlog (manual/interactive only — NOT part of the scheduled routine)
 
+**Preferred way to run this (Oct 30, 2026 onward): the `onehome-photos` Claude skill.** It drives the team
+member's own Chrome (Claude in Chrome) through the email's tokenized "N new or updated" link — which signs in
+by itself, no password — loads every tile on the `/properties/list` view, extracts listings + photo URLs in
+page JavaScript, and POSTs them in chunks of 15 to `POST /api/ingest/onehome-portal` from a tab logged into
+the app. That route (`app/api/ingest/onehome-portal/route.ts`, any active signed-in profile) runs the same
+`applyOneHomeListings`/`applyOneHomePhotos` as step 2, so photos are downloaded server-side within the ~30
+minute signed-URL window. Confirmed live on first run: 148 tiles → 148 parsed, 115 new properties inserted
+with photos, 31 already present (photos kept), 0 photo failures, ~85 s end to end. No Playwright, no
+sandbox network access needed. The Playwright path below still works but is the fallback now.
+
 **Skip this step entirely if you're the unattended scheduled routine.** See "The scheduled daily routine is
 email-only" above — this needs a real browser the scheduled routine's sandbox can't provide. Only run this when
 asked to interactively, with a live browser tool available.
