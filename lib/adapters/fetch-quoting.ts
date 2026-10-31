@@ -67,8 +67,24 @@ export function frontlineDwellingA(dwellingA: number): number {
   return Math.max(Math.round(dwellingA), FRONTLINE_DWELLING_A_MINIMUM);
 }
 
-// Fetch's own default for HO3 Coverage C (personal property) when not set.
-export const DEFAULT_PERSONAL_PROPERTY_PCT = 50;
+// This agency's own default for HO3 Coverage C (personal property), sent on
+// every quote unless lib/quote-requests/fetch-pipeline.ts's buildFetchQuoteItems
+// is given an explicit CoverageOverride — Fetch's own product default is 50%,
+// confirmed against GetApplicationSchema("home"), but this agency quotes 25%
+// by default (set by explicit instruction, not Fetch's choice).
+export const DEFAULT_PERSONAL_PROPERTY_PCT = 25;
+
+// Fetch's ho_3_coverage_c field only accepts "50%"/"25%"/"0%" — kept as its
+// own string constant (rather than derived from the number above) since it's
+// the literal value sent on the wire; buildQuoteFields below is the only
+// place that reads it.
+const DEFAULT_HO3_COVERAGE_C = "25%";
+
+// Fetch's ho_3_replacement_cost field: "Yes" settles personal property at
+// replacement cost, "No" at actual cash value. Fetch's own product default
+// is "Yes" (RCV) — this agency quotes ACV by default, by explicit
+// instruction, same as the Coverage C default above.
+const DEFAULT_HO3_REPLACEMENT_COST = "No";
 
 // Year roof-to-wall clips became the default credit this agency quotes on
 // an ordinary (non-referral-partner) quote (see buildQuoteFields below).
@@ -209,6 +225,13 @@ export const fetchQuotingAdapter: CarrierQuoteAdapter<FetchQuoteFields, FetchRat
       // silently fail on blank optionals rather than surfacing an error.
       // Never earlier than the build year — plumbing can't predate the house.
       plumbing_updated: String(Math.max(2020, Number(property.year_built))),
+      // HO3-only (per GetApplicationSchema's note on both fields — DP3, DP1,
+      // and other form types keep their own product defaults regardless).
+      // buildFetchQuoteItems overrides ho_3_coverage_c when a caller passes
+      // an explicit CoverageOverride; this is the baseline every quote gets
+      // otherwise.
+      ho_3_coverage_c: DEFAULT_HO3_COVERAGE_C,
+      ho_3_replacement_cost: DEFAULT_HO3_REPLACEMENT_COST,
       // Any referral partner (realtor, mortgage broker, or roofing company)
       // gets the shared wind-mit trio — see referralPartnerWindMitFields.
       ...(referralPartnerType ? referralPartnerWindMitFields(Number(property.year_built)) : {}),

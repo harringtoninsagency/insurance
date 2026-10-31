@@ -47,6 +47,6 @@ export function coverageLines(c: ResolvedCoverages): string[] {
   const personalDollars = usd((c.dwelling_a * c.personal_property_pct) / 100);
   return [
     `Coverage A (Dwelling): ${usd(c.dwelling_a)}${c.isDefault ? " (estimated)" : ""}`,
-    `Coverage C (Personal Property, HO3): ${c.personal_property_pct}% = ${personalDollars}${c.isDefault ? " (carrier default)" : ""}`,
+    `Coverage C (Personal Property, HO3): ${c.personal_property_pct}% = ${personalDollars}${c.isDefault ? " (agency default)" : ""}`,
   ];
 }
