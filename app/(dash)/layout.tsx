@@ -13,7 +13,6 @@ const NAV_LINKS = [
   { href: "/properties", label: "Properties" },
   { href: "/properties/onehome", label: "OneHome queue" },
   { href: "/quote-requests", label: "Quote requests" },
-  { href: "/review", label: "Outreach review" },
   { href: "/contacts", label: "Referral Partners" },
   { href: "/share", label: "Share with a partner" },
 ] as const;
@@ -104,14 +103,6 @@ export default async function DashLayout({
               className="block rounded px-3 py-2 font-medium text-[#003049] hover:bg-[#003049]/5"
             >
               Quote requests
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/review"
-              className="block rounded px-3 py-2 font-medium text-[#003049] hover:bg-[#003049]/5"
-            >
-              Outreach review
             </Link>
           </li>
           <li>
