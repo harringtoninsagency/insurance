@@ -7,6 +7,7 @@ import { prepareQuoteRequest } from "@/lib/quote-requests/prepare";
 import { fireQuoteRoutine } from "@/lib/quote-requests/fire-routine";
 import { checkConsumerPropertyLimit } from "@/lib/quote-requests/rate-limit";
 import { notifyConsumerQuoteSubmission } from "@/lib/quote-requests/consumer-submission-notify";
+import { sendInstaHomeQuoteAcknowledgment } from "@/lib/quote-requests/instahomequote-acknowledgment";
 import { normalizeEmail } from "@/lib/contacts/normalize";
 
 export type ConsumerQuoteValues = Record<string, string>;
@@ -104,6 +105,10 @@ export async function submitConsumerQuoteAction(_prev: ConsumerQuoteState, formD
     zipcode,
     leadSource,
   });
+
+  if (leadSource === "instahomequote") {
+    await sendInstaHomeQuoteAcknowledgment({ firstName, email });
+  }
 
   // The property-matching/enrichment step needs no Fetch/agent session, so
   // it runs immediately; only the actual carrier quote after this has to
