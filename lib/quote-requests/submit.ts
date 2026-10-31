@@ -51,6 +51,8 @@ export interface SubmitQuoteRequestInput {
    * Scenario" proposal variant; see finalizeQuoteRequest).
    */
   roofScenario?: boolean;
+  /** Which marketed funnel this came through (e.g. "instahomequote"), for tracking separately from the rest of the pipeline. */
+  leadSource?: string | null;
 }
 
 export type SubmitResult = { ok: true; id: string } | { ok: false; error: string };
@@ -148,6 +150,7 @@ export async function submitQuoteRequest(
       personal_property_pct: parsed.personalPropertyPct ?? null,
       assigned_agent_id: input.assignedAgentId ?? null,
       requested_roof_scenario: input.roofScenario ?? false,
+      lead_source: input.leadSource ?? null,
       status: "new",
     })
     .select("id")

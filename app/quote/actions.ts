@@ -1,5 +1,6 @@
 "use server";
 
+import { headers } from "next/headers";
 import { createServiceSupabase } from "@/lib/supabase/server";
 import { submitQuoteRequest, type SubmitQuoteRequestInput } from "@/lib/quote-requests/submit";
 import { prepareQuoteRequest } from "@/lib/quote-requests/prepare";
@@ -33,6 +34,11 @@ const str = (formData: FormData, key: string) => String(formData.get(key) ?? "")
  * fireQuoteRoutine); only the completion email differs — see
  * lib/quote-requests/completion-email.ts's buildConsumerQuoteCompletionEmail,
  * wired in from finalizeQuoteRequest by requester_type.
+ *
+ * Also the InstaHomeQuote landing page's submission (app/instahomequote) —
+ * same form, same action, same pipeline. Which funnel it came through is
+ * read off the actual Host header rather than trusted from the form, so it
+ * can't be spoofed by whichever page happens to render <QuoteForm />.
  */
 export async function submitConsumerQuoteAction(_prev: ConsumerQuoteState, formData: FormData): Promise<ConsumerQuoteState> {
   // Hidden honeypot: real people never fill it in.
@@ -57,6 +63,8 @@ export async function submitConsumerQuoteAction(_prev: ConsumerQuoteState, formD
   }
 
   const zipcode = str(formData, "zipcode");
+  const host = (await headers()).get("host") ?? "";
+  const leadSource = host.includes("instahomequote") ? "instahomequote" : null;
   const supabase = createServiceSupabase();
   const limit = await checkConsumerPropertyLimit(supabase, email, addressLine, city, zipcode || null);
   if (!limit.ok) {
@@ -75,6 +83,7 @@ export async function submitConsumerQuoteAction(_prev: ConsumerQuoteState, formD
     state: str(formData, "state") || "FL",
     zipcode,
     assignedAgentId: AGENCY_OWNER_AGENT_ID,
+    leadSource,
   };
 
   const result = await submitQuoteRequest(supabase, input);
@@ -93,6 +102,7 @@ export async function submitConsumerQuoteAction(_prev: ConsumerQuoteState, formD
     city,
     state: str(formData, "state") || "FL",
     zipcode,
+    leadSource,
   });
 
   // The property-matching/enrichment step needs no Fetch/agent session, so

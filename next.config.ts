@@ -18,6 +18,25 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "10mb",
     },
   },
+  // The InstaHomeQuote funnel is marketed as its own domain, but it's just
+  // the "/" root of this same app rewritten to a distinct landing page (see
+  // app/instahomequote/page.tsx) — no separate deployment to maintain.
+  async rewrites() {
+    return {
+      beforeFiles: [
+        {
+          source: "/",
+          has: [{ type: "host", value: "instahomequote.com" }],
+          destination: "/instahomequote",
+        },
+        {
+          source: "/",
+          has: [{ type: "host", value: "www.instahomequote.com" }],
+          destination: "/instahomequote",
+        },
+      ],
+    };
+  },
 };
 
 export default nextConfig;

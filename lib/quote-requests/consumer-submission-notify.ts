@@ -24,6 +24,8 @@ export async function notifyConsumerQuoteSubmission(input: {
   city: string;
   state: string;
   zipcode: string;
+  /** Which marketed funnel this came through (e.g. "instahomequote") — changes only the subject line, so it's identifiable/filterable in the inbox. */
+  leadSource?: string | null;
 }): Promise<void> {
   const cfg = loadEmailConfig();
   if (!cfg.ok) {
@@ -33,6 +35,7 @@ export async function notifyConsumerQuoteSubmission(input: {
 
   const address = input.formattedAddress || [input.addressLine, input.city, `${input.state} ${input.zipcode}`.trim()].filter(Boolean).join(", ");
   const dashboardUrl = `${cfg.config.baseUrl}/quote-requests`;
+  const subject = input.leadSource === "instahomequote" ? "InstaHomeQuote - New Quote Request" : `New quote request — ${address}`;
 
   const rows: Array<[string, string]> = [
     ["Name", `${input.firstName} ${input.lastName}`.trim()],
@@ -46,7 +49,7 @@ export async function notifyConsumerQuoteSubmission(input: {
       from: cfg.config.from,
       to: NOTIFY_TO,
       replyTo: cfg.config.replyTo,
-      subject: `New quote request — ${address}`,
+      subject,
       text: [
         "A visitor submitted the public quote page with the following details:",
         "",

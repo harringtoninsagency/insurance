@@ -500,6 +500,8 @@ export interface Database {
           assigned_agent_id: string | null;
           /** Explicit ask from the partner-portal form's second CTA — see lib/quote-requests/fetch-pipeline.ts's roofScenario resolution. */
           requested_roof_scenario: boolean;
+          /** Which marketed funnel this came through (e.g. "instahomequote"), or null for everything else. */
+          lead_source: string | null;
           claimed_at: string | null;
           routine_fired_at: string | null;
           routine_fire_failed_at: string | null;
