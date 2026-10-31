@@ -29,12 +29,36 @@ declare global {
   interface Window {
     google?: {
       maps: {
-        importLibrary: (library: "places") => Promise<{
+        importLibrary?: (library: "places") => Promise<{
           PlaceAutocompleteElement: new () => GooglePlaceAutocompleteElement;
         }>;
       };
     };
   }
+}
+
+/**
+ * The script tag's own onLoad firing — even combined with awaiting
+ * importLibrary() once it exists — isn't enough: confirmed live in
+ * production, `window.google.maps.importLibrary` itself can still be
+ * undefined for a beat after onLoad, because loading=async's bootstrap
+ * stub finishes attaching it slightly asynchronously, with no event of its
+ * own to wait on. Poll for it directly rather than trusting any single
+ * "ready" signal.
+ */
+type ImportLibraryFn = (library: "places") => Promise<{ PlaceAutocompleteElement: new () => GooglePlaceAutocompleteElement }>;
+
+function waitForImportLibrary(timeoutMs = 10000): Promise<ImportLibraryFn> {
+  return new Promise((resolve, reject) => {
+    const start = Date.now();
+    const tick = () => {
+      const fn = window.google?.maps?.importLibrary;
+      if (fn) return resolve(fn);
+      if (Date.now() - start > timeoutMs) return reject(new Error("Timed out waiting for google.maps.importLibrary"));
+      setTimeout(tick, 50);
+    };
+    tick();
+  });
 }
 
 export interface ParsedAddress {
@@ -95,14 +119,14 @@ export function AddressAutocompleteInput({ onSelect }: { onSelect: (address: Par
     let placeAutocomplete: GooglePlaceAutocompleteElement | null = null;
 
     (async () => {
-      // The script's onLoad firing doesn't mean google.maps.places is
-      // populated yet — with loading=async (Google's current recommended
-      // flag, confirmed live: dropping it just trades this race for a
-      // "loaded without loading=async" console warning) that happens
-      // slightly later. importLibrary's promise is what actually waits for
-      // it; reading window.google.maps.places directly after onLoad raced
-      // it and threw "Cannot read properties of undefined" in production.
-      const { PlaceAutocompleteElement } = await window.google!.maps.importLibrary("places");
+      // The script's onLoad firing doesn't mean google.maps.places (or even
+      // google.maps.importLibrary itself) is populated yet — loading=async's
+      // bootstrap finishes attaching things slightly after its own script
+      // tag has loaded, confirmed live in production, with no event to wait
+      // on. waitForImportLibrary polls for the one function that's always
+      // there once it's safe to proceed.
+      const importLibrary = await waitForImportLibrary();
+      const { PlaceAutocompleteElement } = await importLibrary("places");
       if (cancelled || !container) return;
 
       placeAutocomplete = new PlaceAutocompleteElement();
