@@ -143,6 +143,12 @@ export function AddressAutocompleteInput({ onSelect }: { onSelect: (address: Par
       placeAutocomplete.style.backgroundColor = "#ffffff";
       placeAutocomplete.style.fontSize = "1rem";
       placeAutocomplete.style.color = "#0f172a";
+      // Defaults to "light dark" (documented, overridable) — on a visitor
+      // whose browser/OS prefers dark, the suggestion dropdown rendered in
+      // its dark theme with illegible low-contrast text (confirmed live,
+      // screenshotted). The rest of this app has no dark mode, so pin it
+      // light to match everything else on the page.
+      placeAutocomplete.style.colorScheme = "light";
       container.appendChild(placeAutocomplete);
 
       placeAutocomplete.addEventListener("gmp-select", async (event) => {
