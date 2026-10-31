@@ -47,9 +47,19 @@ const PLACEHOLDER_INSURED = {
 // Frontline's own quote item can carry a different, higher number.
 const DWELLING_A_PER_SQFT = 225;
 
+// Rounded UP to the next even thousand, by explicit instruction — confirmed
+// live that a non-round Coverage A gets rejected outright by some carriers
+// ("Enter values in hundred dollar increments only" — Cabrillo Coastal) and
+// flagged by others ("Please use increments of $1,000 for Coverage A" —
+// American Traditions). Rounding up, not to nearest, so this never UNDER-
+// states the rebuild-cost estimate the $/sqft figure above was reasoned from.
+function roundUpToThousand(n: number): number {
+  return Math.ceil(n / 1000) * 1000;
+}
+
 /** Coverage A the adapter quotes by default for a home of this size — no carrier-specific floor applied. */
 export function defaultDwellingA(sqft: number): number {
-  return Math.round(Number(sqft) * DWELLING_A_PER_SQFT);
+  return roundUpToThousand(Number(sqft) * DWELLING_A_PER_SQFT);
 }
 
 // Frontline-only floor: confirmed live that Frontline silently zeroes
