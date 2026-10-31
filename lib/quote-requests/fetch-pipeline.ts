@@ -175,12 +175,21 @@ export interface FinalizeResult {
   proposalIds: string[];
   detail: string;
   /**
-   * Set only on a completed, partner-submitted request with a PDF to send.
-   * finalizeQuoteRequest cannot send this itself (see
+   * Set only on a completed, partner-submitted or consumer request with a
+   * PDF to send. finalizeQuoteRequest cannot send this itself (see
    * buildQuoteCompletionEmail's comment) — the caller must send it via the
    * Resend MCP send-email tool, using these fields as given.
    */
   pendingEmail?: QuoteCompletionEmail | null;
+  /**
+   * Set alongside pendingEmail only for a consumer request from a tracked
+   * marketing funnel (currently InstaHomeQuote) — a second, separate send
+   * to the agency inbox titled distinctly from pendingEmail's
+   * customer-facing subject (see ConsumerQuoteCompletionResult's doc
+   * comment). Send this one too, via the same Resend MCP tool, in addition
+   * to pendingEmail — never instead of it.
+   */
+  pendingAgencyCopyEmail?: QuoteCompletionEmail | null;
 }
 
 /**
@@ -251,9 +260,14 @@ export async function finalizeQuoteRequest(quoteRequestId: string, standardQuote
   // (see pendingEmail's doc comment for why). Every other requester_type
   // (public, internal) stays null here and goes through the
   // producer-reviewed outreach queue on /review instead, unchanged.
-  const pendingEmail =
-    request.requester_type === "consumer"
-      ? await buildConsumerQuoteCompletionEmail(quoteRequestId, proposalIds)
-      : await buildQuoteCompletionEmail(quoteRequestId, proposalIds);
-  return { status: "completed", proposalIds, detail, pendingEmail };
+  let pendingEmail: QuoteCompletionEmail | null = null;
+  let pendingAgencyCopyEmail: QuoteCompletionEmail | null = null;
+  if (request.requester_type === "consumer") {
+    const built = await buildConsumerQuoteCompletionEmail(quoteRequestId, proposalIds);
+    pendingEmail = built?.customerEmail ?? null;
+    pendingAgencyCopyEmail = built?.agencyCopyEmail ?? null;
+  } else {
+    pendingEmail = await buildQuoteCompletionEmail(quoteRequestId, proposalIds);
+  }
+  return { status: "completed", proposalIds, detail, pendingEmail, pendingAgencyCopyEmail };
 }

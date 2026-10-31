@@ -205,6 +205,17 @@ they are already decided, not yours to pick:
 - `replyTo`: `pendingEmail.replyTo` (may be null — omit the field entirely if so).
 - `cc`: `pendingEmail.cc`.
 
+### 5b. Also send `pendingAgencyCopyEmail`, if set
+
+`result.pendingAgencyCopyEmail` is only ever set alongside `pendingEmail`, and only for a consumer request
+that came through a tracked marketing funnel (currently InstaHomeQuote — `quote_requests.lead_source =
+'instahomequote'`). When it's set, `pendingEmail.cc` is already empty for that same request (the agency's
+copy comes from this second send instead of a shared cc, since one email can't carry two different subject
+lines for its different recipients), so send this one too — same Resend MCP `send-email` tool, same `from`
+rule as above, using `pendingAgencyCopyEmail`'s own `to`, `cc`, `subject` (already "InstaHomeQuote
+Request"), `text`, `html`, `attachments`, and `idempotencyKey`. Skip this step entirely when the field is
+null or absent — that's every partner request and every untracked consumer request, unchanged from before.
+
 ### 6. Clean up and report
 
 Delete every scratch script created in this run. Summarize what was processed: address, carriers/premiums

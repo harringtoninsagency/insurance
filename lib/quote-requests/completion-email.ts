@@ -149,9 +149,25 @@ export async function buildQuoteCompletionEmail(quoteRequestId: string, proposal
   }
 }
 
+export interface ConsumerQuoteCompletionResult {
+  customerEmail: QuoteCompletionEmail;
+  /**
+   * A separate copy for the agency inbox, titled distinctly from the
+   * customer-facing subject, instead of being folded into customerEmail's cc
+   * — only set when the request came through a tracked marketing funnel
+   * (currently just InstaHomeQuote, by explicit instruction: the agency
+   * wants its own copy titled "InstaHomeQuote Request" so it's filterable,
+   * which a shared cc can't do since one email has one subject for every
+   * recipient). Null for every other consumer submission, which keeps the
+   * agency CC'd on customerEmail exactly as before.
+   */
+  agencyCopyEmail: QuoteCompletionEmail | null;
+}
+
 /**
  * Builds (but does not send) a homeowner's copy of their completed quote
- * request from the consumer re-shop page (app/quote) — requester_type
+ * request from the consumer re-shop page (app/quote, or the InstaHomeQuote
+ * funnel it also serves — see app/instahomequote/page.tsx) — requester_type
  * "consumer" only, by explicit instruction. Unlike the partner email above,
  * this attaches ONLY the insurance summary, never the listing snapshot
  * (that's a realtor-marketing document this homeowner never asked for), and
@@ -160,14 +176,14 @@ export async function buildQuoteCompletionEmail(quoteRequestId: string, proposal
  * from. Called from finalizeQuoteRequest the same way; see its doc comment
  * for why this returns data instead of sending it directly.
  */
-export async function buildConsumerQuoteCompletionEmail(quoteRequestId: string, proposalIds: string[]): Promise<QuoteCompletionEmail | null> {
+export async function buildConsumerQuoteCompletionEmail(quoteRequestId: string, proposalIds: string[]): Promise<ConsumerQuoteCompletionResult | null> {
   if (!proposalIds.length) return null;
 
   try {
     const supabase = createServiceSupabase();
     const { data: request } = await supabase
       .from("quote_requests")
-      .select("requester_type, requester_email, requester_name, property_id")
+      .select("requester_type, requester_email, requester_name, property_id, lead_source")
       .eq("id", quoteRequestId)
       .single();
     if (!request || request.requester_type !== "consumer" || !request.requester_email || !request.property_id) return null;
@@ -217,16 +233,36 @@ export async function buildConsumerQuoteCompletionEmail(quoteRequestId: string, 
       ].join("")
     );
 
-    return {
+    const isInstaHomeQuote = request.lead_source === "instahomequote";
+    const attachments = [{ filename: `insurance-quote-${addressSlug}.pdf`, url: signed.signedUrl }];
+
+    const customerEmail: QuoteCompletionEmail = {
       to: request.requester_email,
-      cc: [AGENCY_CC],
+      // The agency still gets every result — either here, as a plain cc, or
+      // (for a tracked funnel) as its own agencyCopyEmail below, never both.
+      cc: isInstaHomeQuote ? [] : [AGENCY_CC],
       replyTo: cfg.config.replyTo,
       subject: `Your Florida home insurance quote — ${property.address}`,
       text,
       html,
-      attachments: [{ filename: `insurance-quote-${addressSlug}.pdf`, url: signed.signedUrl }],
+      attachments,
       idempotencyKey: `consumer-quote-completion-${quoteRequestId}`,
     };
+
+    const agencyCopyEmail: QuoteCompletionEmail | null = isInstaHomeQuote
+      ? {
+          to: AGENCY_CC,
+          cc: [],
+          replyTo: cfg.config.replyTo,
+          subject: "InstaHomeQuote Request",
+          text,
+          html,
+          attachments,
+          idempotencyKey: `consumer-quote-completion-agency-${quoteRequestId}`,
+        }
+      : null;
+
+    return { customerEmail, agencyCopyEmail };
   } catch (err) {
     console.error(`Failed to build consumer quote-completion email for ${quoteRequestId}: ${err instanceof Error ? err.message : String(err)}`);
     return null;
