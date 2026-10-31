@@ -371,22 +371,35 @@ export async function findCountyParcel(property: PropertyRow): Promise<CountyPar
   if (matches.length === 0) return { parcel: null, missReason: "no_street_name_match" };
   if (matches.length === 1) return { parcel: matches[0] ?? null };
 
-  if (property.zipcode) {
-    const zipMatches = matches.filter((row) => row.zipcode === property.zipcode);
-    if (zipMatches.length === 1) return { parcel: zipMatches[0] ?? null };
+  // Each signal below narrows the candidate pool further rather than being
+  // tried independently against the full match set — confirmed live this
+  // matters: "701 12TH Avenue N, St Petersburg" (zip 33701) has 5 same-name
+  // candidates countywide. Zip alone narrows only to 2 (both St Petersburg,
+  // one "AVE S" and one "AVE N", since they share a zip); suffix alone
+  // narrows to 3 (every AVE regardless of city/zip); directional alone
+  // narrows to 2 (both the St Petersburg and Safety Harbor "AVE N" rows,
+  // since they're textually identical in site_address). None of the three
+  // resolves it alone, but zip -> directional together do: chaining them
+  // lets each one trim what the last one couldn't. A signal that would
+  // narrow a candidate pool to zero (a data mismatch on that one field) is
+  // skipped rather than applied, so one bad signal can't wrongly eliminate
+  // every real candidate.
+  let candidates = matches;
+  const narrow = (predicate: (row: CountyParcelRow) => boolean) => {
+    const filtered = candidates.filter(predicate);
+    if (filtered.length > 0) candidates = filtered;
+  };
+
+  if (property.zipcode) narrow((row) => row.zipcode === property.zipcode);
+  if (candidates.length > 1) {
+    const suffixAbbrev = extractSuffixAbbreviation(property.street);
+    if (suffixAbbrev) narrow((row) => row.str_sfx?.toLowerCase() === suffixAbbrev);
+  }
+  if (candidates.length > 1) {
+    const directional = extractDirectional(property.street);
+    if (directional) narrow((row) => extractParcelDirectional(row.site_address) === directional);
   }
 
-  const suffixAbbrev = extractSuffixAbbreviation(property.street);
-  if (suffixAbbrev) {
-    const suffixMatches = matches.filter((row) => row.str_sfx?.toLowerCase() === suffixAbbrev);
-    if (suffixMatches.length === 1) return { parcel: suffixMatches[0] ?? null };
-  }
-
-  const directional = extractDirectional(property.street);
-  if (directional) {
-    const directionalMatches = matches.filter((row) => extractParcelDirectional(row.site_address) === directional);
-    if (directionalMatches.length === 1) return { parcel: directionalMatches[0] ?? null };
-  }
-
+  if (candidates.length === 1) return { parcel: candidates[0] ?? null };
   return { parcel: null, missReason: "ambiguous_match" };
 }
