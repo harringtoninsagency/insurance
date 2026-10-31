@@ -29,9 +29,9 @@ declare global {
   interface Window {
     google?: {
       maps: {
-        places: {
+        importLibrary: (library: "places") => Promise<{
           PlaceAutocompleteElement: new () => GooglePlaceAutocompleteElement;
-        };
+        }>;
       };
     };
   }
@@ -91,42 +91,57 @@ export function AddressAutocompleteInput({ onSelect }: { onSelect: (address: Par
   useEffect(() => {
     if (!scriptLoaded || !containerRef.current || !window.google) return;
     const container = containerRef.current;
+    let cancelled = false;
+    let placeAutocomplete: GooglePlaceAutocompleteElement | null = null;
 
-    const placeAutocomplete = new window.google.maps.places.PlaceAutocompleteElement();
-    placeAutocomplete.includedRegionCodes = ["us"];
-    placeAutocomplete.includedPrimaryTypes = ["street_address"];
-    placeAutocomplete.placeholder = "Start typing your home address...";
-    // Only these properties are documented as overridable on the host
-    // element (border/background/font) — padding and height aren't, so the
-    // element's own built-in sizing still governs those.
-    placeAutocomplete.style.width = "100%";
-    placeAutocomplete.style.display = "block";
-    placeAutocomplete.style.border = "1px solid #cbd5e1";
-    placeAutocomplete.style.borderRadius = "0.25rem";
-    placeAutocomplete.style.backgroundColor = "#ffffff";
-    placeAutocomplete.style.fontSize = "1rem";
-    placeAutocomplete.style.color = "#0f172a";
-    container.appendChild(placeAutocomplete);
+    (async () => {
+      // The script's onLoad firing doesn't mean google.maps.places is
+      // populated yet — with loading=async (Google's current recommended
+      // flag, confirmed live: dropping it just trades this race for a
+      // "loaded without loading=async" console warning) that happens
+      // slightly later. importLibrary's promise is what actually waits for
+      // it; reading window.google.maps.places directly after onLoad raced
+      // it and threw "Cannot read properties of undefined" in production.
+      const { PlaceAutocompleteElement } = await window.google!.maps.importLibrary("places");
+      if (cancelled || !container) return;
 
-    placeAutocomplete.addEventListener("gmp-select", async (event) => {
-      const { placePrediction } = event as unknown as { placePrediction: GooglePlacePrediction };
-      const place = placePrediction.toPlace();
-      await place.fetchFields({ fields: ["addressComponents", "formattedAddress"] });
-      onSelect(parsePlace(place));
-    });
+      placeAutocomplete = new PlaceAutocompleteElement();
+      placeAutocomplete.includedRegionCodes = ["us"];
+      placeAutocomplete.includedPrimaryTypes = ["street_address"];
+      placeAutocomplete.placeholder = "Start typing your home address...";
+      // Only these properties are documented as overridable on the host
+      // element (border/background/font) — padding and height aren't, so
+      // the element's own built-in sizing still governs those.
+      placeAutocomplete.style.width = "100%";
+      placeAutocomplete.style.display = "block";
+      placeAutocomplete.style.border = "1px solid #cbd5e1";
+      placeAutocomplete.style.borderRadius = "0.25rem";
+      placeAutocomplete.style.backgroundColor = "#ffffff";
+      placeAutocomplete.style.fontSize = "1rem";
+      placeAutocomplete.style.color = "#0f172a";
+      container.appendChild(placeAutocomplete);
 
-    // Typing again after a selection has to invalidate it — otherwise a
-    // stale, previously-selected address could still submit even though the
-    // visible text no longer matches it. "input" is a standard DOM event;
-    // the element's own "gmp-select" handler above runs and sets a fresh
-    // selection after this fires for the same keystroke that completes it,
-    // so the two don't fight each other.
-    placeAutocomplete.addEventListener("input", () => onSelect(null));
+      placeAutocomplete.addEventListener("gmp-select", async (event) => {
+        const { placePrediction } = event as unknown as { placePrediction: GooglePlacePrediction };
+        const place = placePrediction.toPlace();
+        await place.fetchFields({ fields: ["addressComponents", "formattedAddress"] });
+        onSelect(parsePlace(place));
+      });
+
+      // Typing again after a selection has to invalidate it — otherwise a
+      // stale, previously-selected address could still submit even though
+      // the visible text no longer matches it. "input" is a standard DOM
+      // event; the element's own "gmp-select" handler above runs and sets a
+      // fresh selection after this fires for the same keystroke that
+      // completes it, so the two don't fight each other.
+      placeAutocomplete.addEventListener("input", () => onSelect(null));
+    })();
 
     // Re-running this on every render would create a second element —
     // scriptLoaded only flips once, so this effect only ever runs once too.
     return () => {
-      container.removeChild(placeAutocomplete);
+      cancelled = true;
+      if (placeAutocomplete) container.removeChild(placeAutocomplete);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scriptLoaded]);
