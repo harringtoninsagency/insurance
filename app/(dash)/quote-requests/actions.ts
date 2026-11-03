@@ -41,10 +41,10 @@ async function startRoutineFor(result: QueueResult): Promise<boolean> {
   return (await fireQuoteRoutine(result.requestId)).started;
 }
 
-export async function runQuoteForPropertyAction(propertyId: string, kind: QuoteRequestKind = "both"): Promise<QueueActionResult> {
+export async function runQuoteForPropertyAction(propertyId: string, kind: QuoteRequestKind = "both", requestedFloodQuote = false): Promise<QueueActionResult> {
   try {
     const { supabase, requester } = await teamMember();
-    const result = await queuePropertyQuote(supabase, propertyId, requester, asKind(kind));
+    const result = await queuePropertyQuote(supabase, propertyId, requester, asKind(kind), false, null, requestedFloodQuote);
     const started = await startRoutineFor(result);
     refresh(propertyId);
     return { ...result, started };
