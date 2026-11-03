@@ -220,11 +220,38 @@ moment.
    `roof_scenario` checkbox) — each wired through its own `actions.ts` into
    `submitQuoteRequest` (the internal form via `queueNewAddressQuote`, which
    already forwards unknown `SubmitQuoteRequestInput` fields through
-   unchanged). The *existing*-property "Run quote now" button
-   (`RunQuoteButton.tsx` → `queuePropertyQuote`) was deliberately left out —
-   it inserts straight into `quote_requests` itself rather than going through
-   `submitQuoteRequest`, and wasn't named in this list; it'd need its own
-   param added the same way `roofScenario` was, if that's wanted too.
+   unchanged).
+
+   The *existing*-property "Run quote now" button (`RunQuoteButton.tsx` →
+   `queuePropertyQuote`) was initially left out of this list since it
+   inserts straight into `quote_requests` rather than going through
+   `submitQuoteRequest` — **now also done**: `queuePropertyQuote` gained its
+   own `requestedFloodQuote` parameter (mirroring `roofScenario`), written
+   to `requested_flood_quote` on insert; `RunQuoteButton.tsx` shows a
+   matching checkbox (full, non-compact variant only — the compact one used
+   in table rows stays unchanged) and `runQuoteForPropertyAction` threads it
+   through. `queueNewAddressQuote`'s existing-property match path (the case
+   where a typed-in address resolves to a property already in the system)
+   was also fixed to forward `input.requestedFloodQuote` into that same
+   `queuePropertyQuote` call — it had been silently dropping the opt-in
+   there before.
+
+   `scripts/auto-ingest-onehome.ts` — the unattended OneHome mailbox
+   ingest, which also calls `queuePropertyQuote` directly — now always
+   passes `requestedFloodQuote: true`. There's no person at that entry
+   point to tick a checkbox, so by explicit decision every auto-ingested
+   listing opts in automatically; this is a real behavior choice, not just
+   plumbing, worth knowing about since it means every OneHome-sourced
+   property now rides the RocketFlood session on this routine's cadence
+   too, not just partner/consumer/internal-form submissions.
+
+   Net effect for this routine: **every** path that can create or queue a
+   `quote_requests` row (partner portal, consumer re-shop/InstaHomeQuote,
+   internal "Run a quote" form, "Run quote now" on an existing property,
+   and OneHome auto-ingest) can now set `requested_flood_quote = true`, so
+   step 3b above is reachable from all of them on exactly the same hourly/
+   on-demand cadence as the home quote — nothing about step 3b itself
+   changes per origin.
 
 All five items above are now done in code, and the schema dependency is
 cleared too: migration `0040_rocketflood_flood_quotes.sql` has been applied

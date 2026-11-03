@@ -239,3 +239,9 @@ arrive in exactly the same shape as any other request — `status = 'processing'
 `requester_type = 'internal'` and `requested_by` set to the team member. Nothing in steps 1-5 changes. The one
 difference: an internal request points at the property that was already in the system (no dedicated copy is made, since
 there's no partner whose visibility needs isolating), so re-quoting a property just upserts onto its existing quote rows.
+
+Any of these rows — same as a partner/consumer submission — can also carry `requested_flood_quote = true`:
+"Run quote now" has its own opt-in checkbox, and `scripts/auto-ingest-onehome.ts` (the unattended OneHome mailbox
+ingest, which queues quotes the same way) always sets it. See
+[`docs/process-flood-quote-requests.md`](./process-flood-quote-requests.md) for the flood insertions into steps
+1-5 above — they run on this exact same cadence, regardless of which entry point set the flag.
