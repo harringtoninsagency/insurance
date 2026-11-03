@@ -109,6 +109,10 @@ async function main() {
   // reported back as alreadyQueued rather than duplicated, so re-running
   // this against the same listing (or one that previously failed to quote
   // and is being retried) is always safe.
+  //
+  // Every auto-ingested listing also requests a RocketFlood quote (the last
+  // `true` below) — there's no person here to tick the opt-in checkbox the
+  // other entry points show, and by request this pipeline always asks.
   const requester: Requester = {
     userId: null,
     name: "OneHome auto-ingest",
@@ -119,7 +123,7 @@ async function main() {
   let queuedCount = 0;
   let firedCount = 0;
   for (const property of toQuote) {
-    const result = await queuePropertyQuote(supabase, property.id, requester, "both");
+    const result = await queuePropertyQuote(supabase, property.id, requester, "both", false, null, true);
     if (!result.ok) {
       log(`  Couldn't queue a quote for property ${property.id} (mls ${property.mls_id}): ${result.error}`);
       continue;
