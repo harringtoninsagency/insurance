@@ -566,11 +566,19 @@ export async function generateIndicationProposal(
     const cardWidth = (tableWidth - cardGap * (cardCount - 1)) / 3; // always 1/3 of the full row width, even with fewer than 3 cards, so a 1- or 2-carrier result doesn't stretch to fill the row
     const cardHeight = 54;
     const disclaimerHeight = 18;
-    // 22 (drawSectionHeader's own fixed consumption) + the card row + the
-    // disclaimer line below it — the whole block this section draws, not
-    // just the cards, so a break here never crowds the footer.
-    const sectionHeight = 22 + cardHeight + 10 + disclaimerHeight;
+    // Breathing room above the header when this section lands right under the
+    // carrier table on the same page (the table loop above leaves y at the
+    // bottom of its last row with no gap of its own) — matches the gap used
+    // between every other section in this file (e.g. the 24pt gap before
+    // CARRIER INDICATIONS). Not needed when a continuation page starts fresh
+    // instead, since startContinuationPage already sets its own top margin.
+    const sectionGap = 14;
+    // sectionGap + 22 (drawSectionHeader's own fixed consumption) + the card
+    // row + the disclaimer line below it — the whole block this section
+    // draws, not just the cards, so a break here never crowds the footer.
+    const sectionHeight = sectionGap + 22 + cardHeight + 10 + disclaimerHeight;
     if (y - sectionHeight < MARGIN + FOOTER_RESERVE) startContinuationPage(false);
+    else y -= sectionGap;
     drawSectionHeader("FLOOD INDICATIONS");
     const cardTop = y;
 
