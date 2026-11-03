@@ -117,6 +117,15 @@ export async function generateListingSnapshotProposal(
     .order("premium", { ascending: true });
   if (quotesError) throw new Error(`Failed to load quotes: ${quotesError.message}`);
 
+  // Split home vs. flood the moment the query comes back — before this,
+  // a cheap RocketFlood quote (form_type "flood") could slip into the HO3/
+  // DP3-only logic below (the "starting indication" box, the carrier table,
+  // coverages) since this query has no form_type filter. See the matching
+  // split in generate-indication.ts.
+  const allQuotes = (quotes ?? []) as QuoteRow[];
+  const homeQuotes = allQuotes.filter((q) => q.form_type !== "flood");
+  const floodQuotes = allQuotes.filter((q) => q.form_type === "flood").slice(0, 3);
+
   const { data: existingProposals } = await supabase
     .from("proposals")
     .select("version")
@@ -278,10 +287,11 @@ export async function generateListingSnapshotProposal(
 
   // Prefer the cheapest HO3 quote for the headline number — HO3 is the form
   // most homeowners want, so leading with a cheaper DP3 (dwelling-fire) quote
-  // would be a misleading "starting" price. Falls back to the cheapest quote
-  // of any form if no HO3 quote exists at all.
-  const cheapestHo3 = (quotes as QuoteRow[] | null)?.find((q) => q.form_type === "HO3");
-  const bestQuote = cheapestHo3 ?? quotes?.[0];
+  // would be a misleading "starting" price. Falls back to the cheapest home
+  // quote of any form if no HO3 quote exists at all. Flood is never eligible
+  // here — homeQuotes already excludes it (see the split above).
+  const cheapestHo3 = homeQuotes.find((q) => q.form_type === "HO3");
+  const bestQuote = cheapestHo3 ?? homeQuotes[0];
   const indicationX = MARGIN + photoWidth + boxGap;
   page.drawRectangle({
     x: indicationX,
@@ -314,7 +324,7 @@ export async function generateListingSnapshotProposal(
   page.drawRectangle({ x: indicationX + boxPad, y: boxY, width: indicationWidth - boxPad * 2, height: 0.75, color: PERIWINKLE_GREY });
   boxY -= 15;
   page.drawText("Markets found:", { x: indicationX + boxPad, y: boxY, size: 9, font, color: WHITE });
-  page.drawText(quotes?.length ? "YES" : "NO", {
+  page.drawText(homeQuotes.length ? "YES" : "NO", {
     x: indicationX + boxPad + font.widthOfTextAtSize("Markets found: ", 9),
     y: boxY,
     size: 9,
@@ -323,7 +333,7 @@ export async function generateListingSnapshotProposal(
   });
   boxY -= 12;
   page.drawText("Subject to application and underwriting", { x: indicationX + boxPad, y: boxY, size: 7.5, font, color: rgb(0.75, 0.79, 0.85) });
-  const coverages = resolveCoverages((quotes ?? []).map((q) => q.coverages), property.sqft);
+  const coverages = resolveCoverages(homeQuotes.map((q) => q.coverages), property.sqft);
   if (coverages) {
     boxY -= 11;
     const basis = `Based on ${formatCurrency(coverages.dwelling_a)} dwelling${coverages.isDefault ? " (est.)" : ""}, ${coverages.personal_property_pct}% contents`;
@@ -365,8 +375,10 @@ export async function generateListingSnapshotProposal(
   // always the customizable one — a producer's own manual entry
   // (properties.manual_carrier_name/manual_carrier_premium) for a company
   // that didn't pull a result through Fetch, blank until they fill it in.
+  // homeQuotes only — a priced flood quote never belongs in this table,
+  // it gets its own FLOOD INDICATIONS section below.
   drawSectionHeader("PRELIMINARY CARRIER INDICATIONS");
-  const sortedQuotes = [...((quotes ?? []) as QuoteRow[])].sort((a, b) => Number(a.premium) - Number(b.premium));
+  const sortedQuotes = [...homeQuotes].sort((a, b) => Number(a.premium) - Number(b.premium));
   const topQuotes = sortedQuotes.slice(0, 4);
 
   interface CarrierTableRow {
@@ -609,6 +621,36 @@ export async function generateListingSnapshotProposal(
     page.drawText("Email us the buyer's name, phone number and email", { x: col3X, y: col3TextY, size: 8.5, font, color: rgb(0.3, 0.35, 0.4) });
     col3TextY -= 11;
     page.drawText("for a personalized quote.", { x: col3X, y: col3TextY, size: 8.5, font, color: rgb(0.3, 0.35, 0.4) });
+  }
+
+  // --- Flood indications: up to 3 equal-width cards, cheapest first — the
+  // same shape as generate-indication.ts's FLOOD INDICATIONS section, sized
+  // down to fit this doc's one fixed page. There's no pagination here (this
+  // whole document is a single, non-continuing page), so this reuses the
+  // ~90pt gap that's always sat empty between the agent/referral box above
+  // and the footer rule below (see that section's own comment) rather than
+  // growing the page — boxTop/bottomBoxHeight are still in scope from it.
+  if (floodQuotes.length > 0) {
+    let floodY = boxTop - bottomBoxHeight - 10;
+    page.drawText("FLOOD INDICATIONS", { x: MARGIN, y: floodY, size: 9, font: boldFont, color: DEEP_BLUE });
+    floodY -= 10;
+
+    const floodCardGap = 10;
+    const floodCardCount = floodQuotes.length;
+    const floodCardWidth = (CONTENT_WIDTH - floodCardGap * (floodCardCount - 1)) / 3;
+    const floodCardHeight = 38;
+    const floodCardTop = floodY;
+    floodQuotes.forEach((quote, i) => {
+      const cardX = MARGIN + i * (floodCardWidth + floodCardGap);
+      page.drawRectangle({ x: cardX, y: floodCardTop - floodCardHeight, width: floodCardWidth, height: floodCardHeight, color: CREAM, borderColor: PERIWINKLE_GREY, borderWidth: 0.75 });
+      const textX = cardX + 8;
+      const maxTextWidth = floodCardWidth - 16;
+      const premiumText = formatCurrency(Number(quote.premium));
+      page.drawText(quote.carrier, { x: textX, y: floodCardTop - 13, size: fitSize(boldFont, quote.carrier, maxTextWidth, 8.5), font: boldFont, color: DEEP_BLUE });
+      page.drawText(premiumText, { x: textX, y: floodCardTop - 28, size: fitSize(boldFont, premiumText, maxTextWidth, 13), font: boldFont, color: DEEP_BLUE });
+    });
+    floodY -= floodCardHeight + 4;
+    page.drawText("Preliminary RocketFlood marketplace estimates — not bindable rates.", { x: MARGIN, y: floodY, size: 6.5, font: italicFont, color: PERIWINKLE_GREY });
   }
 
   // --- Footer ---

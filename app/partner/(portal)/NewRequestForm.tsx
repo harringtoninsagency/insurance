@@ -71,6 +71,11 @@ export function NewRequestForm({ defaultEmail }: { defaultEmail: string }) {
             </div>
           </details>
 
+          <label className="flex items-center gap-2 text-slate-700">
+            <input type="checkbox" name="requestFloodQuote" value="true" className="h-4 w-4 rounded border-slate-300" />
+            Also get a flood insurance quote (RocketFlood)
+          </label>
+
           <div className="space-y-2">
             <button
               type="submit"

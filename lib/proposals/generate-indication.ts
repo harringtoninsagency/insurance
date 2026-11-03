@@ -49,6 +49,8 @@ const CARRIER_LOGOS_DIR = join(BRANDING_DIR, "carriers");
 
 // Carrier logo files, added as they're sourced from each carrier's own site.
 // Carriers not listed here (or missing their file) fall back to text-only.
+// Flood carriers (Neptune, Bankers NFIP, MSI, Wright NFIP, ...) aren't in
+// this map — the flood section below is always text-only, no logo lookup.
 const CARRIER_LOGO_FILES: Record<string, string> = {
   Frontline: "frontline.png",
   "Universal P&C": "universal-pc.png",
@@ -119,6 +121,9 @@ export async function generateIndicationProposal(
   // premium = 0 (not null) shows up for carrier responses that were actually
   // declined/errored (e.g. an occupancy-type rejection) — exclude those too,
   // not just nulls, so a decline doesn't masquerade as the cheapest option.
+  // This one query already returns flood rows too (form_type = "flood",
+  // adapter = "rocketflood") alongside the home HO3/DP3 rows — split below
+  // rather than querying twice.
   const { data: quotes, error: quotesError } = await supabase
     .from("quotes")
     .select("*")
@@ -126,7 +131,21 @@ export async function generateIndicationProposal(
     .gt("premium", 0)
     .order("premium", { ascending: true });
   if (quotesError) throw new Error(`Failed to load quotes: ${quotesError.message}`);
-  if (!quotes?.length) {
+
+  const homeQuotes = (quotes ?? []).filter((q) => q.form_type !== "flood");
+  // Already ascending by premium from the query above — selectTopFloodCarriers
+  // (lib/quote-requests/rocketflood-pipeline.ts) already capped this at 3
+  // before it ever reached the `quotes` table, so no slice needed here, but
+  // kept defensive in case that ever changes.
+  const floodQuotes = (quotes ?? []).filter((q) => q.form_type === "flood").slice(0, 3);
+
+  // This is the Insurance Summary — an empty home-carrier table (flood-only,
+  // or nothing priced at all) isn't a document worth generating. A flood
+  // request with no home quote requested should never reach here in the
+  // first place (flood only ever rides alongside a home request today, per
+  // docs/process-flood-quote-requests.md), so this guard not firing isn't
+  // expected to regress anything.
+  if (!homeQuotes.length) {
     throw new Error(`Property ${propertyId} has no priced quotes to build a proposal from`);
   }
 
@@ -208,7 +227,7 @@ export async function generateIndicationProposal(
 
   // --- Property Snapshot: cream color-blocked panel per brand color usage guide ---
   drawSectionHeader("PROPERTY SNAPSHOT");
-  const coverages = resolveCoverages(quotes.map((q) => q.coverages), property.sqft);
+  const coverages = resolveCoverages(homeQuotes.map((q) => q.coverages), property.sqft);
   const snapshot = [
     property.year_built ? `Year Built: ${property.year_built}` : null,
     property.sqft ? `Living Area: ${property.sqft.toLocaleString()} sqft` : null,
@@ -248,7 +267,7 @@ export async function generateIndicationProposal(
   const tableWidth = PAGE_WIDTH - 2 * MARGIN;
 
   const carrierLogos = new Map<string, PDFImage>();
-  for (const carrier of new Set(quotes.map((q) => q.carrier))) {
+  for (const carrier of new Set(homeQuotes.map((q) => q.carrier))) {
     const filename = CARRIER_LOGO_FILES[carrier];
     if (!filename) continue;
     const logoPath = join(CARRIER_LOGOS_DIR, filename);
@@ -259,7 +278,7 @@ export async function generateIndicationProposal(
   // HO3 options first (most homeowners want HO3, not the DP3 dwelling-fire
   // form), cheapest-to-most-expensive within each form.
   const formRank = (form: string | null) => (form === "HO3" ? 0 : form === "DP3" ? 1 : 2);
-  const displayQuotes = [...quotes].sort(
+  const displayQuotes = [...homeQuotes].sort(
     (a, b) => formRank(a.form_type) - formRank(b.form_type) || Number(a.premium) - Number(b.premium)
   );
   // Highlight the cheapest HO3, not the cheapest overall — DP3 is a rental
@@ -532,6 +551,65 @@ export async function generateIndicationProposal(
     page.drawText(formatCurrency(Number(quote.premium)), { x: colPremium, y: textY, size: 10, font: carrierFont, color: DEEP_BLUE });
     y -= rowHeight;
   });
+
+  // --- Flood Indications: up to 3 cards in one horizontal row, 1/3 width
+  // each (cheapest first — floodQuotes is already ascending by premium).
+  // Separate section from the home carrier table above, not folded into it —
+  // flood premiums come from a different marketplace (RocketFlood) with a
+  // different carrier roster than the home carriers above, and every one of
+  // them is a scraped marketplace estimate, not a Fetch-priced rate (see
+  // lib/quote-requests/rocketflood-pipeline.ts). Skipped entirely when no
+  // flood quote was requested/priced for this property — most properties. ---
+  if (floodQuotes.length > 0) {
+    const cardGap = 12;
+    const cardCount = floodQuotes.length;
+    const cardWidth = (tableWidth - cardGap * (cardCount - 1)) / 3; // always 1/3 of the full row width, even with fewer than 3 cards, so a 1- or 2-carrier result doesn't stretch to fill the row
+    const cardHeight = 54;
+    const disclaimerHeight = 18;
+    // 22 (drawSectionHeader's own fixed consumption) + the card row + the
+    // disclaimer line below it — the whole block this section draws, not
+    // just the cards, so a break here never crowds the footer.
+    const sectionHeight = 22 + cardHeight + 10 + disclaimerHeight;
+    if (y - sectionHeight < MARGIN + FOOTER_RESERVE) startContinuationPage(false);
+    drawSectionHeader("FLOOD INDICATIONS");
+    const cardTop = y;
+
+    floodQuotes.forEach((quote, i) => {
+      const cardX = MARGIN + i * (cardWidth + cardGap);
+      page.drawRectangle({
+        x: cardX,
+        y: cardTop - cardHeight,
+        width: cardWidth,
+        height: cardHeight,
+        color: CREAM,
+        borderColor: PERIWINKLE_GREY,
+        borderWidth: 0.75,
+      });
+      const textX = cardX + 10;
+      const maxTextWidth = cardWidth - 20;
+      page.drawText(quote.carrier, {
+        x: textX,
+        y: cardTop - 20,
+        size: fitSize(boldFont, quote.carrier, maxTextWidth, 11),
+        font: boldFont,
+        color: DEEP_BLUE,
+      });
+      page.drawText(formatCurrency(Number(quote.premium)), {
+        x: textX,
+        y: cardTop - 38,
+        size: fitSize(boldFont, formatCurrency(Number(quote.premium)), maxTextWidth, 16),
+        font: boldFont,
+        color: DEEP_BLUE,
+      });
+      page.drawText("flood / year", { x: textX, y: cardTop - 49, size: 7.5, font, color: PERIWINKLE_GREY });
+    });
+    y -= cardHeight + 10;
+    page.drawText(
+      "Flood premiums are preliminary marketplace estimates from RocketFlood, not bindable rates.",
+      { x: MARGIN, y, size: 7.5, font: italicFont, color: PERIWINKLE_GREY }
+    );
+    y -= 18;
+  }
 
   if (y - (AGENT_SECTION_HEIGHT + AGENT_HEADER_HEIGHT) < MARGIN + FOOTER_RESERVE) startContinuationPage(false);
   await drawAgentSection();

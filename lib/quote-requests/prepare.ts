@@ -27,6 +27,16 @@ export interface PrepareResult {
  * quote_requests.property_id, so if two different people's requests ever
  * pointed at the same property row, each would see the other's quote/proposal
  * history through it. One request, one property, always — no exceptions.
+ *
+ * Also decides flood_status here, alongside the home quote's own status, when
+ * requested_flood_quote is set — see docs/process-flood-quote-requests.md.
+ * Deliberately NOT gated on hasEnoughToQuote/county enrichment below:
+ * RocketFlood looks up year built, square footage, construction, flood zone,
+ * and both elevations itself from the address the moment an application is
+ * created there (confirmed live against a real address — see that doc), so a
+ * property this app couldn't match to a county record can still get a flood
+ * quote. The only thing flood actually needs from here is a deliverable
+ * address.
  */
 export async function prepareQuoteRequest(requestId: string): Promise<PrepareResult> {
   const supabase = createServiceSupabase();
@@ -39,7 +49,20 @@ export async function prepareQuoteRequest(requestId: string): Promise<PrepareRes
     ({ houseNumber, street } = splitStreetAddress(request.address_line));
   } catch {
     const detail = "Could not read a house number and street name out of the address given.";
-    await supabase.from("quote_requests").update({ status: "needs_review", status_detail: detail }).eq("id", requestId);
+    await supabase
+      .from("quote_requests")
+      .update({
+        status: "needs_review",
+        status_detail: detail,
+        // No property ever gets created on this path, so flood can't run
+        // either — mirror the home quote's own needs_review here rather than
+        // leaving flood_status null, which would otherwise read as "flood
+        // wasn't requested" instead of "flood couldn't start."
+        ...(request.requested_flood_quote
+          ? { flood_status: "needs_review", flood_status_detail: detail }
+          : {}),
+      })
+      .eq("id", requestId);
     await notifyNeedsReview({
       requesterType: request.requester_type,
       requesterName: request.requester_name,
@@ -98,7 +121,24 @@ export async function prepareQuoteRequest(requestId: string): Promise<PrepareRes
         ? describeCountyParcelMiss(enrichment.missReason)
         : `No matching county property record was found, and no year built / square footage was given with the request. ${describeCountyParcelMiss(enrichment.missReason)}`;
 
-  await supabase.from("quote_requests").update({ status, status_detail: detail }).eq("id", requestId);
+  // Flood eligibility: a deliverable address is all RocketFlood needs — see
+  // this function's own doc comment for why that's a lower bar than
+  // hasEnoughToQuote above. houseNumber/street are guaranteed non-empty here
+  // (the catch block above returns before this point otherwise); city/state/
+  // zipcode are the raw submitted fields and can still be blank on a sloppy
+  // partner-portal submission, so they're what actually gates this.
+  let floodFields: { flood_status: "processing" | "needs_review"; flood_status_detail: string } | Record<string, never> = {};
+  if (request.requested_flood_quote) {
+    const hasUsableAddress = !!(request.city && request.state && request.zipcode);
+    floodFields = {
+      flood_status: hasUsableAddress ? "processing" : "needs_review",
+      flood_status_detail: hasUsableAddress
+        ? "Address is complete — RocketFlood will look up flood zone, elevation, and property details itself."
+        : "Request is missing city, state, or zip — RocketFlood needs a complete address to run its own lookup.",
+    };
+  }
+
+  await supabase.from("quote_requests").update({ status, status_detail: detail, ...floodFields }).eq("id", requestId);
   if (status === "needs_review") {
     await notifyNeedsReview({
       requesterType: request.requester_type,

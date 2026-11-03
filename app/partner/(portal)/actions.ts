@@ -151,6 +151,10 @@ export async function submitPartnerQuoteRequestAction(_prev: PartnerRequestState
     // partner-chosen ask, independent of the automatic roofing_company
     // contact-type detection in fetch-pipeline.ts (either can trigger it).
     roofScenario: str(formData, "intent") === "roof_scenario",
+    // A standalone checkbox (NewRequestForm.tsx), independent of which CTA
+    // button was pressed — a partner can ask for a flood quote alongside
+    // either the standard or the roof-scenario request.
+    requestedFloodQuote: formData.get("requestFloodQuote") === "true",
   };
 
   const result = await submitQuoteRequest(service, input);

@@ -62,6 +62,11 @@ export function QuoteForm() {
         <Field id="email" name="email" label="Email" type="email" required autoComplete="email" defaultValue={v.email} />
       </div>
 
+      <label className="flex items-start gap-2 text-sm text-slate-600">
+        <input type="checkbox" name="requestFloodQuote" value="true" className="mt-0.5 h-4 w-4 rounded border-slate-300" />
+        <span>Also get a flood insurance quote for this property (separate from homeowners coverage)</span>
+      </label>
+
       <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
         <label htmlFor="website">Website</label>
         <input id="website" name="website" type="text" tabIndex={-1} autoComplete="off" />

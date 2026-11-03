@@ -84,6 +84,7 @@ export async function submitConsumerQuoteAction(_prev: ConsumerQuoteState, formD
     state: str(formData, "state") || "FL",
     zipcode,
     assignedAgentId: AGENCY_OWNER_AGENT_ID,
+    requestedFloodQuote: str(formData, "requestFloodQuote") === "true",
     leadSource,
   };
 

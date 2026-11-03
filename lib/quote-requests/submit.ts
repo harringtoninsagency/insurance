@@ -51,6 +51,14 @@ export interface SubmitQuoteRequestInput {
    * Scenario" proposal variant; see finalizeQuoteRequest).
    */
   roofScenario?: boolean;
+  /**
+   * Opt-in ask for a RocketFlood instant flood quote alongside the home
+   * quote — see docs/process-flood-quote-requests.md. Independent of
+   * roofScenario; either, neither, or both can be set on the same request.
+   * prepareQuoteRequest decides flood_status from this the same moment it
+   * decides the home quote's own status.
+   */
+  requestedFloodQuote?: boolean;
   /** Which marketed funnel this came through (e.g. "instahomequote"), for tracking separately from the rest of the pipeline. */
   leadSource?: string | null;
 }
@@ -150,6 +158,7 @@ export async function submitQuoteRequest(
       personal_property_pct: parsed.personalPropertyPct ?? null,
       assigned_agent_id: input.assignedAgentId ?? null,
       requested_roof_scenario: input.roofScenario ?? false,
+      requested_flood_quote: input.requestedFloodQuote ?? false,
       lead_source: input.leadSource ?? null,
       status: "new",
     })

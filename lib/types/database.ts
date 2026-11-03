@@ -45,12 +45,14 @@ export type QuoteAdapterName =
   | "manual"
   | "selectsys"
   | "ivans"
-  | "fetch_quoting";
+  | "fetch_quoting"
+  | "rocketflood";
 export type ListingSourceName = "bridge" | "trestle" | "mlsgrid" | "county" | "onehome" | "quote_request";
 export type PartnerAccountStatus = "invited" | "active" | "disabled";
 export type QuoteRequesterType = "partner" | "public" | "internal" | "consumer";
 export type QuoteRequestKind = "quote_summary" | "listing_snapshot" | "both";
 export type QuoteRequestStatus = "new" | "processing" | "completed" | "failed" | "needs_review";
+export type QuoteRequestFloodStatus = "processing" | "completed" | "failed" | "needs_review";
 export type PartnerAccessRequestStatus = "pending" | "approved" | "denied";
 
 export interface Database {
@@ -502,6 +504,11 @@ export interface Database {
           requested_roof_scenario: boolean;
           /** Which marketed funnel this came through (e.g. "instahomequote"), or null for everything else. */
           lead_source: string | null;
+          /** Opt-in ask for a RocketFlood instant flood quote alongside the home quote -- see docs/process-flood-quote-requests.md. */
+          requested_flood_quote: boolean;
+          flood_status: QuoteRequestFloodStatus | null;
+          flood_status_detail: string | null;
+          flood_processed_at: string | null;
           claimed_at: string | null;
           routine_fired_at: string | null;
           routine_fire_failed_at: string | null;

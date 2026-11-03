@@ -113,6 +113,10 @@ export function NewQuoteForm({ referralPartners }: { referralPartners: ReferralP
           <input type="checkbox" name="roof_scenario" value="true" className="h-4 w-4 rounded border-slate-300" />
           New Roof Scenario — assumes a newly installed roof on this property
         </label>
+        <label className="flex items-center gap-2 text-sm text-slate-700 sm:col-span-2">
+          <input type="checkbox" name="requested_flood_quote" value="true" className="h-4 w-4 rounded border-slate-300" />
+          Also quote flood insurance (RocketFlood)
+        </label>
       </div>
 
       {referralPartners.length > 0 && (
