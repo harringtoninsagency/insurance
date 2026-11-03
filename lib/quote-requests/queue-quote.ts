@@ -69,6 +69,16 @@ export async function queuePropertyQuote(
     return { ok: false, error: "This property is missing a street address, city, or zip code the carriers require." };
   }
 
+  // Mirrors prepareQuoteRequest's own flood_status decision (see
+  // docs/process-flood-quote-requests.md) — the hourly routine's step 3b
+  // only picks up a request once flood_status = 'processing', so without
+  // this, a flood opt-in queued through this function (RunQuoteButton,
+  // auto-ingest-onehome.ts) would set requested_flood_quote but never
+  // actually get a flood quote. house_number/street/city/zipcode are
+  // already guaranteed present by the check above; state defaults from the
+  // property record.
+  const floodFields = requestedFloodQuote ? { flood_status: "processing" as const, flood_status_detail: "Address is complete — RocketFlood will look up flood zone, elevation, and property details itself." } : {};
+
   const { data: request, error } = await supabase
     .from("quote_requests")
     .insert({
@@ -88,6 +98,7 @@ export async function queuePropertyQuote(
       property_id: propertyId,
       requested_roof_scenario: roofScenario,
       requested_flood_quote: requestedFloodQuote,
+      ...floodFields,
     })
     .select("id")
     .single();
