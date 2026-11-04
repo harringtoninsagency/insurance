@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/types/database";
 import { applyConsentEvent } from "@/lib/contacts/consent";
 import { escapeLike } from "@/lib/contacts/upsert-contact";
+import { stopQuoteRequestFollowUps } from "@/lib/quote-requests/follow-ups";
 
 const TOLERANCE_MS = 5 * 60 * 1000;
 
@@ -64,7 +65,7 @@ export async function handleResendEvent(supabase: SupabaseClient<Database>, even
     .select("id, agency_id, recipient, contact_id")
     .eq("provider_message_id", messageId)
     .maybeSingle();
-  if (!item) return "ignored: unknown message";
+  if (!item) return handleFollowUpEvent(supabase, event.type, messageId);
 
   if (event.type === "email.bounced") {
     await supabase.from("outreach").update({ status: "bounced", send_error: "Bounced: the address rejected the email" }).eq("id", item.id);
@@ -89,4 +90,41 @@ export async function handleResendEvent(supabase: SupabaseClient<Database>, even
     });
   }
   return "complained";
+}
+
+/**
+ * The same two events for a partner follow-up email (lib/quote-requests/
+ * follow-ups.ts) rather than an outreach item: suppress the address, end
+ * the rest of that request's sequence, and on a complaint mark the partner
+ * do-not-contact — exactly what the outreach path does.
+ */
+async function handleFollowUpEvent(supabase: SupabaseClient<Database>, type: string, messageId: string): Promise<string> {
+  const { data: followUp } = await supabase
+    .from("quote_request_follow_ups")
+    .select("id, agency_id, quote_request_id")
+    .eq("provider_message_id", messageId)
+    .maybeSingle();
+  if (!followUp) return "ignored: unknown message";
+
+  const { data: request } = await supabase.from("quote_requests").select("contact_id").eq("id", followUp.quote_request_id).maybeSingle();
+  const { data: contact } = request?.contact_id
+    ? await supabase.from("industry_contacts").select("*").eq("id", request.contact_id).maybeSingle()
+    : { data: null };
+  if (!contact?.email) return "ignored: follow-up has no contact email";
+
+  const bounced = type === "email.bounced";
+  const reason = bounced ? "Bounced: the address rejected the email" : "Recipient marked the email as spam";
+  await supabase.from("quote_request_follow_ups").update({ send_error: reason }).eq("id", followUp.id);
+  await stopQuoteRequestFollowUps(supabase, followUp.quote_request_id, reason);
+  await suppress(supabase, followUp.agency_id, contact.email, bounced ? "Hard bounce" : "Spam complaint");
+
+  if (!bounced && !contact.do_not_contact) {
+    await applyConsentEvent(supabase, contact, {
+      type: "do_not_contact",
+      method: "directory",
+      note: "Marked a quote follow-up email as spam (complaint reported by the email provider)",
+      recordedBy: "email provider",
+    });
+  }
+  return bounced ? "bounced (follow-up)" : "complained (follow-up)";
 }

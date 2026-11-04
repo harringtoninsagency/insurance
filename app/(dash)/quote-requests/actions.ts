@@ -8,6 +8,7 @@ import { verifyAddress, type VerifyAddressResult } from "@/lib/geocoding/verify-
 import { sessionContext } from "@/lib/contacts/session";
 import { regenerateExistingProposals } from "@/lib/proposals/regenerate";
 import { resolveReferralPartnerContact } from "@/lib/contacts/resolve-referral-partner-contact";
+import { stopQuoteRequestFollowUps } from "@/lib/quote-requests/follow-ups";
 import type { QuoteRequestKind } from "@/lib/types/database";
 
 const KINDS: QuoteRequestKind[] = ["quote_summary", "listing_snapshot", "both"];
@@ -80,6 +81,22 @@ export async function updateQuoteRequestAssignedAgentAction(requestId: string, f
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "Failed to save the assigned agent." };
+  }
+}
+
+/**
+ * Ends a partner request's automated follow-up sequence (the partner
+ * replied, the buyer bound, or they went elsewhere — see
+ * lib/quote-requests/follow-ups.ts). Touches already sent stay as history.
+ */
+export async function stopQuoteRequestFollowUpsAction(requestId: string): Promise<{ ok: true; stopped: number } | { ok: false; error: string }> {
+  try {
+    const { supabase, userEmail } = await sessionContext();
+    const result = await stopQuoteRequestFollowUps(supabase, requestId, `Stopped by ${userEmail}`);
+    revalidatePath("/quote-requests");
+    return { ok: true, stopped: result.stopped };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Failed to stop follow-ups." };
   }
 }
 

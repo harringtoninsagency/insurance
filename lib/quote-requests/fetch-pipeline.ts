@@ -5,6 +5,7 @@ import { generateIndicationProposal } from "@/lib/proposals/generate-indication"
 import { generateListingSnapshotProposal } from "@/lib/proposals/generate-listing-snapshot";
 import { resolveReferralPartner } from "@/lib/quote-requests/referral-partner";
 import { buildQuoteCompletionEmail, buildConsumerQuoteCompletionEmail, type QuoteCompletionEmail } from "@/lib/quote-requests/completion-email";
+import { scheduleQuoteRequestFollowUps } from "@/lib/quote-requests/follow-ups";
 import { finalizeFloodQuoteRequest, type RocketFloodCarrierResult } from "@/lib/quote-requests/rocketflood-pipeline";
 import type { ContactType, Database } from "@/lib/types/database";
 
@@ -353,6 +354,10 @@ export async function finalizeQuoteRequest(
     pendingAgencyCopyEmail = built?.agencyCopyEmail ?? null;
   } else {
     pendingEmail = await buildQuoteCompletionEmail(quoteRequestId, proposalIds);
+    // A partner request also gets the two-touch follow-up sequence queued
+    // (Day 2 check-in, Day 7 soft close — sent by the daily Vercel cron, see
+    // lib/quote-requests/follow-ups.ts). No-op for every other requester_type.
+    await scheduleQuoteRequestFollowUps(quoteRequestId);
   }
   return { status: "completed", proposalIds, detail, pendingEmail, pendingAgencyCopyEmail };
 }

@@ -45,8 +45,18 @@ const PROFILE_COLUMNS = "full_name, email, personal_email, photo_path, active";
  *   4. The agency's earliest-created active admin, as a last-resort default
  *      so the section always has someone to show rather than going blank.
  * Returns null only if the agency has no admin at all to fall back to.
+ *
+ * `options.fallbackToDefaultAdmin: false` skips step 4 and returns null
+ * when steps 1–3 find nobody — for callers that have their own "no agent
+ * assigned" treatment, like the partner follow-up emails
+ * (lib/quote-requests/follow-ups.ts), which sign as the agency itself in
+ * that case rather than as whichever admin happens to be oldest.
  */
-export async function resolveProposalAgent(propertyId: string, quoteRequestId?: string | null): Promise<ProposalAgentInfo | null> {
+export async function resolveProposalAgent(
+  propertyId: string,
+  quoteRequestId?: string | null,
+  options: { fallbackToDefaultAdmin?: boolean } = {}
+): Promise<ProposalAgentInfo | null> {
   const supabase = createServiceSupabase();
 
   const { data: property } = await supabase.from("properties").select("agency_id, assigned_agent_id").eq("id", propertyId).maybeSingle();
@@ -88,7 +98,7 @@ export async function resolveProposalAgent(propertyId: string, quoteRequestId?: 
     profile = data?.active ? data : null;
   }
 
-  if (!profile && property?.agency_id) {
+  if (!profile && property?.agency_id && options.fallbackToDefaultAdmin !== false) {
     const { data: defaultAdmin } = await supabase
       .from("profiles")
       .select(PROFILE_COLUMNS)

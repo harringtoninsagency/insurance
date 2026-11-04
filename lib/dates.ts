@@ -3,6 +3,26 @@ export function todayEt(now: Date = new Date()): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
 }
 
+/**
+ * A todayEt()-shaped day key plus N business days (Mon–Fri), as another day
+ * key. Counts only weekdays forward from `dayKey`, so "+2" from a Thursday is
+ * the following Monday and "+2" from a Saturday is Tuesday. US holidays are
+ * deliberately not skipped — a follow-up landing on one just sits in the
+ * inbox like any other weekday email.
+ */
+export function addBusinessDays(dayKey: string, days: number): string {
+  const [year, month, day] = dayKey.split("-").map(Number);
+  // Noon UTC keeps the date arithmetic clear of any DST edge when formatting back out.
+  const date = new Date(Date.UTC(year!, month! - 1, day!, 12));
+  let remaining = days;
+  while (remaining > 0) {
+    date.setUTCDate(date.getUTCDate() + 1);
+    const dow = date.getUTCDay();
+    if (dow !== 0 && dow !== 6) remaining -= 1;
+  }
+  return date.toISOString().slice(0, 10);
+}
+
 /** Formats a YYYY-MM-DD date column as M/D/YYYY without a time-zone shift. */
 export function formatDateOnly(value: string | null | undefined): string {
   const m = value?.match(/^(\d{4})-(\d{2})-(\d{2})/);
