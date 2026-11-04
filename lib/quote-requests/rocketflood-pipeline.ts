@@ -90,7 +90,7 @@ export function buildRocketFloodQuoteInput(
   const zipcode = property.zipcode || request.zipcode || "";
 
   const requesterName = request.requester_name?.trim();
-  const [clientFirstName, ...rest] = requesterName
+  const [clientFirstName = "Homeowner", ...rest] = requesterName
     ? requesterName.split(/\s+/)
     : ["Homeowner"];
   const clientLastName = rest.join(" ") || "Homeowner";
