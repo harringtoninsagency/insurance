@@ -21,6 +21,7 @@ import { createServiceSupabase } from "@/lib/supabase/server";
 import { sendSlackAlert } from "@/lib/alerts/slack";
 import { queuePropertyQuote, type Requester } from "@/lib/quote-requests/queue-quote";
 import { fireQuoteRoutine } from "@/lib/quote-requests/fire-routine";
+import { FLOOD_QUOTING_ENABLED } from "@/lib/feature-flags";
 
 const AGENCY_ID = "ccb0a58e-0b78-4799-b236-66d1bda42f67";
 // Wider than the daily cadence this is meant to run on, so a missed run (the
@@ -110,9 +111,11 @@ async function main() {
   // this against the same listing (or one that previously failed to quote
   // and is being retried) is always safe.
   //
-  // Every auto-ingested listing also requests a RocketFlood quote (the last
-  // `true` below) — there's no person here to tick the opt-in checkbox the
-  // other entry points show, and by request this pipeline always asks.
+  // Every auto-ingested listing also requests a RocketFlood quote — there's
+  // no person here to tick the opt-in checkbox the other entry points show,
+  // and by request this pipeline always asks — gated on the same
+  // FLOOD_QUOTING_ENABLED flag those checkboxes are paused behind while
+  // flood quoting is still being tested (see docs/process-flood-quote-requests.md).
   const requester: Requester = {
     userId: null,
     name: "OneHome auto-ingest",
@@ -123,7 +126,7 @@ async function main() {
   let queuedCount = 0;
   let firedCount = 0;
   for (const property of toQuote) {
-    const result = await queuePropertyQuote(supabase, property.id, requester, "both", false, null, true);
+    const result = await queuePropertyQuote(supabase, property.id, requester, "both", false, null, FLOOD_QUOTING_ENABLED);
     if (!result.ok) {
       log(`  Couldn't queue a quote for property ${property.id} (mls ${property.mls_id}): ${result.error}`);
       continue;
