@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { submitPartnerQuoteRequestAction, type PartnerRequestState } from "./actions";
+import { FLOOD_QUOTING_ENABLED } from "@/lib/feature-flags";
 
 const inputClass = "w-full rounded border border-slate-300 bg-white px-2 py-1.5 text-sm focus:border-[#003049] focus:outline-none";
 
@@ -71,10 +72,12 @@ export function NewRequestForm({ defaultEmail }: { defaultEmail: string }) {
             </div>
           </details>
 
-          <label className="flex items-center gap-2 text-slate-700">
-            <input type="checkbox" name="requestFloodQuote" value="true" className="h-4 w-4 rounded border-slate-300" />
-            Also get a flood insurance quote (RocketFlood)
-          </label>
+          {FLOOD_QUOTING_ENABLED && (
+            <label className="flex items-center gap-2 text-slate-700">
+              <input type="checkbox" name="requestFloodQuote" value="true" className="h-4 w-4 rounded border-slate-300" />
+              Also get a flood insurance quote (RocketFlood)
+            </label>
+          )}
 
           <div className="space-y-2">
             <button

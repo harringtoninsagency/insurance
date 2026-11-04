@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { submitConsumerQuoteAction, type ConsumerQuoteState } from "./actions";
 import { AddressAutocompleteInput, type ParsedAddress } from "./AddressAutocompleteInput";
 import { CONTACT_EMAIL, CONTACT_PHONE } from "@/lib/contacts/consent-text";
+import { FLOOD_QUOTING_ENABLED } from "@/lib/feature-flags";
 
 const inputClass =
   "w-full rounded border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 focus:border-[#003049] focus:outline-none";
@@ -62,10 +63,12 @@ export function QuoteForm() {
         <Field id="email" name="email" label="Email" type="email" required autoComplete="email" defaultValue={v.email} />
       </div>
 
-      <label className="flex items-start gap-2 text-sm text-slate-600">
-        <input type="checkbox" name="requestFloodQuote" value="true" className="mt-0.5 h-4 w-4 rounded border-slate-300" />
-        <span>Also get a flood insurance quote for this property (separate from homeowners coverage)</span>
-      </label>
+      {FLOOD_QUOTING_ENABLED && (
+        <label className="flex items-start gap-2 text-sm text-slate-600">
+          <input type="checkbox" name="requestFloodQuote" value="true" className="mt-0.5 h-4 w-4 rounded border-slate-300" />
+          <span>Also get a flood insurance quote for this property (separate from homeowners coverage)</span>
+        </label>
+      )}
 
       <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
         <label htmlFor="website">Website</label>

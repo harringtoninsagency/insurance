@@ -4,6 +4,7 @@ import { useActionState, useState, useTransition } from "react";
 import Link from "next/link";
 import { runQuoteForAddressAction, verifyQuoteAddressAction, type NewQuoteState } from "../actions";
 import type { VerifyAddressResult } from "@/lib/geocoding/verify-address";
+import { FLOOD_QUOTING_ENABLED } from "@/lib/feature-flags";
 
 const inputClass = "w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#003049] focus:outline-none";
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -113,10 +114,12 @@ export function NewQuoteForm({ referralPartners }: { referralPartners: ReferralP
           <input type="checkbox" name="roof_scenario" value="true" className="h-4 w-4 rounded border-slate-300" />
           New Roof Scenario — assumes a newly installed roof on this property
         </label>
-        <label className="flex items-center gap-2 text-sm text-slate-700 sm:col-span-2">
-          <input type="checkbox" name="requested_flood_quote" value="true" className="h-4 w-4 rounded border-slate-300" />
-          Also quote flood insurance (RocketFlood)
-        </label>
+        {FLOOD_QUOTING_ENABLED && (
+          <label className="flex items-center gap-2 text-sm text-slate-700 sm:col-span-2">
+            <input type="checkbox" name="requested_flood_quote" value="true" className="h-4 w-4 rounded border-slate-300" />
+            Also quote flood insurance (RocketFlood)
+          </label>
+        )}
       </div>
 
       {referralPartners.length > 0 && (

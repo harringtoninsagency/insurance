@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { runQuoteForPropertyAction } from "./actions";
 import type { QuoteRequestKind } from "@/lib/types/database";
+import { FLOOD_QUOTING_ENABLED } from "@/lib/feature-flags";
 
 export function RunQuoteButton({ propertyId, compact = false, label = "Run quote now" }: { propertyId: string; compact?: boolean; label?: string }) {
   const [isPending, startTransition] = useTransition();
@@ -46,7 +47,7 @@ export function RunQuoteButton({ propertyId, compact = false, label = "Run quote
             <option value="listing_snapshot">Listing snapshot only</option>
           </select>
         )}
-        {!compact && (
+        {!compact && FLOOD_QUOTING_ENABLED && (
           <label className="flex items-center gap-1.5 text-xs text-slate-700">
             <input
               type="checkbox"
