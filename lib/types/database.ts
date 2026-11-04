@@ -437,6 +437,31 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["contact_follow_ups"]["Row"]>;
         Relationships: [];
       };
+      quote_request_follow_ups: {
+        Row: {
+          id: string;
+          agency_id: string;
+          quote_request_id: string;
+          /** 1 = the Day-2 check-in, 2 = the Day-7 soft close — see lib/quote-requests/follow-ups.ts. */
+          touch: 1 | 2;
+          /** YYYY-MM-DD (ET business day) the touch becomes due. */
+          scheduled_for: string;
+          sent_at: string | null;
+          provider_message_id: string | null;
+          send_error: string | null;
+          stopped_at: string | null;
+          stopped_reason: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["quote_request_follow_ups"]["Row"]> & {
+          agency_id: string;
+          quote_request_id: string;
+          touch: 1 | 2;
+          scheduled_for: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["quote_request_follow_ups"]["Row"]>;
+        Relationships: [];
+      };
       property_notes: {
         Row: {
           id: string;

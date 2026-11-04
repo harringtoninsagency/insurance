@@ -205,6 +205,10 @@ they are already decided, not yours to pick:
 - `replyTo`: `pendingEmail.replyTo` (may be null — omit the field entirely if so).
 - `cc`: `pendingEmail.cc`.
 
+For a completed partner request, `finalizeQuoteRequest` has also already queued the two automated follow-up
+emails (`quote_request_follow_ups`, sent later by the app's own Vercel cron — see
+[`docs/email-setup.md`](./email-setup.md)). Nothing for this routine to do there.
+
 ### 5b. Also send `pendingAgencyCopyEmail`, if set
 
 `result.pendingAgencyCopyEmail` is only ever set alongside `pendingEmail`, and only for a consumer request

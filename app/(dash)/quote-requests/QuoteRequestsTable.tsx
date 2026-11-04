@@ -2,8 +2,10 @@ import Link from "next/link";
 import { todayEt, formatDayHeading, formatDateTimeEt } from "@/lib/dates";
 import type { Database } from "@/lib/types/database";
 import { QuoteRequestAssignedAgentSelect } from "./QuoteRequestAssignedAgentSelect";
+import { QuoteRequestFollowUps } from "./QuoteRequestFollowUps";
 
 type QuoteRequestRow = Database["public"]["Tables"]["quote_requests"]["Row"];
+type FollowUpRow = Database["public"]["Tables"]["quote_request_follow_ups"]["Row"];
 
 const STATUS_LABEL: Record<string, { label: string; className: string }> = {
   new: { label: "New", className: "bg-slate-100 text-slate-600" },
@@ -30,6 +32,8 @@ interface Props {
   teamMembers: TeamMember[];
   propertyById: Map<string, { id: string; address: string }>;
   contactById: Map<string, { id: string; full_name: string | null; company_name: string | null }>;
+  /** Automated partner follow-up touches by quote_request_id (lib/quote-requests/follow-ups.ts); optional so callers without the column can leave it out. */
+  followUpsByRequestId?: Map<string, FollowUpRow[]>;
 }
 
 /**
@@ -38,7 +42,7 @@ interface Props {
  * InstaHomeQuote funnel page) — kept as one component so the two never drift
  * apart on status labels, grouping, or row layout.
  */
-export function QuoteRequestsTable({ requests, teamMembers, propertyById, contactById }: Props) {
+export function QuoteRequestsTable({ requests, teamMembers, propertyById, contactById, followUpsByRequestId }: Props) {
   const activeRequests = requests.filter((r) => r.status === "new" || r.status === "processing" || r.status === "needs_review");
   const completedRequests = requests.filter((r) => r.status === "completed" || r.status === "failed");
 
@@ -96,6 +100,11 @@ export function QuoteRequestsTable({ requests, teamMembers, propertyById, contac
         <td className="min-w-[10rem] px-4 py-3">
           <QuoteRequestAssignedAgentSelect requestId={r.id} assignedAgentId={r.assigned_agent_id} teamMembers={teamMembers} />
         </td>
+        {followUpsByRequestId && (
+          <td className="px-4 py-3">
+            <QuoteRequestFollowUps requestId={r.id} followUps={followUpsByRequestId.get(r.id) ?? []} />
+          </td>
+        )}
         <td className="px-4 py-3 text-slate-500">{formatDateTimeEt(r.created_at)}</td>
       </tr>
     );
@@ -112,6 +121,7 @@ export function QuoteRequestsTable({ requests, teamMembers, propertyById, contac
               <th className="px-4 py-3">Wants</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Assigned to</th>
+              {followUpsByRequestId && <th className="px-4 py-3">Follow-ups</th>}
               <th className="px-4 py-3">Requested</th>
             </tr>
           </thead>
