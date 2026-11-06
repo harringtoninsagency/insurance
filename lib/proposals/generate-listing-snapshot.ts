@@ -1,4 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
+import type { Json } from "@/lib/types/database";
 import { join } from "node:path";
 import { PDFDocument, StandardFonts, rgb, type PDFImage } from "pdf-lib";
 import { createServiceSupabase } from "@/lib/supabase/server";
@@ -74,6 +75,7 @@ interface QuoteRow {
   carrier: string;
   form_type: string | null;
   premium: string | number;
+  coverages: Json | null;
 }
 
 function sniffImageKind(bytes: Uint8Array): "jpg" | "png" {

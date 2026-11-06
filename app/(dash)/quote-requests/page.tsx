@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { QuoteRequestsTable } from "./QuoteRequestsTable";
+import type { Database } from "@/lib/types/database";
+
+type FollowUpRow = Database["public"]["Tables"]["quote_request_follow_ups"]["Row"];
 
 export default async function QuoteRequestsPage({
   searchParams,
@@ -30,6 +33,19 @@ export default async function QuoteRequestsPage({
   ]);
   const propertyById = new Map((properties ?? []).map((p) => [p.id, p]));
   const contactById = new Map((contacts ?? []).map((c) => [c.id, c]));
+
+  // Automated partner follow-up touches (lib/quote-requests/follow-ups.ts),
+  // grouped by request so the table can show where each sequence stands.
+  const requestIds = (requests ?? []).map((r) => r.id);
+  const followUps: FollowUpRow[] = requestIds.length
+    ? ((await supabase.from("quote_request_follow_ups").select("*").in("quote_request_id", requestIds)).data ?? [])
+    : [];
+  const followUpsByRequestId = new Map<string, FollowUpRow[]>();
+  for (const f of followUps) {
+    const bucket = followUpsByRequestId.get(f.quote_request_id);
+    if (bucket) bucket.push(f);
+    else followUpsByRequestId.set(f.quote_request_id, [f]);
+  }
 
   const pendingCount = (requests ?? []).filter((r) => r.status === "processing").length;
   const needsReviewCount = (requests ?? []).filter((r) => r.status === "needs_review").length;
@@ -72,7 +88,13 @@ export default async function QuoteRequestsPage({
 
       {error && <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">{error.message}</p>}
       {!error && (
-        <QuoteRequestsTable requests={requests ?? []} teamMembers={teamMembers ?? []} propertyById={propertyById} contactById={contactById} />
+        <QuoteRequestsTable
+          requests={requests ?? []}
+          teamMembers={teamMembers ?? []}
+          propertyById={propertyById}
+          contactById={contactById}
+          followUpsByRequestId={followUpsByRequestId}
+        />
       )}
     </div>
   );

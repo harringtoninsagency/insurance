@@ -60,9 +60,34 @@ confirm, then adds you to the suppression list — remove yourself from **Suppre
   directory contact do-not-contact.
 - **Tracking:** opens and clicks are deliberately not tracked.
 
+## Partner quote follow-up sequence (automated)
+
+After a **partner-submitted** quote request completes and the results email goes out, the app queues two
+friendly follow-up emails to that partner (`lib/quote-requests/follow-ups.ts`):
+
+| Touch | Sends | Subject |
+|---|---|---|
+| 1 | 2 business days after completion | Quick check-in on *{address}* |
+| 2 | 7 business days after completion | Closing the loop on *{address}* |
+
+- **Who signs:** the agent assigned to the request in Clear to Close (property assignment first, then the
+  request's own "Assigned to", then the partner's linked agent — the same precedence the proposal PDFs use).
+  With no agent assigned, the email signs as the agency: Brightway Insurance, The Harrington Agency,
+  727-789-2200, HarringtonAgency@Brightway.com. Resolved at send time, so assigning an agent after touch 1
+  changes who signs touch 2.
+- **CC:** `harringtonagency@brightway.com` on every touch, plus the assigned agent. Reply-to is the signer.
+- **Sent by a Vercel cron** (`vercel.json` → `/api/cron/quote-follow-ups`, weekday mornings ET). Vercel
+  authenticates the call with the project's `CRON_SECRET` env var — **add `CRON_SECRET`** (any long random
+  string, e.g. `openssl rand -hex 32`) in Vercel, then redeploy. Without it the route refuses to run.
+- **Stops automatically** when the partner submits a newer request for the same property, the address lands on
+  the suppression list / do-not-contact / opted out, or a touch bounces or is marked spam. A producer can also
+  click **Stop follow-ups** on the row in `/quote-requests` (the partner replied, the buyer bound, etc.).
+- **Apply migration `0041_quote_request_follow_ups.sql`** in Supabase Studio.
+- Public, internal, and consumer requests never get this sequence.
+
 ## Not covered yet
 
 - Confirmation ("double opt-in") emails for people who sign up on `/partners`.
-- Scheduled or follow-up sequences — every send is a one-off, manually triggered.
+- Follow-up sequences for anything other than partner quote requests — outreach sends are still one-offs.
 - A stuck item (process died after the provider accepted the message but before the result was saved) isn't
   shown in any list; it's deliberately not re-sent. Check the Resend dashboard if you suspect one.

@@ -5,12 +5,25 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { createBrowserSupabase } from "@/lib/supabase/client";
 import { establishSessionFromUrl } from "@/lib/supabase/establish-session";
+import { activatePartnerAccountAction } from "@/app/partner/accept-invite/actions";
 import brightwayLogo from "@/assets/branding/brightway-harrington-horizontal-deep-blue.png";
 
 // Landing page for both a team invite and a password-reset email: Supabase's
 // link arrives here with the token already in the URL and the browser client
 // (detectSessionInUrl, on by default) turns it into a real session before
 // these effects run — so there's nothing to parse here, only a password to set.
+//
+// A partner can land here too, not just on /partner/accept-invite — their
+// one-time invite link is consumed before they ever click it (an email
+// security scanner prefetching the URL is the common case) and they fall
+// back to "Forgot password" instead, which redirects here. Without the
+// activatePartnerAccountAction call below, that partner would set a working
+// password, sign in fine, and then get bounced straight back to
+// /partner/login forever, because their partner_accounts row never got
+// linked to the new auth user (confirmed in production, Nov 2026).
+// activatePartnerAccountAction is a no-op for a team member (no matching
+// industry_contacts row) and idempotent if the partner was already active,
+// so it's safe to call unconditionally rather than only in the else branch.
 export default function SetPasswordPage() {
   const router = useRouter();
   const supabase = createBrowserSupabase();
@@ -49,6 +62,12 @@ export default function SetPasswordPage() {
     const { data: profile } = userData.user
       ? await supabase.from("profiles").select("id").eq("id", userData.user.id).maybeSingle()
       : { data: null };
+
+    // See the activatePartnerAccountAction note above this component — this
+    // is what actually links a partner's partner_accounts row the first
+    // time they set a password here instead of on /partner/accept-invite.
+    if (!profile) await activatePartnerAccountAction();
+
     setLoading(false);
     router.push(profile ? "/home" : "/partner");
     router.refresh();
