@@ -8,6 +8,7 @@ import { GenerateListingSnapshotButton } from "./GenerateListingSnapshotButton";
 import { PhotoUploadForm } from "./PhotoUploadForm";
 import { EditListingAgentForm } from "./EditListingAgentForm";
 import { CoBrandContactSelect } from "./CoBrandContactSelect";
+import { AssignedAgentSelect } from "../AssignedAgentSelect";
 import { QueueOutreachForm } from "./QueueOutreachForm";
 import { DateQuotedForm } from "./DateQuotedForm";
 import { ManualCarrierForm } from "./ManualCarrierForm";
@@ -25,6 +26,7 @@ export default async function PropertyDetailPage({
   const [
     { data: directoryContacts },
     { data: referralPartnerContacts },
+    { data: teamMembers },
     { data: latestRequest },
     { data: property },
     { data: enrichment },
@@ -53,6 +55,10 @@ export default async function PropertyDetailPage({
       .eq("do_not_contact", false)
       .in("contact_type", ["realtor", "mortgage_broker", "roofing_company"])
       .order("full_name"),
+    // Same "Assigned Agent" picker as the properties list — here too, so a
+    // team member can credit themselves (or whoever's running it) right
+    // where they run the quote, not just from the list page.
+    supabase.from("profiles").select("id, full_name, email").eq("active", true).order("full_name"),
     supabase
       .from("quote_requests")
       .select("id, contact_id, status, status_detail, created_at")
@@ -139,6 +145,16 @@ export default async function PropertyDetailPage({
           <span className="inline-block h-2 w-2 shrink-0 bg-[#F0FF00]" />
           Run a quote
         </h2>
+        <div className="mb-3">
+          <label className="text-xs text-slate-500">Assigned Brightway agent — credited on every generated PDF for this property</label>
+          <div className="mt-1">
+            <AssignedAgentSelect
+              propertyId={property.id}
+              assignedAgentId={property.assigned_agent_id}
+              teamMembers={teamMembers ?? []}
+            />
+          </div>
+        </div>
         {latestRequest && (latestRequest.status === "new" || latestRequest.status === "processing") ? (
           <p className="rounded bg-amber-50 px-3 py-2 text-sm text-amber-900">
             Quote queued {formatDateTimeEt(latestRequest.created_at)} — it will be pulled by the quote run now in progress, or at the latest the next hourly run.

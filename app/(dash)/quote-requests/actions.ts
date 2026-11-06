@@ -128,6 +128,7 @@ export async function runQuoteForAddressAction(_prev: NewQuoteState, formData: F
         roofScenario: formData.get("roof_scenario") === "true",
         requestedFloodQuote: formData.get("requested_flood_quote") === "true",
         contactId: coBrandContact?.id ?? null,
+        assignedAgentId: str("assigned_agent_id") || null,
       },
       requester
     );

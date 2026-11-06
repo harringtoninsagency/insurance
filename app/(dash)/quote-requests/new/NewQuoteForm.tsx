@@ -28,7 +28,13 @@ interface ReferralPartnerOption {
   companyName: string | null;
 }
 
-export function NewQuoteForm({ referralPartners }: { referralPartners: ReferralPartnerOption[] }) {
+interface TeamMemberOption {
+  id: string;
+  fullName: string | null;
+  email: string;
+}
+
+export function NewQuoteForm({ referralPartners, teamMembers }: { referralPartners: ReferralPartnerOption[]; teamMembers: TeamMemberOption[] }) {
   const [state, formAction, isPending] = useActionState<NewQuoteState, FormData>(runQuoteForAddressAction, null);
   const [isVerifying, startVerifying] = useTransition();
   const [verification, setVerification] = useState<Verification>({ status: "idle" });
@@ -109,6 +115,20 @@ export function NewQuoteForm({ referralPartners }: { referralPartners: ReferralP
             <option value="quote_summary">Quote summary only</option>
             <option value="listing_snapshot">Listing snapshot only</option>
           </select>
+        </div>
+        <div className="space-y-1 sm:col-span-2">
+          <label htmlFor="assigned_agent_id" className="text-xs font-medium text-slate-600">
+            Assign to (optional)
+          </label>
+          <select id="assigned_agent_id" name="assigned_agent_id" defaultValue="" className={inputClass}>
+            <option value="">— Unassigned —</option>
+            {teamMembers.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.fullName ?? m.email}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-slate-500">Credited as this property&apos;s Brightway agent on the generated PDFs.</p>
         </div>
         <label className="flex items-center gap-2 text-sm text-slate-700 sm:col-span-2">
           <input type="checkbox" name="roof_scenario" value="true" className="h-4 w-4 rounded border-slate-300" />

@@ -10,12 +10,15 @@ export default async function NewQuotePage() {
   // differently than the rest of this dashboard: the signed-in session's
   // own "agency scoped" policy on industry_contacts already limits this.
   const { supabase } = await sessionContext();
-  const { data: contacts } = await supabase
-    .from("industry_contacts")
-    .select("id, full_name, company_name")
-    .eq("do_not_contact", false)
-    .in("contact_type", ["realtor", "mortgage_broker", "roofing_company"])
-    .order("full_name");
+  const [{ data: contacts }, { data: teamMembers }] = await Promise.all([
+    supabase
+      .from("industry_contacts")
+      .select("id, full_name, company_name")
+      .eq("do_not_contact", false)
+      .in("contact_type", ["realtor", "mortgage_broker", "roofing_company"])
+      .order("full_name"),
+    supabase.from("profiles").select("id, full_name, email").eq("active", true).order("full_name"),
+  ]);
 
   return (
     <div className="max-w-2xl">
@@ -28,7 +31,10 @@ export default async function NewQuotePage() {
         picks it up.
       </p>
       <div className="rounded-lg border border-slate-200 bg-white p-6">
-        <NewQuoteForm referralPartners={(contacts ?? []).map((c) => ({ id: c.id, fullName: c.full_name, companyName: c.company_name }))} />
+        <NewQuoteForm
+          referralPartners={(contacts ?? []).map((c) => ({ id: c.id, fullName: c.full_name, companyName: c.company_name }))}
+          teamMembers={(teamMembers ?? []).map((m) => ({ id: m.id, fullName: m.full_name, email: m.email }))}
+        />
       </div>
     </div>
   );
