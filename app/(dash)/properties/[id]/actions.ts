@@ -5,7 +5,7 @@ import { applyCountyEnrichment } from "@/lib/enrichment/apply-county-enrichment"
 import { describeCountyParcelMiss } from "@/lib/enrichment/county-parcels";
 import { generateIndicationProposal } from "@/lib/proposals/generate-indication";
 import { generateListingSnapshotProposal } from "@/lib/proposals/generate-listing-snapshot";
-import { regenerateExistingProposals } from "@/lib/proposals/regenerate";
+import { regenerateExistingProposals, resolvePropertyProposalContext } from "@/lib/proposals/regenerate";
 import { uploadListingPhoto } from "@/lib/proposals/listing-photo";
 import { queueOutreach } from "@/lib/outreach/queue";
 import { sessionContext } from "@/lib/contacts/session";
@@ -19,13 +19,15 @@ export async function pullCountyDataAction(propertyId: string) {
 }
 
 export async function generateProposalAction(propertyId: string) {
-  const result = await generateIndicationProposal(propertyId);
+  const { quoteRequestId, referralPartner, roofScenario } = await resolvePropertyProposalContext(propertyId);
+  const result = await generateIndicationProposal(propertyId, referralPartner, quoteRequestId, roofScenario);
   revalidatePath(`/properties/${propertyId}`);
   return result;
 }
 
 export async function generateListingSnapshotAction(propertyId: string) {
-  const result = await generateListingSnapshotProposal(propertyId);
+  const { quoteRequestId, referralPartner } = await resolvePropertyProposalContext(propertyId);
+  const result = await generateListingSnapshotProposal(propertyId, referralPartner, quoteRequestId);
   revalidatePath(`/properties/${propertyId}`);
   return result;
 }
@@ -108,6 +110,47 @@ export async function updateAssignedAgentAction(propertyId: string, formData: Fo
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "Failed to save the assigned agent." };
+  }
+}
+
+/**
+ * Credits a referral partner on this property's proposals after the fact —
+ * the only other way to do this is NewQuoteForm's "Co-brand with a referral
+ * partner" picker, which only exists at the moment a brand-new address is
+ * first queued. A property re-quoted via RunQuoteButton (no such picker) or
+ * one whose partner wasn't chosen at creation had no way to add or correct
+ * this afterward — confirmed live on 3969 Talah Dr, where the listing agent
+ * was on file in the Listing agent field/directory but never credited on
+ * the generated PDFs because nothing had set the quote request's contact_id.
+ *
+ * Sets contact_id on the property's most recent quote_request, same field
+ * NewQuoteForm's picker writes — so this also grants that partner's own
+ * portal login (if they have one) visibility into this request, same as
+ * choosing them there would. That's intended: being credited on a proposal
+ * and being able to see it in the portal are the same thing everywhere else
+ * in this app.
+ */
+export async function updateCoBrandContactAction(propertyId: string, formData: FormData): Promise<{ ok: true } | { ok: false; error: string }> {
+  const contactId = String(formData.get("contact_id") ?? "").trim() || null;
+  try {
+    const { supabase } = await sessionContext();
+    const { data: latestRequest } = await supabase
+      .from("quote_requests")
+      .select("id")
+      .eq("property_id", propertyId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!latestRequest) return { ok: false, error: "This property has no quote request yet — run a quote first." };
+
+    const { error } = await supabase.from("quote_requests").update({ contact_id: contactId }).eq("id", latestRequest.id);
+    if (error) return { ok: false, error: error.message };
+
+    await regenerateExistingProposals(propertyId);
+    revalidatePath(`/properties/${propertyId}`);
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Failed to save the co-branded referral partner." };
   }
 }
 

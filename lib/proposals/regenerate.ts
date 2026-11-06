@@ -1,7 +1,37 @@
 import { createServiceSupabase } from "@/lib/supabase/server";
 import { generateIndicationProposal } from "@/lib/proposals/generate-indication";
 import { generateListingSnapshotProposal } from "@/lib/proposals/generate-listing-snapshot";
-import { resolveReferralPartner } from "@/lib/quote-requests/referral-partner";
+import { resolveReferralPartner, type ReferralPartnerInfo } from "@/lib/quote-requests/referral-partner";
+
+export interface PropertyProposalContext {
+  quoteRequestId: string | null;
+  referralPartner: ReferralPartnerInfo | null;
+  roofScenario: boolean;
+}
+
+/**
+ * Resolves which referral partner (if any) and quote request a property's
+ * proposals should credit — the same lookup regenerateExistingProposals does
+ * internally, pulled out so a direct "generate proposal" call (property
+ * page) can resolve it too instead of calling generateIndicationProposal/
+ * generateListingSnapshotProposal with no referral partner at all, which
+ * left every manually (re)generated PDF cobranding-blank regardless of
+ * whatever contact is actually on file — confirmed live on 3969 Talah Dr.
+ */
+export async function resolvePropertyProposalContext(propertyId: string): Promise<PropertyProposalContext> {
+  const supabase = createServiceSupabase();
+  const { data: latestRequest } = await supabase
+    .from("quote_requests")
+    .select("id, contact_id, requested_roof_scenario")
+    .eq("property_id", propertyId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const quoteRequestId = latestRequest?.id ?? null;
+  const referralPartner = await resolveReferralPartner(quoteRequestId);
+  const roofScenario = referralPartner?.contactType === "roofing_company" || latestRequest?.requested_roof_scenario === true;
+  return { quoteRequestId, referralPartner, roofScenario };
+}
 
 /**
  * Regenerates a property's existing proposals in place (new version, same
@@ -31,16 +61,7 @@ export async function regenerateExistingProposals(propertyId: string): Promise<v
     if (!proposals?.length) return;
     const kinds = new Set(proposals.map((p) => p.kind));
 
-    const { data: latestRequest } = await supabase
-      .from("quote_requests")
-      .select("id, contact_id, requested_roof_scenario")
-      .eq("property_id", propertyId)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    const quoteRequestId = latestRequest?.id ?? null;
-    const referralPartner = await resolveReferralPartner(quoteRequestId);
-    const roofScenario = referralPartner?.contactType === "roofing_company" || latestRequest?.requested_roof_scenario === true;
+    const { quoteRequestId, referralPartner, roofScenario } = await resolvePropertyProposalContext(propertyId);
 
     if (kinds.has("indication") || kinds.has("roof_scenario")) {
       await generateIndicationProposal(propertyId, referralPartner, quoteRequestId, roofScenario).catch((err) =>

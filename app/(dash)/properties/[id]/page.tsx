@@ -7,6 +7,7 @@ import { GenerateProposalButton } from "./GenerateProposalButton";
 import { GenerateListingSnapshotButton } from "./GenerateListingSnapshotButton";
 import { PhotoUploadForm } from "./PhotoUploadForm";
 import { EditListingAgentForm } from "./EditListingAgentForm";
+import { CoBrandContactSelect } from "./CoBrandContactSelect";
 import { QueueOutreachForm } from "./QueueOutreachForm";
 import { DateQuotedForm } from "./DateQuotedForm";
 import { ManualCarrierForm } from "./ManualCarrierForm";
@@ -23,6 +24,7 @@ export default async function PropertyDetailPage({
 
   const [
     { data: directoryContacts },
+    { data: referralPartnerContacts },
     { data: latestRequest },
     { data: property },
     { data: enrichment },
@@ -42,9 +44,18 @@ export default async function PropertyDetailPage({
       .neq("email_consent", "opted_out")
       .order("full_name")
       .limit(1000),
+    // Same co-branding picker options as NewQuoteForm's "Co-brand with a
+    // referral partner" — here for setting/changing it after the fact (see
+    // CoBrandContactSelect's own doc comment).
+    supabase
+      .from("industry_contacts")
+      .select("id, full_name, company_name")
+      .eq("do_not_contact", false)
+      .in("contact_type", ["realtor", "mortgage_broker", "roofing_company"])
+      .order("full_name"),
     supabase
       .from("quote_requests")
-      .select("status, status_detail, created_at")
+      .select("id, contact_id, status, status_detail, created_at")
       .eq("property_id", id)
       .order("created_at", { ascending: false })
       .limit(1)
@@ -162,6 +173,25 @@ export default async function PropertyDetailPage({
         <p className="mt-1 text-xs text-slate-500">
           Saving here also adds the agent to (or updates them in) the Referral Partners directory.
         </p>
+
+        <div className="mt-4 border-t border-slate-200 pt-4">
+          <div className="text-xs text-slate-500">
+            Co-branded on proposals — whoever&apos;s picked here (usually the listing agent above, once they&apos;re in
+            the directory) gets their name, phone, email and photo credited alongside the Brightway agent on every
+            generated PDF for this property.
+          </div>
+          {latestRequest ? (
+            <div className="mt-1.5">
+              <CoBrandContactSelect
+                propertyId={property.id}
+                contactId={latestRequest.contact_id}
+                referralPartners={(referralPartnerContacts ?? []).map((c) => ({ id: c.id, fullName: c.full_name, companyName: c.company_name }))}
+              />
+            </div>
+          ) : (
+            <p className="mt-1.5 text-xs text-slate-500">Run a quote for this property first.</p>
+          )}
+        </div>
       </section>
 
       <section>
