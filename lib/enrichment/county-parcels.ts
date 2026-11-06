@@ -366,7 +366,17 @@ export async function findCountyParcel(property: PropertyRow): Promise<CountyPar
   // running it back through normalizeStreetName would wrongly strip a second
   // word that happens to also be a suffix in its own right (e.g. "SUN ISLE"
   // loses "isle", since "isle" is itself a valid street suffix elsewhere).
-  const matches = data.filter((row) => row.str_name && row.str_name.trim().toLowerCase() === targetStreet);
+  let matches = data.filter((row) => row.str_name && row.str_name.trim().toLowerCase() === targetStreet);
+
+  // Falls back to a whitespace-insensitive compare only when the exact match
+  // found nothing — confirmed live on "5767 Westshore Drive" vs Pasco's own
+  // "5767 WEST SHORE DRIVE" (str_name "WEST SHORE"): a real, correctly typed
+  // address whose word-split just doesn't match the county's, which exact
+  // equality was otherwise sending to needs_review as a false typo flag.
+  if (matches.length === 0) {
+    const targetCollapsed = targetStreet.replace(/\s+/g, "");
+    matches = data.filter((row) => row.str_name && row.str_name.trim().toLowerCase().replace(/\s+/g, "") === targetCollapsed);
+  }
 
   if (matches.length === 0) return { parcel: null, missReason: "no_street_name_match" };
   if (matches.length === 1) return { parcel: matches[0] ?? null };
