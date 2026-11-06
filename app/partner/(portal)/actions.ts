@@ -9,7 +9,7 @@ import { fireQuoteRoutine } from "@/lib/quote-requests/fire-routine";
 import { notifyReferralPartnerSubmission } from "@/lib/quote-requests/submission-notify";
 import { uploadPartnerImage, type BrandingKind } from "@/lib/partners/branding";
 import { resolvePublicAgent } from "@/lib/team/team";
-import { regeneratePropertiesForContactAgentChange } from "@/lib/proposals/regenerate";
+import { regeneratePropertiesForContactAgentChange, regeneratePropertiesForContactBrandingChange } from "@/lib/proposals/regenerate";
 
 export type PartnerRequestValues = Record<string, string>;
 export type PartnerRequestState = { done: { status: string } } | { error: string; values: PartnerRequestValues } | null;
@@ -42,6 +42,9 @@ async function uploadPartnerBrandingAction(kind: BrandingKind, formData: FormDat
   try {
     const bytes = new Uint8Array(await file.arrayBuffer());
     await uploadPartnerImage(kind, account.agencyId, account.contactId, bytes, file.type);
+    // Only the co-branding photo appears on generated PDFs — the logo is
+    // shown in the partner's own portal only.
+    if (kind === "photo") await regeneratePropertiesForContactBrandingChange(account.contactId);
     revalidatePath("/partner");
     return { ok: true };
   } catch (err) {
@@ -67,6 +70,7 @@ export async function updatePartnerCompanyNameAction(_prev: PartnerActionResult 
   const { error } = await service.from("industry_contacts").update({ company_name: companyName }).eq("id", account.contactId);
   if (error) return { ok: false, error: error.message };
 
+  await regeneratePropertiesForContactBrandingChange(account.contactId);
   revalidatePath("/partner");
   return { ok: true };
 }

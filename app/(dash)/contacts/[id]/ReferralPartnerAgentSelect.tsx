@@ -1,9 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useState, useTransition } from "react";
 import { updateReferralPartnerAgentAction } from "../actions";
-
-type State = { ok: true } | { ok: false; error: string } | null;
 
 interface TeamMember {
   id: string;
@@ -18,21 +16,39 @@ interface Props {
 }
 
 export function ReferralPartnerAgentSelect({ contactId, referralPartnerAgentId, teamMembers }: Props) {
-  async function runAction(_prev: State, formData: FormData): Promise<State> {
-    return updateReferralPartnerAgentAction(contactId, formData);
+  const [selected, setSelected] = useState(referralPartnerAgentId ?? "");
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  const dirty = selected !== (referralPartnerAgentId ?? "");
+
+  function save() {
+    setError(null);
+    setSaved(false);
+    startTransition(async () => {
+      const formData = new FormData();
+      formData.set("referral_partner_agent_id", selected);
+      const result = await updateReferralPartnerAgentAction(contactId, formData);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      setSaved(true);
+    });
   }
 
-  const [state, formAction, isPending] = useActionState<State, FormData>(runAction, null);
-
   return (
-    <form action={formAction}>
+    <div className="flex flex-wrap items-center gap-2">
       <select
-        name="referral_partner_agent_id"
-        defaultValue={referralPartnerAgentId ?? ""}
-        onChange={(e) => e.currentTarget.form?.requestSubmit()}
+        value={selected}
+        onChange={(e) => {
+          setSelected(e.target.value);
+          setSaved(false);
+        }}
         disabled={isPending}
         aria-label="Referral partner agent"
-        className="w-full rounded border border-slate-300 bg-white px-2 py-1 text-sm disabled:opacity-50"
+        className="rounded border border-slate-300 bg-white px-2 py-1 text-sm disabled:opacity-50"
       >
         <option value="">— None selected —</option>
         {teamMembers.map((m) => (
@@ -41,7 +57,16 @@ export function ReferralPartnerAgentSelect({ contactId, referralPartnerAgentId, 
           </option>
         ))}
       </select>
-      {state && !state.ok && <p className="mt-1 text-xs text-red-600">{state.error}</p>}
-    </form>
+      <button
+        type="button"
+        onClick={save}
+        disabled={isPending || !dirty}
+        className="rounded border border-[#003049] px-2.5 py-1 text-xs font-medium text-[#003049] hover:bg-[#003049]/5 disabled:opacity-50"
+      >
+        {isPending ? "Saving..." : "Save"}
+      </button>
+      {saved && !dirty && <span className="text-xs text-green-700">Saved — locked in for cobranding.</span>}
+      {error && <span className="text-xs text-red-600">{error}</span>}
+    </div>
   );
 }

@@ -45,11 +45,13 @@ export function EditContactDetailsForm({ contact }: { contact: ContactDetails })
   const [editing, setEditing] = useState(false);
   const [values, setValues] = useState<ContactDetailsPayload>(toPayload(contact));
   const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   function startEditing() {
     setValues(toPayload(contact));
     setError(null);
+    setSaved(false);
     setEditing(true);
   }
 
@@ -69,6 +71,7 @@ export function EditContactDetailsForm({ contact }: { contact: ContactDetails })
         return;
       }
       setEditing(false);
+      setSaved(true);
     });
   }
 
@@ -90,7 +93,7 @@ export function EditContactDetailsForm({ contact }: { contact: ContactDetails })
             <div className="text-slate-800">{value ?? "—"}</div>
           </div>
         ))}
-        <div className="flex items-end">
+        <div className="flex items-end gap-2">
           <button
             type="button"
             onClick={startEditing}
@@ -98,6 +101,7 @@ export function EditContactDetailsForm({ contact }: { contact: ContactDetails })
           >
             Edit contact details
           </button>
+          {saved && <span className="text-xs text-green-700">Saved.</span>}
         </div>
       </>
     );

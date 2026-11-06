@@ -95,3 +95,32 @@ export async function regeneratePropertiesForContactAgentChange(contactId: strin
     console.error(`regeneratePropertiesForContactAgentChange: unexpected failure for contact ${contactId}: ${err instanceof Error ? err.message : err}`);
   }
 }
+
+/**
+ * Same idea, but for a change to the referral partner's own cobranding info
+ * — name, company, phone, email, or co-branding photo (industry_contacts),
+ * all of which feed the "co-branded referral partner" block in
+ * generate-indication.ts/generate-listing-snapshot.ts. Unlike the agent
+ * assignment above, there's no precedence to re-check here:
+ * resolveReferralPartner always keys off whichever quote_request is most
+ * recent for a given property, so every property whose latest request
+ * points at this contact picks up the change immediately. Scoped to this
+ * contact's properties, not an agency-wide scan.
+ */
+export async function regeneratePropertiesForContactBrandingChange(contactId: string): Promise<void> {
+  try {
+    const supabase = createServiceSupabase();
+    const { data: requests } = await supabase
+      .from("quote_requests")
+      .select("property_id")
+      .eq("contact_id", contactId)
+      .not("property_id", "is", null);
+    const propertyIds = [...new Set((requests ?? []).map((r) => r.property_id as string))];
+
+    for (const propertyId of propertyIds) {
+      await regenerateExistingProposals(propertyId);
+    }
+  } catch (err) {
+    console.error(`regeneratePropertiesForContactBrandingChange: unexpected failure for contact ${contactId}: ${err instanceof Error ? err.message : err}`);
+  }
+}

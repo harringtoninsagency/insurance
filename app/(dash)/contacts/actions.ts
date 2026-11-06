@@ -7,7 +7,7 @@ import { upsertContact } from "@/lib/contacts/upsert-contact";
 import { importContactsCsv, type ImportSummary } from "@/lib/contacts/import-csv";
 import { invitePartner, type InviteResult } from "@/lib/partners/invite";
 import { uploadPartnerImage, type BrandingKind } from "@/lib/partners/branding";
-import { regeneratePropertiesForContactAgentChange } from "@/lib/proposals/regenerate";
+import { regeneratePropertiesForContactAgentChange, regeneratePropertiesForContactBrandingChange } from "@/lib/proposals/regenerate";
 import { createServiceSupabase } from "@/lib/supabase/server";
 import { cleanText, normalizeEmail, normalizePersonName, normalizePhone } from "@/lib/contacts/normalize";
 import type { ConsentEventType, ConsentMethod, ContactSource, ContactType } from "@/lib/types/database";
@@ -221,6 +221,10 @@ export async function updateContactDetailsAction(contactId: string, payload: Con
       .eq("id", contactId);
     if (error) return { ok: false, error: error.message };
 
+    // Name/company/phone/email all feed the co-branded block on every
+    // proposal already generated for this contact's properties — see
+    // regeneratePropertiesForContactBrandingChange's own doc comment.
+    await regeneratePropertiesForContactBrandingChange(contactId);
     revalidatePath(`/contacts/${contactId}`);
     revalidatePath("/contacts");
     return { ok: true };
@@ -247,6 +251,9 @@ async function uploadContactBrandingAction(kind: BrandingKind, contactId: string
     const service = createServiceSupabase();
     const bytes = new Uint8Array(await file.arrayBuffer());
     await uploadPartnerImage(kind, agencyId, contactId, bytes, file.type);
+    // Only the co-branding photo appears on generated PDFs — the logo is
+    // shown in the partner's own portal only (see ContactBrandingForm).
+    if (kind === "photo") await regeneratePropertiesForContactBrandingChange(contactId);
     revalidatePath(`/contacts/${contactId}`);
     return { ok: true };
   } catch (err) {
